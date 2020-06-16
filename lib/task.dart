@@ -1,5 +1,5 @@
-class Todo {
+class Task {
   bool isCompleted = false;
   String name;
-  Todo(this.name);
+  Task(this.name);
 }
