@@ -149,22 +149,22 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
 
-    _removeTask(int index) {
+    _removeTask(Task task) {
       setState(() {
-        tasks.removeAt(index);
+        tasks.remove(task);
       });
     }
 
     Future<void> _createTodo() async {
-      var todo = await showDialog<Task>(
+      var todo = await showDialog<String>(
           context: context,
           builder: (BuildContext context) {
-            return NewTask();
+            return NewTask("Новое Задание");
           }
       );
       if(todo != null) {
         setState(() {
-          tasks.add(todo);
+          tasks.add(Task(todo));
         });
       }
     }

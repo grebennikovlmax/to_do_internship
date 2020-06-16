@@ -7,7 +7,7 @@ class TaskItem extends StatefulWidget {
 
   final Task task;
   final int index;
-  final void Function(int) onRemoveTask;
+  final void Function(Task) onRemoveTask;
 
   TaskItem(this.task, this.onRemoveTask, this.index);
 
@@ -17,7 +17,7 @@ class TaskItem extends StatefulWidget {
   }
 }
 
-class _TaskItemState extends State<TaskItem> {
+class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin{
 
   _todoTaped(bool val) {
     setState(() {
@@ -34,32 +34,49 @@ class _TaskItemState extends State<TaskItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Dismissible(
+      direction: DismissDirection.endToStart,
+      background: Container(
         decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8)
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(10)
         ),
-      child: ListTile(
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => TaskDetail(widget.task))).then((value) {
-                  setState(() {
-                    print(value);
-                });
-            }),
-        title: Text(widget.task.name),
-        subtitle: Text(countSteps),
-        trailing: GestureDetector(
-          child: Icon(Icons.delete, color: Theme.of(context).primaryColor),
-          onTap: () => widget.onRemoveTask(widget.index),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Icon(Icons.delete),
+          ),
         ),
-        leading: Checkbox(
-            activeColor: Theme.of(context).primaryColor,
-            value: widget.task.isCompleted,
-            onChanged: (val) => _todoTaped(val)
+      ),
+      onDismissed: (dir) => widget.onRemoveTask(widget.task),
+      key: UniqueKey(),
+      child: Container(
+            decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8)
+            ),
+          child: ListTile(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => TaskDetail(widget.task))).then((value) {
+                      if(value != null) widget.onRemoveTask(widget.task);
+                      setState(() {});
+                }),
+            title: Text(widget.task.name),
+            subtitle: Text(countSteps),
+            trailing: GestureDetector(
+              child: Icon(Icons.delete, color: Theme.of(context).primaryColor),
+              onTap: () => widget.onRemoveTask(widget.task),
+            ),
+            leading: Checkbox(
+                activeColor: Theme.of(context).primaryColor,
+                value: widget.task.isCompleted,
+                onChanged: (val) => _todoTaped(val)
+            ),
+          )
         ),
-      )
     );
   }
 

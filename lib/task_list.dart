@@ -5,7 +5,7 @@ import 'task_item.dart';
 class TaskList extends StatelessWidget {
 
   final List<Task> tasks;
-  final void Function(int) onRemoveTask;
+  final void Function(Task) onRemoveTask;
 
   TaskList(this.tasks, this.onRemoveTask);
 

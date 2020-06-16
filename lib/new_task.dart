@@ -4,6 +4,10 @@ import 'model/task.dart';
 
 class NewTask extends StatefulWidget {
 
+  final String title;
+  final String taskValue;
+
+  NewTask(this.title,[this.taskValue = ""]);
 
   @override
   State<StatefulWidget> createState() {
@@ -19,7 +23,7 @@ class _NewTaskState extends State<NewTask> {
   @override
   Widget build(BuildContext context) {
     return  SimpleDialog (
-        title: Text("Новое задание"),
+        title: Text(widget.title),
         children: <Widget>[
           Form(
             key: _formKey,
@@ -28,9 +32,11 @@ class _NewTaskState extends State<NewTask> {
                 Padding(
                     padding: EdgeInsets.all(10),
                     child: TextFormField(
+                      initialValue: widget.taskValue,
                       onSaved: (value) {
-                        Navigator.of(context).pop(Task(value));
+                        Navigator.of(context).pop(value);
                       },
+                      autofocus: true,
                       validator: (value) {
                         if(value.isEmpty) return "Задание не может быть пустым";
                         return value.length > 20 ? "Много символов" : null;
@@ -38,7 +44,7 @@ class _NewTaskState extends State<NewTask> {
                     )
                 ),
                 RaisedButton(
-                  child: Text("Создать"),
+                  child: Text(widget.taskValue.isEmpty ? "Создать" : "Изменить"),
                   onPressed: () =>  _formKey.currentState.validate() ? _formKey.currentState.save() : null,
                 )
               ],
