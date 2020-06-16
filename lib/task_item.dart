@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/task.dart';
+import 'model/task.dart';
+import 'pages/task_detail.dart';
 
 class TaskItem extends StatefulWidget {
 
@@ -24,6 +25,13 @@ class _TaskItemState extends State<TaskItem> {
     });
   }
 
+  String get countSteps {
+    int steps = widget.task.stepsCount;
+    if(steps == 0) return "";
+    int completedSteps = widget.task.steps.where((step) => step.isCompleted == true).length;
+    return "$completedSteps из $steps";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,7 +40,16 @@ class _TaskItemState extends State<TaskItem> {
         borderRadius: BorderRadius.circular(8)
         ),
       child: ListTile(
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TaskDetail(widget.task))).then((value) {
+                  setState(() {
+                    print(value);
+                });
+            }),
         title: Text(widget.task.name),
+        subtitle: Text(countSteps),
         trailing: GestureDetector(
           child: Icon(Icons.delete, color: Theme.of(context).primaryColor),
           onTap: () => widget.onRemoveTask(widget.index),

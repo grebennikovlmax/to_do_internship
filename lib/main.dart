@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'task.dart';
+import 'model/task.dart';
 import 'task_list.dart';
 import 'new_task.dart';
 import 'empty_task_list.dart';
@@ -45,8 +45,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-enum PopBarMenuItem {hide, delete, theme}
-
 class MyHomePage extends StatefulWidget {
 
   final String title;
@@ -64,12 +62,24 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   bool _completedIsHidden = false;
 
+
+
   List<Task> tasks = [
     Task("Дорисовать дизайн"),
-    Task("Дописать тз на стражировку"),
     Task("Дописать план")
   ];
-  
+
+  @override
+  void initState() {
+    Task newTask = Task("Дописать тз на стражировку");
+    var step1 = TaskStep("Написать часть про главный экран");
+    var step2 = TaskStep("Очень сложный длинный шаг, на который легко наткнуться, сложно выполнить и невозможно забыть");
+    newTask.steps.add(step1);
+    newTask.steps.add(step2);
+    tasks.add(newTask);
+    super.initState();
+  }
+
   _removeCompletedTasks() {
     setState(() {
       tasks = tasks.where((task) => task.isCompleted == false).toList();

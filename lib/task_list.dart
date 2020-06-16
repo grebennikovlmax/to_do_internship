@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/task.dart';
-import 'package:todointernship/task_item.dart';
+import 'model/task.dart';
+import 'task_item.dart';
 
 class TaskList extends StatelessWidget {
 
