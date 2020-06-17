@@ -1,8 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:intl/intl.dart';
 
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/step_item.dart';
 import 'package:todointernship/new_task.dart';
+import 'package:todointernship/time_picker_dialog.dart';
 
 class TaskDetailScrollView extends StatefulWidget {
 
@@ -21,6 +25,7 @@ enum TaskDetailPopupMenuItem {update, delete}
 class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
 
   double appBarHeight = 128;
+  String date = "";
 
   ScrollController _scrollController;
 
@@ -118,13 +123,33 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
             SliverList(
                 delegate: SliverChildListDelegate([
                   Card(
-                      margin: EdgeInsets.fromLTRB(10, 28, 10, 10),
+                      margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: _createSteps(),
                       )
                   ),
+                  Card(
+                    margin: EdgeInsets.fromLTRB(16, 10, 16, 5),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        ListTile(
+                          leading: Icon(Icons.notifications_none),
+                          title: Text("Напомнить")
+                        ),
+                        Divider(
+                          thickness: 2,
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.insert_invitation),
+                          onTap: _pickDate,
+                          title: Text(date.isEmpty ? "Добавить дату выполнения" : date ),
+                        )
+                      ],
+                    ),
+                  )
                 ])
             ),
           ]),
@@ -134,6 +159,15 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
 
   List<Widget> _createSteps() {
     List<Widget> widgets = [];
+    String formatDate = DateFormat("dd.MM.yyyy").format(widget.task.date);
+    widgets.add(Padding(
+      padding: const EdgeInsets.all(14.0),
+      child: Text("Создано: $formatDate",
+        style: TextStyle(
+          color: Color.fromRGBO(0, 0, 0, 0.6)
+        ),
+      ),
+    ));
     for(var step in widget.task.steps) {
       widgets.add(
           StepItem(
@@ -166,6 +200,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
           endIndent: 20,
         )
     );
+
     widgets.add(
         Padding(
           padding: const EdgeInsets.fromLTRB(10, 10, 10, 20),
@@ -188,6 +223,47 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
       });
     }
   }
+
+  Future<void> _pickDate() async {
+    var date = await showDialog<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        return TimePickerDialog();
+      }
+    );
+
+    if(date == null) {
+      TargetPlatform platform = Theme.of(context).platform;
+      if (platform == TargetPlatform.iOS) {
+        date = await showCupertinoModalPopup<DateTime>(
+            context: context,
+            builder: (context) {
+              return CupertinoDatePicker(
+                initialDateTime: DateTime.now(),
+                minimumDate: DateTime.now(),
+                onDateTimeChanged: (val) => Navigator.of(context).pop(val),
+              );
+            }
+        );
+      } else {
+        date = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2100)
+        );
+      }
+    }
+
+    if(date != null) {
+      String formatDate = DateFormat("dd.MM.yyyy").format(date);
+      setState(() {
+        this.date = formatDate;
+      });
+    }
+  }
+
+  
 
   _onDelete(TaskStep step) {
     setState(() {

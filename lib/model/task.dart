@@ -1,9 +1,12 @@
 class Task {
   bool isCompleted = false;
   String name;
+  DateTime date;
   List<TaskStep> steps = [];
   int get stepsCount => steps.length;
-  Task(this.name);
+  Task(this.name) {
+    date = DateTime.now();
+  }
 }
 
 class TaskStep {
