@@ -50,14 +50,14 @@ class _ThemePickerState extends State<ThemePicker> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text("Выбор темы") ,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: _createRadio()
-              )
-            ],
-          )
+    children: <Widget>[
+      Text("Выбор темы") ,
+      Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: _createRadio()
+      )
+    ],
+    )
     );
   }
 

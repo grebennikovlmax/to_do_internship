@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'model/task.dart';
-
 class NewTask extends StatefulWidget {
 
   final String title;

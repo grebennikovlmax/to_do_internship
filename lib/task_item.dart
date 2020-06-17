@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'model/task.dart';
 import 'pages/task_detail.dart';
+import 'custom_checkbox.dart';
 
 class TaskItem extends StatefulWidget {
 
@@ -17,11 +18,11 @@ class TaskItem extends StatefulWidget {
   }
 }
 
-class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin{
+class _TaskItemState extends State<TaskItem> {
 
-  _todoTaped(bool val) {
+  _onChanged() {
     setState(() {
-      widget.task.isCompleted = val;
+      widget.task.isCompleted = !widget.task.isCompleted;
     });
   }
 
@@ -45,7 +46,7 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
           alignment: Alignment.centerRight,
           child: Padding(
             padding: EdgeInsets.only(right: 10),
-            child: Icon(Icons.delete),
+            child: Icon(Icons.delete,color: Colors.white,),
           ),
         ),
       ),
@@ -65,15 +66,14 @@ class _TaskItemState extends State<TaskItem> with SingleTickerProviderStateMixin
                       setState(() {});
                 }),
             title: Text(widget.task.name),
-            subtitle: Text(countSteps),
-            trailing: GestureDetector(
-              child: Icon(Icons.delete, color: Theme.of(context).primaryColor),
-              onTap: () => widget.onRemoveTask(widget.task),
-            ),
-            leading: Checkbox(
-                activeColor: Theme.of(context).primaryColor,
-                value: widget.task.isCompleted,
-                onChanged: (val) => _todoTaped(val)
+            subtitle: countSteps.isEmpty ? null : Text(countSteps),
+//            trailing: IconButton(
+//              onPressed: () => widget.onRemoveTask(widget.task),
+//              icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
+//            ),
+            leading: CustomCheckBox(
+              value: widget.task.isCompleted,
+              onChange: _onChanged,
             ),
           )
         ),

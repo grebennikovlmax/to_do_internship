@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'model/task.dart';
-import 'task_list.dart';
-import 'new_task.dart';
-import 'empty_task_list.dart';
-import 'popup_menu.dart';
-import 'theme_picker.dart';
+import 'package:todointernship/model/task.dart';
+import 'package:todointernship/task_list.dart';
+import 'package:todointernship/new_task.dart';
+import 'package:todointernship/empty_task_list.dart';
+import 'package:todointernship/popup_menu.dart';
+import 'package:todointernship/theme_picker.dart';
 
 void main() {
   runApp(MyApp());
@@ -62,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   bool _completedIsHidden = false;
 
-
+  List<Task> filteredTasks = [];
 
   List<Task> tasks = [
     Task("Дорисовать дизайн"),
@@ -100,6 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
   
   _hideCompletedTasks() {
     setState(() {
+      filteredTasks = _completedIsHidden ? [] : tasks.where((element) => element.isCompleted == false).toList() ;
+      filteredTasks.forEach((element) {print(element.name);});
       _completedIsHidden = !_completedIsHidden;
     });
   }
@@ -141,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ]
       ),
-      body: tasks.isEmpty ? EmptyTaskList() :  TaskList(_completedIsHidden ? tasks.where((element) => element.isCompleted == false).toList() : tasks, _removeTask),
+      body: _completedIsHidden  && filteredTasks.isEmpty ? EmptyTaskList(isEmptyTask: tasks.isEmpty) :  TaskList(_completedIsHidden ? filteredTasks : tasks, _removeTask),
 //      body: _selectedIndex == 0 ? TaskList(_completedIsHidden ? tasks.where((element) => element.isCompleted == false).toList() : tasks, _removeTask) : Text("Empty"),
       floatingActionButton: FloatingActionButton(
           onPressed: _createTodo,
