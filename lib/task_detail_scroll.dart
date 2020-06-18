@@ -153,7 +153,8 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                 ])
             ),
           ]),
-      _setupFab()]
+      _setupFab()
+      ]
     );
   }
 

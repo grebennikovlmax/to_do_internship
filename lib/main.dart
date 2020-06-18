@@ -6,44 +6,62 @@ import 'package:todointernship/new_task.dart';
 import 'package:todointernship/empty_task_list.dart';
 import 'package:todointernship/popup_menu.dart';
 import 'package:todointernship/theme_picker.dart';
+import 'package:todointernship/pages/home_page.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
 
-  @override
-  State<StatefulWidget> createState() {
-    return _MyAppState();
-  }
-
-}
-
-class _MyAppState extends State<MyApp> {
-
-  ThemeData theme = ThemeData(
-      primaryColor: Color(0xff6202EE),
-      accentColor: Color(0xff01A39D),
-      backgroundColor: Colors.indigo[100]
-  );
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Title',
-      theme: theme,
-      home: MyHomePage(title: "Title",onChangeTheme: _onChangeTheme,activeTheme: theme),
+      theme: ThemeData(
+        primaryColor: Color(0xff6202EE),
+        accentColor: Color(0xff01A39D),
+        backgroundColor: Colors.indigo[100]
+      ),
+      home: HomePage()
     );
   }
 
-  _onChangeTheme(ThemeData newTheme) {
-    setState(() {
-      theme = newTheme;
-    });
-  }
 }
+
+//class MyApp extends StatefulWidget {
+//
+//  @override
+//  State<StatefulWidget> createState() {
+//    return _MyAppState();
+//  }
+//
+//}
+//
+//class _MyAppState extends State<MyApp> {
+//
+//  ThemeData theme = ThemeData(
+//      primaryColor: Color(0xff6202EE),
+//      accentColor: Color(0xff01A39D),
+//      backgroundColor: Colors.indigo[100]
+//  );
+//
+//  // This widget is the root of your application.
+//  @override
+//  Widget build(BuildContext context) {
+//    return MaterialApp(
+//      title: 'Title',
+//      theme: theme,
+//      home: HomePage(),
+////      home: MyHomePage(title: "Title",onChangeTheme: _onChangeTheme,activeTheme: theme),
+//    );
+//  }
+//
+//  _onChangeTheme(ThemeData newTheme) {
+//    setState(() {
+//      theme = newTheme;
+//    });
+//  }
+//}
 
 class MyHomePage extends StatefulWidget {
 
