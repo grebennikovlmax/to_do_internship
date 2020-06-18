@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:math';
 
-import 'package:todointernship/widgets/competrion_bar.dart';
+import 'package:todointernship/widgets/completion_bar.dart';
 
 class AllTasksCard extends StatelessWidget {
 

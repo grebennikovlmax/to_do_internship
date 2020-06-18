@@ -1,16 +1,40 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:todointernship/model/category.dart';
+import 'package:todointernship/model/task.dart';
+import 'package:todointernship/model/category_theme.dart';
+
+
 
 import 'package:todointernship/widgets/all_tasks_card.dart';
 import 'package:todointernship/widgets/category_card.dart';
 
 class HomePage extends StatelessWidget {
 
+  List<Category> categories;
+
+  HomePage() {
+    Task newTask = Task("Дописать тз на стражировку");
+    var step1 = TaskStep("Написать часть про главный экран");
+    var step2 = TaskStep("Очень сложный длинный шаг, на который легко наткнуться, сложно выполнить и невозможно забыть");
+    newTask.steps.add(step1);
+    newTask.steps.add(step2);
+    Category cat1 = Category("Здоровье",CategoryTheme(Colors.red.value,Colors.blue.value));
+    cat1.newTask = Task("Дорисовать дизайн");
+    cat1.newTask = Task("Дописать план");
+    cat1.newTask = newTask;
+
+    Category cat2 = Category("Работа",CategoryTheme(Colors.yellow.value,Colors.green.value));
+    cat2.newTask = Task("Спать");
+    cat2.newTask = Task("Есть");
+    cat2.newTask = newTask;
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo[200],
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
         title: Text("Оторвись от дивана")
       ),
@@ -33,7 +57,6 @@ class HomePage extends StatelessWidget {
               child: Container(
                 margin: EdgeInsets.only(top: 18),
                 child: GridView.builder(
-                    shrinkWrap: true,
                     itemCount: 4,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisSpacing: 20,
