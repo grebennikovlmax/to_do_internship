@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/task_list.dart';
 import 'package:todointernship/new_task.dart';
 import 'package:todointernship/empty_task_list.dart';
+import 'package:todointernship/pages/category_detail.dart';
+import 'package:todointernship/pages/task_detail.dart';
 import 'package:todointernship/popup_menu.dart';
 import 'package:todointernship/theme_picker.dart';
 import 'package:todointernship/pages/home_page.dart';
@@ -17,6 +18,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: "/",
+      routes: {
+        "/category_detail" : (context) => CategoryDetail(ModalRoute.of(context).settings.arguments),
+        "/task_detail" : (context) => TaskDetail(ModalRoute.of(context).settings.arguments)
+      },
       theme: ThemeData(
         primaryColor: Color(0xff6202EE),
         accentColor: Color(0xff01A39D),
@@ -161,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ]
       ),
-      body: _completedIsHidden  && filteredTasks.isEmpty ? EmptyTaskList(isEmptyTask: tasks.isEmpty) :  TaskList(_completedIsHidden ? filteredTasks : tasks, _removeTask),
+//      body: _completedIsHidden  && filteredTasks.isEmpty ? EmptyTaskList(isEmptyTask: tasks.isEmpty) :  TaskList(_completedIsHidden ? filteredTasks : tasks, _removeTask),
 //      body: _selectedIndex == 0 ? TaskList(_completedIsHidden ? tasks.where((element) => element.isCompleted == false).toList() : tasks, _removeTask) : Text("Empty"),
       floatingActionButton: FloatingActionButton(
           onPressed: _createTodo,

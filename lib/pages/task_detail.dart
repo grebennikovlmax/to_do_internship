@@ -4,7 +4,6 @@ import 'package:todointernship/model/task.dart';
 import 'package:todointernship/task_detail_scroll.dart';
 
 
-
 class TaskDetail extends StatelessWidget {
 
   final Task task;

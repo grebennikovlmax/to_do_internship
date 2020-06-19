@@ -42,55 +42,6 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     super.dispose();
   }
 
-  _popupMenuButtonPressed(TaskDetailPopupMenuItem item) {
-    switch(item) {
-      case TaskDetailPopupMenuItem.delete:
-        Navigator.of(context).pop(widget.task);
-        break;
-      case TaskDetailPopupMenuItem.update:
-        _updateTaskName();
-        break;
-    }
-  }
-
-  Widget _setupFab() {
-    final double defaultTop = appBarHeight - 4;
-    final double scaleStart = 96;
-    final double scaleEnd = scaleStart / 2;
-
-    double top = defaultTop;
-    double scale = 1;
-
-    if(_scrollController.hasClients) {
-      double offset = _scrollController.offset;
-      top -= offset;
-      if(offset < defaultTop - scaleStart) {
-        scale = 1;
-      } else if(offset < defaultTop - scaleEnd) {
-        scale = (defaultTop - scaleEnd - offset) / scaleEnd;
-      } else {
-        scale = 0;
-      }
-    }
-    return Positioned(
-      top: top,
-      left: 16,
-      child: Transform(
-        transform: Matrix4.identity()
-          ..scale(scale),
-        alignment: Alignment.center,
-        child: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              widget.task.isCompleted = !widget.task.isCompleted;
-            });
-          },
-          child: Icon(widget.task.isCompleted ? Icons.clear : Icons.check),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -270,6 +221,55 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     setState(() {
       widget.task.steps.remove(step);
     });
+  }
+
+  Widget _setupFab() {
+    final double defaultTop = appBarHeight - 4;
+    final double scaleStart = 96;
+    final double scaleEnd = scaleStart / 2;
+
+    double top = defaultTop;
+    double scale = 1;
+
+    if(_scrollController.hasClients) {
+      double offset = _scrollController.offset;
+      top -= offset;
+      if(offset < defaultTop - scaleStart) {
+        scale = 1;
+      } else if(offset < defaultTop - scaleEnd) {
+        scale = (defaultTop - scaleEnd - offset) / scaleEnd;
+      } else {
+        scale = 0;
+      }
+    }
+    return Positioned(
+      top: top,
+      left: 16,
+      child: Transform(
+        transform: Matrix4.identity()
+          ..scale(scale),
+        alignment: Alignment.center,
+        child: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              widget.task.isCompleted = !widget.task.isCompleted;
+            });
+          },
+          child: Icon(widget.task.isCompleted ? Icons.clear : Icons.check),
+        ),
+      ),
+    );
+  }
+
+  _popupMenuButtonPressed(TaskDetailPopupMenuItem item) {
+    switch(item) {
+      case TaskDetailPopupMenuItem.delete:
+        Navigator.of(context).pop(widget.task);
+        break;
+      case TaskDetailPopupMenuItem.update:
+        _updateTaskName();
+        break;
+    }
   }
 
 }
