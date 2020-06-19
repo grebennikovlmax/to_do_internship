@@ -7,9 +7,9 @@ import 'task_item.dart';
 class TaskList extends StatelessWidget {
 
   final List<Task> tasks;
-  final StreamController _streamController;
+  final Sink _tasksSink;
 
-  TaskList(this.tasks, this._streamController);
+  TaskList(this.tasks, this._tasksSink);
 
   @override
   Widget build(BuildContext context) {
@@ -21,5 +21,5 @@ class TaskList extends StatelessWidget {
           return TaskItem(tasks[index]);
         });
   }
-  
+
 }

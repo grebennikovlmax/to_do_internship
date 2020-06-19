@@ -8,7 +8,7 @@ class TaskItem extends StatefulWidget {
 
   final Task task;
 
-  TaskItem(this.task, this.onRemoveTask, this.index);
+  TaskItem(this.task);
 
   @override
   State<StatefulWidget> createState() {
@@ -48,7 +48,7 @@ class _TaskItemState extends State<TaskItem> {
           ),
         ),
       ),
-      onDismissed: (dir) => widget.onRemoveTask(widget.task),
+      onDismissed: (dir) => {},
       key: UniqueKey(),
       child: Container(
             decoration: BoxDecoration(
@@ -60,7 +60,6 @@ class _TaskItemState extends State<TaskItem> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => TaskDetail(widget.task))).then((value) {
-                      if(value != null) widget.onRemoveTask(widget.task);
                       setState(() {});
                 }),
             title: Text(widget.task.name),
