@@ -7,8 +7,6 @@ class TaskItem extends StatefulWidget {
 
 
   final Task task;
-  final int index;
-  final void Function(Task) onRemoveTask;
 
   TaskItem(this.task, this.onRemoveTask, this.index);
 
