@@ -1,11 +1,14 @@
 class Task {
   bool isCompleted = false;
   String name;
-  DateTime date;
+  DateTime createdDate;
+  DateTime finalDate;
   List<TaskStep> steps = [];
   int get stepsCount => steps.length;
+  int get completedSteps => steps.where((step) => step.isCompleted).length;
+  
   Task(this.name) {
-    date = DateTime.now();
+    createdDate = DateTime.now();
   }
 }
 

@@ -46,6 +46,7 @@ class _TaskListState extends State<TaskList> {
     _eventStreamController.stream.listen((event) {
       if(event is OnRemoveTask) onRemoveTask(event.task);
       if(event is OnCompletedTask) onCompletedTask(event.task);
+      if(event is  OnUpdateTask) onUpdateTask();
     });
     _taskListStreamController = StreamController();
   }
@@ -83,6 +84,10 @@ class _TaskListState extends State<TaskList> {
 
   void onRemoveTask(Task task) {
     widget.tasks.remove(task);
+    CategoryInfo.of(context).taskListSink.add(widget.tasks);
+  }
+
+  void onUpdateTask() {
     CategoryInfo.of(context).taskListSink.add(widget.tasks);
   }
 

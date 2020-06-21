@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'dart:math';
 
+import 'package:todointernship/model/category.dart';
+
 class CategoryCard extends StatelessWidget {
+
+  final Category category;
+
+  CategoryCard(this.category);
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       child: GestureDetector(
+        onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category),
         child: Card(
           margin: EdgeInsets.zero,
           elevation: 10,
@@ -22,11 +30,11 @@ class CategoryCard extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  child: ProgressBar(),
+                  child: ProgressBar(category.completion, category.theme.primaryColor),
                 ),
                 Container(
                   margin: EdgeInsets.only(top: 13),
-                  child: Text("Здоровье",
+                  child: Text(category.name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 24
@@ -35,7 +43,7 @@ class CategoryCard extends StatelessWidget {
                 ),
                 Container(
                   margin: EdgeInsets.only(top: 5),
-                  child: Text("8 задач(и)",
+                  child: Text("${category.taskCount} задач(и)",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -55,7 +63,7 @@ class CategoryCard extends StatelessWidget {
                         ),
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                          child: Text("4 сделано",
+                          child: Text("${category.completedTasks} сделано",
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 10,
@@ -71,7 +79,7 @@ class CategoryCard extends StatelessWidget {
                         ),
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                          child: Text("4 осталось",
+                          child: Text("${category.incompletedTasks} осталось",
                             style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 10,
@@ -94,22 +102,27 @@ class CategoryCard extends StatelessWidget {
 
 class ProgressBar extends StatelessWidget {
 
+  final double completion;
+  final int color;
+
+  ProgressBar(this.completion, this.color);
+
   @override
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       duration: Duration(seconds: 1),
-      tween: Tween(begin: 0, end: 0.75),
+      tween: Tween(begin: 0, end: completion),
       builder: (_, value, __) {
         int progress = (value * 100).toInt();
         return CustomPaint (
           size: Size.infinite,
-          painter: ProgressBarPainter(value),
+          painter: ProgressBarPainter(value, color),
           child: Center(
               child: Text("$progress%",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: Color(0xff3B961B)
+                  color: Color(color)
                 ),
               )
           ),
@@ -123,8 +136,9 @@ class ProgressBar extends StatelessWidget {
 class ProgressBarPainter extends CustomPainter {
 
   final double completion;
+  final int color;
 
-  ProgressBarPainter(this.completion);
+  ProgressBarPainter(this.completion,this.color);
 
   Paint _painter(Color color) {
     Paint painter = Paint()
@@ -138,7 +152,7 @@ class ProgressBarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.drawCircle(Offset(size.height / 2, size.width / 2), size.width / 2, _painter(Color(0xffC4C4C4)));
     Rect rect = Rect.fromCircle(center: Offset(size.height / 2, size.width / 2),radius: size.width / 2);
-    canvas.drawArc(rect, -pi / 2, -2 * pi * completion, false, _painter(Color(0xff3B961B)));
+    canvas.drawArc(rect, -pi / 2, -2 * pi * completion, false, _painter(Color(color)));
   }
 
   @override

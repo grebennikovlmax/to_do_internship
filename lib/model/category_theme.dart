@@ -1,7 +1,7 @@
 class CategoryTheme {
-  int _backgroundColor;
-  int _primaryColor;
+  int backgroundColor;
+  int primaryColor;
 
-  CategoryTheme(this._backgroundColor, this._primaryColor);
+  CategoryTheme(this.backgroundColor, this.primaryColor);
 
 }

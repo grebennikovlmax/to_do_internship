@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 class TimePickerDialog extends StatelessWidget {
 
-
-  _onPickedDate(BuildContext context, DateTime date) {
-    Navigator.of(context).pop(date);
-  }
-
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
@@ -33,6 +28,10 @@ class TimePickerDialog extends StatelessWidget {
         )
       ],
     );
+  }
+
+  void _onPickedDate(BuildContext context, DateTime date) {
+    Navigator.of(context).pop(date);
   }
 
 }

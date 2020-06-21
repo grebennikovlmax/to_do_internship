@@ -11,7 +11,7 @@ import 'package:todointernship/widgets/category_card.dart';
 
 class HomePage extends StatelessWidget {
 
-  List<Category> categories;
+  List<Category> categories = [];
 
   HomePage() {
     Task newTask = Task("Дописать тз на стражировку");
@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
     var step2 = TaskStep("Очень сложный длинный шаг, на который легко наткнуться, сложно выполнить и невозможно забыть");
     newTask.steps.add(step1);
     newTask.steps.add(step2);
-    Category cat1 = Category("Здоровье",CategoryTheme(Colors.red.value,Colors.blue.value));
+    Category cat1 = Category("Здоровье",CategoryTheme(Color(0xff6002ee).value,Color(0xff90ee02).value));
     cat1.newTask = Task("Дорисовать дизайн");
     cat1.newTask = Task("Дописать план");
     cat1.newTask = newTask;
@@ -27,7 +27,9 @@ class HomePage extends StatelessWidget {
     Category cat2 = Category("Работа",CategoryTheme(Colors.yellow.value,Colors.green.value));
     cat2.newTask = Task("Спать");
     cat2.newTask = Task("Есть");
-    cat2.newTask = newTask;
+
+    categories.add(cat1);
+    categories.add(cat2);
   }
 
 
@@ -57,14 +59,14 @@ class HomePage extends StatelessWidget {
               child: Container(
                 margin: EdgeInsets.only(top: 18),
                 child: GridView.builder(
-                    itemCount: 4,
+                    itemCount: categories.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20,
                       crossAxisCount: 2
                     ),
                     itemBuilder: (BuildContext context, index) {
-                      return CategoryCard();
+                      return CategoryCard(categories[index]);
                     }
                 ),
               ),

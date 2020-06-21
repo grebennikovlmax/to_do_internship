@@ -21,3 +21,11 @@ class OnRemoveTask implements TaskEvent {
   OnRemoveTask(this.task);
 
 }
+
+class OnUpdateTask implements TaskEvent {
+
+  final Task task;
+
+  OnUpdateTask(this.task);
+
+}

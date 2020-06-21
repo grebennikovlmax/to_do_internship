@@ -25,11 +25,11 @@ class _EmptyTaskListState extends State<EmptyTaskList> with SingleTickerProvider
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 3)
+      duration: Duration(milliseconds: 250)
     );
     Tween<Offset> tween = Tween(begin: Offset(0,1), end: Offset.zero);
     _animation = tween.animate(CurvedAnimation(
-      curve: Curves.easeIn,
+      curve: Curves.easeOut,
       parent: _animationController
     ));
     _animationController.forward();

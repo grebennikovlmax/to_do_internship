@@ -2,16 +2,16 @@ import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/category_theme.dart';
 
 class Category {
-  String _name;
-  List<Task> _tasks = [];
-  CategoryTheme _theme;
+  String name;
+  List<Task> tasks = [];
+  CategoryTheme theme;
 
-  Category(this._name,this._theme);
+  Category(this.name,this.theme);
 
-  String get name => _name;
-  int get taskCount => _tasks.length;
-  int get completedTasks => _tasks.where((task) => task.isCompleted).length;
+  int get taskCount => tasks.length;
+  int get completedTasks => tasks.where((task) => task.isCompleted).length;
   int get incompletedTasks => taskCount - completedTasks;
+  double get completion => completedTasks / taskCount;
 
-  set newTask(Task task) => _tasks.add(task);
+  set newTask(Task task) => tasks.add(task);
 }
