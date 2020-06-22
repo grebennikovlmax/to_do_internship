@@ -40,12 +40,17 @@ class TaskItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(8)
           ),
           child: ListTile(
-            onTap: () => Navigator.of(context).pushNamed('/task_detail',arguments: TaskDetailArguments(CategoryInfo.of(context).taskEventSink, task))
-                .then((value) => CategoryInfo.of(context).taskEventSink.add(OnUpdateTask(task))),
+            onTap: () => Navigator.of(context).pushNamed('/task_detail',arguments:
+            TaskDetailArguments(
+                CategoryInfo.of(context).category.theme,
+                task,
+                CategoryInfo.of(context).taskEventSink)
+            ).then((value) => CategoryInfo.of(context).taskEventSink.add(OnUpdateTask(task))),
             title: Text(task.name),
             subtitle: task.stepsCount == 0 ? null : Text("${task.completedSteps} из ${task.stepsCount}"),
             leading: CustomCheckBox(
               value: task.isCompleted,
+              color: Scaffold.of(context).widget.backgroundColor,
               onChange: () {
                 CategoryInfo.of(context).taskEventSink.add(OnCompletedTask(task));
               },

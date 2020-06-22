@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/task_detail_scroll.dart';
+import 'package:todointernship/model/category_theme.dart';
+
 
 class TaskDetailArguments {
   final Task task;
+  final CategoryTheme theme;
   final Sink taskEvent;
 
-  TaskDetailArguments(this.taskEvent, this.task);
+  TaskDetailArguments(this.theme, this.task, this.taskEvent);
 }
 
 
@@ -21,8 +24,8 @@ class TaskDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.amber,
-      body: TaskDetailScrollView(arguments.task,arguments.taskEvent)
+      backgroundColor: Color(arguments.theme.backgroundColor),
+      body: TaskDetailScrollView(arguments.task, arguments.taskEvent, arguments.theme)
     );
   }
 

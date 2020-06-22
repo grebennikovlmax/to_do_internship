@@ -1,14 +1,16 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 
+import 'package:todointernship/pages/category_detail.dart';
+import 'package:todointernship/model/category_theme.dart';
+
+
 class ThemePicker extends StatefulWidget {
 
-  final ThemeData theme;
-  final void Function(ThemeData) onChangeTheme;
+  final Sink themeSink;
 
-  ThemePicker(this.theme, this.onChangeTheme);
+  ThemePicker(this.themeSink);
 
   @override
   State<StatefulWidget> createState() {
@@ -18,26 +20,33 @@ class ThemePicker extends StatefulWidget {
 }
 class _ThemePickerState extends State<ThemePicker> {
 
-  List<Color> colors = [Colors.red, Colors.blue, Colors.amber, Colors.cyan];
   List<ThemeData> themes = [
     ThemeData(
-      primaryColor: Colors.purple[500],
-      backgroundColor: Colors.purple[200],
+      primaryColor: Color(0xfff44336),
+      backgroundColor: Color(0xff36e7f4),
     ),
     ThemeData(
-      primaryColor: Colors.purple[700],
-      backgroundColor: Colors.teal[200],
+      primaryColor: Color(0xffFF5722),
+      backgroundColor: Color(0xffffc422),
     ),
     ThemeData(
-      primaryColor: Colors.black,
-      backgroundColor: Colors.white,
+      primaryColor: Color(0xffffc107),
+      backgroundColor: Color(0xff0745ff),
     ),
     ThemeData(
-      primaryColor: Colors.blue[700],
-      backgroundColor: Colors.greenAccent,
+      primaryColor: Color(0xff4CAF50),
+      backgroundColor: Color(0xffaf4cac),
+    ),
+    ThemeData(
+      primaryColor: Color(0xff2C98F0),
+      backgroundColor: Color(0xff2cf0e6),
+    ),
+    ThemeData(
+      primaryColor: Color(0xff6202EE),
+      backgroundColor: Color(0xff916eff),
     )
   ];
-  ThemeData pickedTheme ;
+  ThemeData pickedTheme;
 
   StreamController<ThemeData> _themeStreamController;
 
@@ -47,8 +56,6 @@ class _ThemePickerState extends State<ThemePicker> {
   void initState() {
     super.initState();
     _themeStreamController = StreamController();
-    pickedTheme = widget.theme;
-    themes.add(widget.theme);
   }
 
   @override
@@ -67,7 +74,12 @@ class _ThemePickerState extends State<ThemePicker> {
         children: <Widget>[
           Container(
               margin: EdgeInsets.only(bottom: 10),
-              child: Text("Выбор темы")) ,
+              child: Text("Выбор темы",
+                style: TextStyle(
+                  fontSize: 18,
+                ),
+              )
+          ) ,
           ConstrainedBox(
             constraints: BoxConstraints(maxHeight: height),
             child: Row(
@@ -75,7 +87,7 @@ class _ThemePickerState extends State<ThemePicker> {
               children: [
                 StreamBuilder<ThemeData>(
                   stream: _themeStreamController.stream,
-                  initialData: pickedTheme,
+                  initialData: Theme.of(context),
                   builder: (context, snapshot) {
                     return ListView.builder(
                       padding: EdgeInsets.zero,
@@ -106,6 +118,7 @@ class _ThemePickerState extends State<ThemePicker> {
 
   _changeTheme(ThemeData theme) {
     _themeStreamController.add(theme);
+    widget.themeSink.add(theme);
   }
 }
 
@@ -131,8 +144,8 @@ class CustomThemPickerButton extends StatelessWidget {
         ),
         child: value ? Center(
           child: Container(
-            width: radius / 2,
-            height: radius / 2,
+            width: radius / 3,
+            height: radius / 3,
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white

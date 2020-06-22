@@ -49,6 +49,7 @@ class _StepItemState extends State<StepItem> {
           leading: CustomCheckBox(
             value: snapshot.data.isCompleted,
             onChange: _onChange,
+            color: Scaffold.of(context).widget.backgroundColor,
           ),
           title: isEditing ? TextFormField(
               textInputAction: TextInputAction.done,

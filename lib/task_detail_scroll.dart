@@ -11,12 +11,15 @@ import 'package:todointernship/time_picker_dialog.dart';
 import 'package:todointernship/widgets/custom_fab.dart';
 import 'package:todointernship/widgets/steps_card.dart';
 import 'package:todointernship/model/fab_state.dart';
+import 'package:todointernship/model/category_theme.dart';
+
 
 class TaskDetailScrollView extends StatefulWidget {
 
   final Task task;
   final Sink taskEvent;
-  TaskDetailScrollView(this.task,this.taskEvent);
+  final CategoryTheme theme;
+  TaskDetailScrollView(this.task,this.taskEvent, this.theme);
 
   @override
   State<StatefulWidget> createState() {
@@ -74,6 +77,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
           controller: _scrollController,
             slivers: <Widget>[
               SliverAppBar(
+                backgroundColor: Color(widget.theme.primaryColor),
                 pinned: true,
                 expandedHeight: appBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
@@ -135,7 +139,12 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                             title: ValueListenableBuilder<DateTime>(
                               valueListenable: _dateNotifier,
                               builder: (context, value, _) {
-                                return Text(value == null ? "Добавить дату выполнения" : dateFormatter.format(value));
+                                if(value == null) return Text("Добавить дату выполнения");
+                                return Text(dateFormatter.format(value),
+                                  style: TextStyle(
+                                    color: value.isBefore(DateTime.now()) ? Colors.red : Colors.black
+                                  ),
+                                );
                               }
                             ),
                           ),
@@ -162,15 +171,17 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   }
 
   Future<void> _updateTaskName() async {
-    var name = await showDialog<String>(
+    var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTask("Редактировть",widget.task.name);
+          return NewTask(widget.task);
         }
     );
-    if(name != null) {
-      widget.task.name = name;
-      _titleNameNotifier.value = name;
+    if(task != null) {
+      widget.task.name = task.name;
+      widget.task.finalDate = task.finalDate;
+      _dateNotifier.value = task.finalDate;
+      _titleNameNotifier.value = task.name;
     }
   }
 
