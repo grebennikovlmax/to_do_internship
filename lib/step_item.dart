@@ -31,14 +31,10 @@ class _StepItemState extends State<StepItem> {
     _streamController = StreamController();
   }
 
-  _onChange() {
-    widget.step.isCompleted = !widget.step.isCompleted;
-    _streamController.add(widget.step);
-  }
-
-  _endEditing() {
-    isEditing = !isEditing;
-    _streamController.add(widget.step);
+  @override
+  void dispose() {
+    _streamController.close();
+    super.dispose();
   }
 
 
@@ -71,6 +67,16 @@ class _StepItemState extends State<StepItem> {
         );
       }
     );
+  }
+
+  void _onChange() {
+    widget.step.isCompleted = !widget.step.isCompleted;
+    _streamController.add(widget.step);
+  }
+
+  void _endEditing() {
+    isEditing = !isEditing;
+    _streamController.add(widget.step);
   }
 
 }

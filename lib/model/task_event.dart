@@ -5,27 +5,20 @@ abstract class TaskEvent {
   TaskEvent(this.task);
 }
 
-class OnCompletedTask implements TaskEvent {
+class OnCompletedTask extends TaskEvent {
 
-  final Task task;
-
-  OnCompletedTask(this.task);
-
+  OnCompletedTask(Task task) : super(task);
 
 }
 
-class OnRemoveTask implements TaskEvent {
+class OnRemoveTask extends TaskEvent {
 
-  final Task task;
-
-  OnRemoveTask(this.task);
+  OnRemoveTask(Task task) : super(task);
 
 }
 
-class OnUpdateTask implements TaskEvent {
+class OnUpdateTask extends TaskEvent {
 
-  final Task task;
-
-  OnUpdateTask(this.task);
+  OnUpdateTask(Task task) : super(task);
 
 }

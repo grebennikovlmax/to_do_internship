@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 class ThemePicker extends StatefulWidget {
@@ -36,49 +39,109 @@ class _ThemePickerState extends State<ThemePicker> {
   ];
   ThemeData pickedTheme ;
 
+  StreamController<ThemeData> _themeStreamController;
+
+  final double height = 24;
+
   @override
   void initState() {
     super.initState();
+    _themeStreamController = StreamController();
     pickedTheme = widget.theme;
     themes.add(widget.theme);
   }
 
   @override
+  void dispose() {
+    _themeStreamController.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-    children: <Widget>[
-      Text("Выбор темы") ,
-      Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: _createRadio()
-      )
-    ],
-    )
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Container(
+              margin: EdgeInsets.only(bottom: 10),
+              child: Text("Выбор темы")) ,
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: height),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                StreamBuilder<ThemeData>(
+                  stream: _themeStreamController.stream,
+                  initialData: pickedTheme,
+                  builder: (context, snapshot) {
+                    return ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: themes.length,
+                      scrollDirection: Axis.horizontal,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                       return Padding(
+                         padding: EdgeInsets.only(right: 10),
+                         child: CustomThemPickerButton(
+                           radius: height,
+                           color: themes[index].primaryColor,
+                           onTap: () => _changeTheme(themes[index]),
+                           value: themes[index] == snapshot.data,
+                         ),
+                       );
+                      });
+                  }
+                )
+              ]
+            ),
+          )
+        ],
+          ),
     );
   }
 
-  List<Widget> _createRadio() {
-    List<Widget> widgets = [];
-    for(var theme in themes) {
-      widgets.add(
-        Radio(
-          value: theme,
-          activeColor: theme.primaryColor,
-          groupValue: pickedTheme,
-          onChanged: (val) {
-            setState(() {
-              pickedTheme = val;
-              widget.onChangeTheme(val);
-            });
-          },
-        )
-      );
-    }
-    return widgets;
+  _changeTheme(ThemeData theme) {
+    _themeStreamController.add(theme);
   }
+}
 
+class CustomThemPickerButton extends StatelessWidget {
+  
+  final Color color;
+  final VoidCallback onTap;
+  final bool value;
+  final double radius;
+  
+  CustomThemPickerButton({this.radius, this.color, this.onTap, this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: radius,
+        height: radius,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color
+        ),
+        child: value ? Center(
+          child: Container(
+            width: radius / 2,
+            height: radius / 2,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white
+            ),
+          ),
+        ) : null
+      ),
+    );
+  }
+  
+  
 }

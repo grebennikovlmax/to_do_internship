@@ -3,11 +3,19 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 import 'package:todointernship/widgets/completion_bar.dart';
+import 'package:todointernship/model/category.dart';
+
 
 class AllTasksCard extends StatelessWidget {
 
+  final List<Category> categoryList;
+
+  AllTasksCard(this.categoryList);
+
   @override
   Widget build(BuildContext context) {
+    final int allTask = categoryList.fold(0, (previousValue, element) => previousValue + element.taskCount);
+    final int completed = categoryList.fold(0, (previousValue, element) => previousValue + element.completedTasks);
     return  Container(
       width: double.infinity,
       child: Card(
@@ -36,7 +44,7 @@ class AllTasksCard extends StatelessWidget {
                       ),
                       Container(
                         margin: EdgeInsets.only(top: 51),
-                        child: Text("Завершенно 8 задач из 22",
+                        child: Text("Завершенно $completed задач из $allTask",
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold
@@ -48,8 +56,8 @@ class AllTasksCard extends StatelessWidget {
                           child: CompletionBar(
                               height: 16,
                               width: 176,
-                              amountTasks: 22,
-                              completedTasks: 16
+                              amountTasks: allTask,
+                              completedTasks: completed
                           )
                       )
                     ],

@@ -7,15 +7,16 @@ import 'package:todointernship/model/category.dart';
 class CategoryCard extends StatelessWidget {
 
   final Category category;
+  final void Function(Category) onUpdate;
 
-  CategoryCard(this.category);
+  CategoryCard(this.category, this.onUpdate);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       child: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category),
+        onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category).then((value) => onUpdate(category)),
         child: Card(
           margin: EdgeInsets.zero,
           elevation: 10,

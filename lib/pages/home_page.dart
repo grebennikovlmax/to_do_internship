@@ -1,19 +1,31 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/category_theme.dart';
-
-
-
 import 'package:todointernship/widgets/all_tasks_card.dart';
 import 'package:todointernship/widgets/category_card.dart';
 
-class HomePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() {
+    return _HomePageState();
+  }
+}
+
+class _HomePageState extends State<HomePage> {
 
   List<Category> categories = [];
 
-  HomePage() {
+  StreamController<List<Category>> _categoryListStreamController;
+
+  @override
+  void initState() {
+    super.initState();
     Task newTask = Task("Дописать тз на стражировку");
     var step1 = TaskStep("Написать часть про главный экран");
     var step2 = TaskStep("Очень сложный длинный шаг, на который легко наткнуться, сложно выполнить и невозможно забыть");
@@ -30,6 +42,13 @@ class HomePage extends StatelessWidget {
 
     categories.add(cat1);
     categories.add(cat2);
+    _categoryListStreamController = StreamController.broadcast();
+  }
+
+  @override
+  void dispose() {
+    _categoryListStreamController.close();
+    super.dispose();
   }
 
 
@@ -45,7 +64,13 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            AllTasksCard(),
+            StreamBuilder<List<Category>>(
+              initialData: categories,
+              stream: _categoryListStreamController.stream,
+              builder: (context, snapshot) {
+                return AllTasksCard(snapshot.data);
+              }
+            ),
             Container(
               margin: EdgeInsets.only(top: 30),
               child: Text("Ветки задач",
@@ -58,16 +83,22 @@ class HomePage extends StatelessWidget {
             Expanded(
               child: Container(
                 margin: EdgeInsets.only(top: 18),
-                child: GridView.builder(
-                    itemCount: categories.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                      crossAxisCount: 2
-                    ),
-                    itemBuilder: (BuildContext context, index) {
-                      return CategoryCard(categories[index]);
-                    }
+                child: StreamBuilder<List<Category>>(
+                  stream: _categoryListStreamController.stream,
+                  initialData: categories,
+                  builder: (context, snapshot) {
+                    return GridView.builder(
+                        itemCount: snapshot.data.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          crossAxisCount: 2
+                        ),
+                        itemBuilder: (BuildContext context, index) {
+                          return CategoryCard(snapshot.data[index], _updateCategoryList);
+                        }
+                    );
+                  }
                 ),
               ),
             ),
@@ -75,5 +106,11 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _updateCategoryList(Category category) {
+    final int index = categories.indexWhere((element) => element.name == category.name);
+    categories[index] = category;
+    _categoryListStreamController.add(categories);
   }
 }

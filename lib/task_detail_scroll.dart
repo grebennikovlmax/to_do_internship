@@ -10,6 +10,7 @@ import 'package:todointernship/new_task.dart';
 import 'package:todointernship/time_picker_dialog.dart';
 import 'package:todointernship/widgets/custom_fab.dart';
 import 'package:todointernship/widgets/steps_card.dart';
+import 'package:todointernship/model/fab_state.dart';
 
 class TaskDetailScrollView extends StatefulWidget {
 
@@ -32,33 +33,36 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
 
   ScrollController _scrollController;
-  StreamController<double> _fabOffsetStream;
+  StreamController<FabState> _fabStateStream;
   StreamController<List<TaskStep>> _stepListStreamController;
-  StreamController<DateTime> _dateStreamController;
-  StreamController<String> _titleNameStreamController;
+
+  ValueNotifier<DateTime> _dateNotifier;
+  ValueNotifier<String> _titleNameNotifier;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _fabOffsetStream = StreamController();
+    _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
-    _dateStreamController = StreamController();
-    _titleNameStreamController = StreamController();
+
+    _dateNotifier = ValueNotifier(widget.task.finalDate);
+    _titleNameNotifier = ValueNotifier(widget.task.name);
 
 
     _scrollController.addListener(() {
-      _fabOffsetStream.add(_scrollController.offset);
+      final state = FabState(_scrollController.offset, widget.task.isCompleted);
+      _fabStateStream.add(state);
     });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _fabOffsetStream.close();
+    _fabStateStream.close();
     _stepListStreamController.close();
-    _titleNameStreamController.close();
-    _dateStreamController.close();
+    _dateNotifier.dispose();
+    _titleNameNotifier.dispose();
     super.dispose();
   }
 
@@ -73,16 +77,15 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                 pinned: true,
                 expandedHeight: appBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
-                    title: StreamBuilder<String>(
-                      stream: _titleNameStreamController.stream,
-                      initialData: widget.task.name,
-                      builder: (context, snapshot) {
-                        return Text(snapshot.data);
+                    title: ValueListenableBuilder<String>(
+                      valueListenable: _titleNameNotifier,
+                      builder: (context, value, _) {
+                        return Text(value);
                       }
                     )),
                 actions: <Widget>[
                   PopupMenuButton<TaskDetailPopupMenuItem>(
-                    onSelected: (val) => _popupMenuButtonPressed(val),
+                    onSelected: _popupMenuButtonPressed,
                     itemBuilder: (BuildContext context) {
                       return [
                         PopupMenuItem<TaskDetailPopupMenuItem>(
@@ -129,11 +132,10 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                           ListTile(
                             leading: Icon(Icons.insert_invitation),
                             onTap: _pickDate,
-                            title: StreamBuilder<DateTime>(
-                              stream: _dateStreamController.stream,
-                              initialData: widget.task.finalDate,
-                              builder: (context, snapshot) {
-                                return Text(snapshot.data == null ? "Добавить дату выполнения" : dateFormatter.format(widget.task.finalDate));
+                            title: ValueListenableBuilder<DateTime>(
+                              valueListenable: _dateNotifier,
+                              builder: (context, value, _) {
+                                return Text(value == null ? "Добавить дату выполнения" : dateFormatter.format(value));
                               }
                             ),
                           ),
@@ -143,11 +145,11 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                   ])
               ),
             ]),
-        StreamBuilder<double>(
-          initialData: 0,
-          stream: _fabOffsetStream.stream,
+        StreamBuilder<FabState>(
+          initialData: FabState(0, widget.task.isCompleted),
+          stream: _fabStateStream.stream,
           builder: (context, snapshot) {
-            return CustomFloatingButton(widget.task.isCompleted, snapshot.data, appBarHeight, _fabPressed );
+            return CustomFloatingButton(snapshot.data.isCompleted, snapshot.data.offset, appBarHeight, _fabPressed );
           }
         )]
       );
@@ -155,9 +157,8 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
 
   void _fabPressed() {
     widget.taskEvent.add(OnCompletedTask(widget.task));
-    setState(() {
-
-    });
+    final state = FabState(_scrollController.offset, !widget.task.isCompleted);
+    _fabStateStream.add(state);
   }
 
   Future<void> _updateTaskName() async {
@@ -169,7 +170,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     );
     if(name != null) {
       widget.task.name = name;
-      _titleNameStreamController.add(name);
+      _titleNameNotifier.value = name;
     }
   }
 
@@ -206,7 +207,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
 
     if(date != null) {
       widget.task.finalDate = date;
-      _dateStreamController.add(widget.task.finalDate);
+      _dateNotifier.value = date;
     }
   }
 
