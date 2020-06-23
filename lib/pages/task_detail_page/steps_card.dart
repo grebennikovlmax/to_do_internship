@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/step_item.dart';
+import 'package:todointernship/pages/task_detail_page/step_item.dart';
 
 class StepsCard extends StatelessWidget {
 

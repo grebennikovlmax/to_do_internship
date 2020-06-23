@@ -117,7 +117,7 @@ class _ThemePickerState extends State<ThemePicker> {
 
   _changeTheme(ThemeData theme) async{
     _themeStreamController.add(theme);
-    widget.themeSink.add(Future.value(theme));
+    widget.themeSink.add((theme));
     final SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setInt("backgroundColor", theme.backgroundColor.value);
     pref.setInt("primaryColor", theme.primaryColor.value);

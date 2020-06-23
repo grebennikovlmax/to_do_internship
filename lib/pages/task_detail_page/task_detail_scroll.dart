@@ -5,12 +5,12 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/model/task_event.dart';
-import 'package:todointernship/new_task.dart';
-import 'package:todointernship/time_picker_dialog.dart';
+import 'package:todointernship/pages/task_list_page/task_event.dart';
+import 'package:todointernship/widgets/new_task.dart';
+import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/widgets/custom_fab.dart';
-import 'package:todointernship/widgets/steps_card.dart';
-import 'package:todointernship/model/fab_state.dart';
+import 'package:todointernship/pages/task_detail_page/steps_card.dart';
+import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/model/category_theme.dart';
 
 

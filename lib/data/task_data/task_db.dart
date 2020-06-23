@@ -10,6 +10,10 @@ class TaskDatabase {
     return _database;
   }
 
+  delete() async {
+    return deleteDatabase(join(await getDatabasesPath(), "task_database"));
+  }
+
   Future<Database> _initDB() async {
     return openDatabase(
         join(await getDatabasesPath(), "task_database"),
@@ -18,7 +22,7 @@ class TaskDatabase {
               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
               "description TEXT,"
               "is_completed INTEGER,"
-              "task_id id,"
+              "task_id INTEGER,"
               "FOREIGN KEY(task_id) REFERENCES tasks(id)"
               ")"
           );
@@ -26,8 +30,8 @@ class TaskDatabase {
               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
               "title TEXT,"
               "is_completed INTEGER,"
-              "created_date TEXT,"
-              "final_date TEXT"
+              "created_date INTEGER,"
+              "final_date INTEGER"
               ")"
           );
         },
@@ -43,7 +47,11 @@ class TaskDatabase {
 
   Future<int> updateTask(Map<String, dynamic> task) async {
     final db = await database;
-    final res = await db.update('tasks', task);
+    final res = await db.update('tasks',
+        task,
+        where: "id = ?",
+        whereArgs: [task["id"]]
+    );
     return res;
   }
 
@@ -55,7 +63,11 @@ class TaskDatabase {
 
   Future<int> deleteTask(int id) async {
     final db = await database;
-    final res = await db.delete(table)
+    final res = await db.delete("tasks",
+      where: "id = ?",
+      whereArgs: [id]
+    );
+    return res;
 
   }
 }

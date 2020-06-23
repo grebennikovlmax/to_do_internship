@@ -1,14 +1,15 @@
+import 'package:flutter/cupertino.dart';
+
 class Task {
-  bool isCompleted = false;
+  bool isCompleted;
+  int id;
   String name;
   DateTime createdDate;
   DateTime finalDate;
   List<TaskStep> steps = [];
-  int get stepsCount => steps.length;
-  int get completedSteps => steps.where((step) => step.isCompleted).length;
   
-  Task({this.name, this.finalDate, this.steps}) {
-    createdDate = DateTime.now();
+  Task({@required this.id, this.name, this.finalDate, this.steps = const [], this.createdDate, this.isCompleted = false}) {
+    createdDate ??= DateTime.now();
   }
 }
 

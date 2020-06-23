@@ -1,7 +1,6 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:todointernship/model/task.dart';
 
-import 'package:todointernship/database/task_db.dart';
+import 'package:todointernship/data/task_data/task_db.dart';
 
 abstract class TaskRepository {
   Future<List<Task>> getTaskList();
@@ -13,8 +12,8 @@ abstract class TaskRepository {
 class TaskDatabaseRepository implements TaskRepository {
 
   static final shared = TaskDatabaseRepository();
-  final TaskDatabase db = TaskDatabase();
 
+  final TaskDatabase db = TaskDatabase();
 
   @override
   Future<int> saveTask(Task task) async {
@@ -29,6 +28,11 @@ class TaskDatabaseRepository implements TaskRepository {
     return res;
   }
 
+  Future<int> removeTask(Task task) async {
+    final res = await db.deleteTask(task.id);
+    return res;
+  }
+
   @override
   Future<List<Task>> getIncompletedListTask() {
     // TODO: implement getIncompletedListTask
@@ -39,26 +43,32 @@ class TaskDatabaseRepository implements TaskRepository {
   @override
   Future<List<Task>> getTaskList() async {
     final taskMap = await db.queryTaskList();
-    print(taskMap.map((e) => _mapToTask(e)).toList());
     return taskMap.map((e) => _mapToTask(e)).toList();
 
+  }
+
+  deleteDB() {
+    db.delete();
   }
 
   Map<String, dynamic> _taskToMap(Task task) {
     return {
       "title" : task.name,
       "is_completed": task.isCompleted ? 1 : 0,
-      "created_date": task.createdDate.toString(),
-      "final_date": task.finalDate.toString()
+      "created_date": task.createdDate.millisecondsSinceEpoch,
+      "final_date": task.finalDate.millisecondsSinceEpoch
     };
   }
 
   Task _mapToTask(Map<String, dynamic> map) {
-    return Task(
-      name: map["title"],
-      finalDate: DateTime.parse(map["final_date"]),
-      steps: []
+    final task = Task(
+        name: map['title'],
+        id: map['id'],
+        finalDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
+        createdDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
+        isCompleted: map['is_completed'] == 0 ? false : true
     );
+    return task;
   }
 
 

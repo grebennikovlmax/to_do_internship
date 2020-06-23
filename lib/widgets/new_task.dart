@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:async';
 
-import 'package:todointernship/time_picker_dialog.dart';
+import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/model/task.dart';
 
 
@@ -150,14 +151,14 @@ class _NewTaskState extends State<NewTask> {
     state.didChange(date);
   }
 
-  _onSave() {
+  _onSave() async {
     if(_formKey.currentState.validate()){
       _formKey.currentState.save();
       final task = Task(
         name: taskName,
         finalDate: date,
-        steps: []
       );
+      await TaskDatabaseRepository.shared.saveTask(task);
       Navigator.of(context).pop(task);
     }
   }

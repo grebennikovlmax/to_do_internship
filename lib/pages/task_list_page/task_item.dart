@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:todointernship/model/task_event.dart';
+import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/custom_checkbox.dart';
-import 'package:todointernship/pages/category_detail.dart';
-import 'package:todointernship/pages/task_detail.dart';
+import 'package:todointernship/widgets/custom_checkbox.dart';
+import 'package:todointernship/pages/task_list_page/task_list_page.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail.dart';
 
 
 class TaskItem extends StatelessWidget {
@@ -33,7 +33,7 @@ class TaskItem extends StatelessWidget {
       onDismissed: (dir) => {
         CategoryInfo.of(context).taskEventSink.add(OnRemoveTask(task))
       },
-      key: UniqueKey(),
+      key: ValueKey(task.id),
       child: Container(
           decoration: BoxDecoration(
               color: Colors.white,
@@ -47,7 +47,7 @@ class TaskItem extends StatelessWidget {
                 CategoryInfo.of(context).taskEventSink)
             ).then((value) => CategoryInfo.of(context).taskEventSink.add(OnUpdateTask(task))),
             title: Text(task.name),
-            subtitle: task.stepsCount == 0 ? null : Text("${task.completedSteps} из ${task.stepsCount}"),
+//            subtitle: task.stepsCount == 0 ? null : Text("${task.completedSteps} из ${task.stepsCount}"),
             leading: CustomCheckBox(
               value: task.isCompleted,
               color: Scaffold.of(context).widget.backgroundColor,
