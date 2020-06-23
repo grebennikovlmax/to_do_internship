@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:math';
@@ -13,86 +14,78 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      child: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category).then((value) => onUpdate(category)),
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: 10,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)
-          ),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  width: 56,
-                  height: 56,
-                  child: ProgressBar(category.completion, category.theme.primaryColor),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 13),
-                  child: Text(category.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category).then((value) => onUpdate(category)),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: 56,
+                height: 56,
+                child: ProgressBar(category.completion, category.theme.primaryColor),
+              ),
+              Divider(
+                height: 13,
+                color: Colors.transparent,
+              ),
+              Text(category.name,
+                style: Theme.of(context).textTheme.headline1
+              ),
+              Divider(
+                height: 5,
+                color: Colors.transparent,
+              ),
+              Text("${category.taskCount} задач(и)",
+                style: Theme.of(context).textTheme.headline5.copyWith(color: Color(0xff979797))
+              ),
+              Divider(
+                height: 7,
+                color: Colors.transparent,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: Colors.teal
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
+                      child: Text("${category.completedTasks} сделано",
+                        style: Theme.of(context).textTheme.headline5.copyWith(
+                            fontSize:10,
+                            color: Color(0xff386895)
+                        )
+                      )
                     ),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 5),
-                  child: Text("${category.taskCount} задач(и)",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff979797)
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: Color.fromRGBO(253, 53, 53, 0.51)
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
+                      child: Text("${category.incompletedTasks} осталось",
+                          style: Theme.of(context).textTheme.headline5.copyWith(
+                              fontSize:10,
+                              color: Color(0xffFD3535)
+                          ),
+                      ),
                     ),
                   )
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 7),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.teal
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                          child: Text("${category.completedTasks} сделано",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 10,
-                              color: Color(0xff386895)
-                            ),
-                          )
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            color: Color.fromRGBO(253, 53, 53, 0.51)
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                          child: Text("${category.incompletedTasks} осталось",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 10,
-                                color: Color(0xffFD3535)
-                            ),),
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
+                ],
+              )
+            ],
           ),
         ),
       ),

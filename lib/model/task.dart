@@ -7,7 +7,7 @@ class Task {
   int get stepsCount => steps.length;
   int get completedSteps => steps.where((step) => step.isCompleted).length;
   
-  Task(this.name, [this.finalDate]) {
+  Task({this.name, this.finalDate, this.steps}) {
     createdDate = DateTime.now();
   }
 }

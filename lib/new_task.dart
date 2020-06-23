@@ -153,7 +153,11 @@ class _NewTaskState extends State<NewTask> {
   _onSave() {
     if(_formKey.currentState.validate()){
       _formKey.currentState.save();
-      final task = Task(taskName, date);
+      final task = Task(
+        name: taskName,
+        finalDate: date,
+        steps: []
+      );
       Navigator.of(context).pop(task);
     }
   }

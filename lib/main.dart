@@ -31,6 +31,13 @@ class MyApp extends StatelessWidget {
             bodyText2: TextStyle(
               fontFamily: "Roboto",
               fontSize: 14
+            ),
+            headline1: TextStyle(
+              fontFamily: "Roboto",
+              letterSpacing: 0.15,
+              fontSize: 24,
+              color: Colors.black,
+              fontWeight: FontWeight.w900
             )
           )
         ),

@@ -16,67 +16,66 @@ class AllTasksCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final int allTask = categoryList.fold(0, (previousValue, element) => previousValue + element.taskCount);
     final int completed = categoryList.fold(0, (previousValue, element) => previousValue + element.completedTasks);
-    return  Container(
-      width: double.infinity,
-      child: Card(
-          margin: EdgeInsets.zero,
-          color: Color(0xff86A5F5),
-          elevation: 10,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)
-          ),
-          child: Container(
-            margin: EdgeInsets.all(16),
-            child: Row(
+    return  Card(
+        margin: EdgeInsets.zero,
+        color: Color(0xff86A5F5),
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)
+        ),
+        child: Container(
+          margin: EdgeInsets.all(16),
+          child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Flexible(
+                Expanded(
                   flex: 2,
                   child: Column(
-                    mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text("Все задания",
+                          style: Theme.of(context).textTheme.headline1
+                      ),
+                      Divider(
+                        height: 52,
+                        color: Colors.transparent,
+                      ),
+                      Text("Завершенно $completed задач из $allTask",
                         style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.only(top: 51),
-                        child: Text("Завершенно $completed задач из $allTask",
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold
-                          ),
-                        ),
+                      Divider(
+                        height: 10,
+                        color: Colors.transparent,
                       ),
-                      Container(
-                          margin: EdgeInsets.only(top: 6),
-                          child: CompletionBar(
-                              height: 16,
-                              width: 176,
-                              amountTasks: allTask,
-                              completedTasks: completed
-                          )
-                      )
+                      CompletionBar(
+                          height: 16,
+                          width: 176,
+                          amountTasks: allTask,
+                          completedTasks: completed
+                      ),
                     ],
                   ),
                 ),
                 Expanded(
                   flex: 1,
                   child: CustomPaint(
+                    size: Size(double.infinity,120),
                     painter: MountPainter(),
                   ),
                 )
               ]
-            ),
-          )
-      ),
+          ),
+        )
     );
   }
 
 }
+
 
 class MountPainter extends CustomPainter {
 
@@ -95,7 +94,7 @@ class MountPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    double sideSize = max(size.width,size.height);
+    double sideSize = min(size.width,size.height);
     Path clipPath = Path()
       ..addArc(Rect.fromCircle(center: size.center(Offset.zero),radius: sideSize / 2), 0, 2 * pi);
 
