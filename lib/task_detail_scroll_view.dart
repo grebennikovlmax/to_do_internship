@@ -8,7 +8,7 @@ import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/task_event.dart';
 import 'package:todointernship/new_task.dart';
 import 'package:todointernship/time_picker_dialog.dart';
-import 'package:todointernship/widgets/custom_fab.dart';
+import 'package:todointernship/widgets/sliver_app_bar_fab.dart';
 import 'package:todointernship/widgets/steps_card.dart';
 import 'package:todointernship/model/fab_state.dart';
 import 'package:todointernship/model/category_theme.dart';
@@ -36,7 +36,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
 
   ScrollController _scrollController;
-  StreamController<FabState> _fabStateStream;
+  StreamController<FabState> _fabStateStreamController;
   StreamController<List<TaskStep>> _stepListStreamController;
 
   ValueNotifier<DateTime> _dateNotifier;
@@ -46,7 +46,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _fabStateStream = StreamController();
+    _fabStateStreamController = StreamController();
     _stepListStreamController = StreamController();
 
     _dateNotifier = ValueNotifier(widget.task.finalDate);
@@ -55,14 +55,14 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
 
     _scrollController.addListener(() {
       final state = FabState(_scrollController.offset, widget.task.isCompleted);
-      _fabStateStream.add(state);
+      _fabStateStreamController.add(state);
     });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _fabStateStream.close();
+    _fabStateStreamController.close();
     _stepListStreamController.close();
     _dateNotifier.dispose();
     _titleNameNotifier.dispose();
@@ -88,20 +88,8 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                       }
                     )),
                 actions: <Widget>[
-                  PopupMenuButton<TaskDetailPopupMenuItem>(
+                  _PopupMenu(
                     onSelected: _popupMenuButtonPressed,
-                    itemBuilder: (BuildContext context) {
-                      return [
-                        PopupMenuItem<TaskDetailPopupMenuItem>(
-                          value: TaskDetailPopupMenuItem.delete,
-                          child: Text("Удалить"),
-                        ),
-                        PopupMenuItem<TaskDetailPopupMenuItem>(
-                          value: TaskDetailPopupMenuItem.update,
-                          child: Text("Редактировать"),
-                        )
-                      ];
-                    },
                   )
                 ],
               ),
@@ -118,47 +106,23 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                         }
                       ),
                     ),
-                    Card(
-                      margin: EdgeInsets.fromLTRB(16, 10, 16, 5),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          ListTile(
-                            leading: Icon(Icons.notifications_none),
-                            title: Text("Напомнить")
-                          ),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 40),
-                            child: Divider(
-                              thickness: 2,
-                            ),
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.insert_invitation),
-                            onTap: _pickDate,
-                            title: ValueListenableBuilder<DateTime>(
-                              valueListenable: _dateNotifier,
-                              builder: (context, value, _) {
-                                if(value == null) return Text("Добавить дату выполнения");
-                                return Text(dateFormatter.format(value),
-                                  style: TextStyle(
-                                    color: value.isBefore(DateTime.now()) ? Colors.red : Colors.black
-                                  ),
-                                );
-                              }
-                            ),
-                          ),
-                        ],
-                      ),
+                    ValueListenableBuilder<DateTime>(
+                      valueListenable: _dateNotifier,
+                      builder: (context, value, _) {
+                        return _DateNotificationCard(
+                          onTap: _pickDate,
+                          date: dateFormatter.format(value),
+                        );
+                      },
                     )
                   ])
               ),
             ]),
         StreamBuilder<FabState>(
           initialData: FabState(0, widget.task.isCompleted),
-          stream: _fabStateStream.stream,
+          stream: _fabStateStreamController.stream,
           builder: (context, snapshot) {
-            return CustomFloatingButton(snapshot.data.isCompleted, snapshot.data.offset, appBarHeight, _fabPressed );
+            return SliverAppBarFloatingButton(snapshot.data.isCompleted, snapshot.data.offset, appBarHeight, _fabPressed );
           }
         )]
       );
@@ -167,7 +131,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   void _fabPressed() {
     widget.taskEvent.add(OnCompletedTask(widget.task));
     final state = FabState(_scrollController.offset, !widget.task.isCompleted);
-    _fabStateStream.add(state);
+    _fabStateStreamController.add(state);
   }
 
   Future<void> _updateTaskName() async {
@@ -232,6 +196,69 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
           _updateTaskName();
           break;
       }
+    }
+  }
+
+  class _PopupMenu extends StatelessWidget {
+
+    final PopupMenuItemSelected<TaskDetailPopupMenuItem> onSelected;
+
+    _PopupMenu({this.onSelected});
+
+
+    @override
+    Widget build(BuildContext context) {
+      return PopupMenuButton<TaskDetailPopupMenuItem>(
+        onSelected: onSelected,
+        itemBuilder: (BuildContext context) {
+          return [
+            PopupMenuItem<TaskDetailPopupMenuItem>(
+              value: TaskDetailPopupMenuItem.delete,
+              child: Text("Удалить"),
+            ),
+            PopupMenuItem<TaskDetailPopupMenuItem>(
+              value: TaskDetailPopupMenuItem.update,
+              child: Text("Редактировать"),
+            )
+          ];
+        },
+      );
+    }
+  }
+
+
+  class _DateNotificationCard extends StatelessWidget {
+
+    final VoidCallback onTap;
+    final String date;
+
+    _DateNotificationCard({this.onTap, this.date});
+
+    @override
+    Widget build(BuildContext context) {
+      return Card(
+          margin: EdgeInsets.fromLTRB(16, 10, 16, 5),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                    leading: Icon(Icons.notifications_none),
+                    title: Text("Напомнить")
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 40),
+                  child: Divider(
+                    thickness: 2,
+                  ),
+                ),
+                ListTile(
+                    leading: Icon(Icons.insert_invitation),
+                    onTap: onTap,
+                    title: date == null ? Text("Добавить дату выполнения")
+                        : Text(date)
+                )
+              ])
+      );
     }
   }
 

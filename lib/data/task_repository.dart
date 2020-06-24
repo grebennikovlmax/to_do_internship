@@ -10,60 +10,6 @@ abstract class TaskRepository {
   Future<int> updateTask(Task task);
 }
 
-class TaskDatabaseRepository implements TaskRepository {
-
-  static final shared = TaskDatabaseRepository();
-  final TaskDatabase db = TaskDatabase();
-
-
-  @override
-  Future<int> saveTask(Task task) async {
-    final map = _taskToMap(task);
-    final res = await db.insertTask(map);
-    return res;
-  }
-
-  Future<int> updateTask(Task task) async {
-    final map = _taskToMap(task);
-    final res = await db.updateTask(map);
-    return res;
-  }
-
-  @override
-  Future<List<Task>> getIncompletedListTask() {
-    // TODO: implement getIncompletedListTask
-    throw UnimplementedError();
-  }
-
-
-  @override
-  Future<List<Task>> getTaskList() async {
-    final taskMap = await db.queryTaskList();
-    print(taskMap.map((e) => _mapToTask(e)).toList());
-    return taskMap.map((e) => _mapToTask(e)).toList();
-
-  }
-
-  Map<String, dynamic> _taskToMap(Task task) {
-    return {
-      "title" : task.name,
-      "is_completed": task.isCompleted ? 1 : 0,
-      "created_date": task.createdDate.toString(),
-      "final_date": task.finalDate.toString()
-    };
-  }
-
-  Task _mapToTask(Map<String, dynamic> map) {
-    return Task(
-      name: map["title"],
-      finalDate: DateTime.parse(map["final_date"]),
-      steps: []
-    );
-  }
-
-
-
-}
 
 class MockTaskRepository implements TaskRepository {
 

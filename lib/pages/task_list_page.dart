@@ -13,16 +13,16 @@ import 'package:todointernship/theme_picker.dart';
 import 'package:todointernship/model/task_list_state.dart';
 import 'package:todointernship/data/task_repository.dart';
 
-class CategoryDetail extends StatefulWidget {
+class TaskListPage extends StatefulWidget {
 
   final Category category;
 
-  CategoryDetail(this.category);
+  TaskListPage(this.category);
 
 
   @override
   State<StatefulWidget> createState() {
-    return _CategoryDetailState();
+    return _TaskListPageState();
   }
 
 }
@@ -43,7 +43,7 @@ class CategoryInfo extends InheritedWidget {
 
 }
 
-class _CategoryDetailState extends State<CategoryDetail> {
+class _TaskListPageState extends State<TaskListPage> {
 
   StreamController<TaskListState> _taskListStateStreamController;
   ValueNotifier<bool> _hideCompletedNotifier;
@@ -120,19 +120,6 @@ class _CategoryDetailState extends State<CategoryDetail> {
                       return TaskList(snapshot.data);
                     },
                   ),
-//            child: StreamBuilder<TaskListState>(
-//              stream: _taskListStateStreamController.stream,
-//              initialData: TaskListState(_hideCompletedNotifier.value, widget.category.tasks),
-//              builder: (context, snapshot) {
-//                if(snapshot.data.completedIsHidden && snapshot.data.taskList.isEmpty && widget.category.tasks.isNotEmpty) {
-//                  return EmptyTaskList(isEmptyTask: false);
-//                }
-//                if(snapshot.data.taskList.isEmpty) {
-//                  return EmptyTaskList(isEmptyTask: true);
-//                }
-//                return TaskList(snapshot.data.taskList);
-//              }
-//              )
                 ),
                 floatingActionButton: FloatingActionButton(
                   onPressed: newTask,
