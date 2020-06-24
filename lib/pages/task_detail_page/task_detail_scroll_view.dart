@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:async';
 
 import 'package:todointernship/model/task.dart';
@@ -11,6 +12,8 @@ import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/widgets/custom_fab.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
+import 'package:todointernship/widgets/new_task.dart';
+
 
 
 class TaskDetailScrollView extends StatefulWidget {
@@ -27,9 +30,8 @@ enum TaskDetailPopupMenuItem {update, delete}
 
 class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
 
-  double appBarHeight = 128;
+  final double appBarHeight = 128;
   DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
-
 
   ScrollController _scrollController;
   StreamController<FabState> _fabStateStream;
@@ -45,12 +47,8 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
 
-//    _dateNotifier = ValueNotifier(TaskInfo.of(context).task.finalDate);
-//    _titleNameNotifier = ValueNotifier(TaskInfo.of(context).task.name);
-
     _dateNotifier = ValueNotifier(DateTime.now());
     _titleNameNotifier = ValueNotifier("sd");
-
 
     _scrollController.addListener(() {
       final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
@@ -133,7 +131,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                           ),
                           ListTile(
                             leading: Icon(Icons.insert_invitation),
-                            onTap: _pickDate,
+                            onTap: _pickFinalDate,
                             title: ValueListenableBuilder<DateTime>(
                               valueListenable: _dateNotifier,
                               builder: (context, value, _) {
@@ -173,8 +171,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-//          return NewTask(widget.task);
-        return Container();
+          return NewTask();
         }
     );
     if(task != null) {
@@ -185,47 +182,39 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     }
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickFinalDate() async {
     var date = await showDialog<DateTime>(
       context: context,
       builder: (BuildContext context) {
-        return TimePickerDialog();
+        return TimePickerDialog(withTime: false);
       }
     );
 
-    if(date == null) {
-      TargetPlatform platform = Theme.of(context).platform;
-      if (platform == TargetPlatform.fuchsia) {
-        date = await showCupertinoModalPopup<DateTime>(
-            context: context,
-            builder: (context) {
-              return CupertinoDatePicker(
-                initialDateTime: DateTime.now().add(Duration(days: 1)),
-                minimumDate: DateTime.now(),
-                onDateTimeChanged: (val) => Navigator.of(context).pop(val),
-              );
-            }
-        );
-      } else {
-        date = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2100)
-        );
-      }
-    }
-
     if(date != null) {
-//      widget.task.finalDate = date;
+      Task task = TaskInfo.of(context).task;
+      task.finalDate = date;
+      await TaskDatabaseRepository.shared.updateTask(task);
       _dateNotifier.value = date;
+    }
+  }
+
+  Future<void> setNotification() async {
+    var dateTime = await showDialog<DateTime>(
+      context: context,
+      builder: (context) {
+        return TimePickerDialog(withTime: true);
+      }
+    );
+
+    if(dateTime != null) {
+      Task task = TaskInfo.of(context).task;
     }
   }
 
   _popupMenuButtonPressed(TaskDetailPopupMenuItem item) {
       switch (item) {
         case TaskDetailPopupMenuItem.delete:
-//          widget.taskEvent.add(OnRemoveTask(widget.task));
+          TaskDatabaseRepository.shared.removeTask(TaskInfo.of(context).task.id);
           Navigator.of(context).pop();
           break;
         case TaskDetailPopupMenuItem.update:

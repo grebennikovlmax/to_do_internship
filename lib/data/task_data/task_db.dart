@@ -50,8 +50,8 @@ class TaskDatabase {
     final db = await database;
     final res = await db.update('tasks',
         task,
-        where: "id = ?",
-        whereArgs: [task["id"]]
+        where: 'id = ?',
+        whereArgs: [task['id']]
     );
     return res;
   }

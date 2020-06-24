@@ -49,7 +49,7 @@ class TaskItem extends StatelessWidget {
                 )
               ).then((value) => TaskListInfo.of(context).taskEventSink.add(OnUpdateTask(task))),
             title: Text(task.name),
-            subtitle: task.steps.isEmpty ? Container() : Text("$completedStepsCount из $stepsCount"),
+            subtitle: task.steps.isEmpty ? null : Text("$completedStepsCount из $stepsCount"),
             leading: CustomCheckBox(
               value: task.isCompleted,
               color: Scaffold.of(context).widget.backgroundColor,

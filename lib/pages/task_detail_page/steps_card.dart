@@ -6,7 +6,6 @@ import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/step_item.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail.dart';
-import 'package:todointernship/pages/task_list_page/task_event.dart';
 
 class StepsCard extends StatelessWidget {
 

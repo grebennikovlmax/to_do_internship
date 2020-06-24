@@ -105,7 +105,7 @@ class TaskDatabaseRepository implements TaskRepository {
         name: map['title'],
         id: map['id'],
         finalDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
-        createdDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
+        createdDate: DateTime.fromMillisecondsSinceEpoch(map['created_date']),
         isCompleted: map['is_completed'] == 0 ? false : true,
         steps: map['steps']
     );
