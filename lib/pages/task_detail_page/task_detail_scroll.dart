@@ -5,21 +5,16 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
-import 'package:todointernship/widgets/new_task.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/widgets/custom_fab.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
-import 'package:todointernship/model/category_theme.dart';
 
 
 class TaskDetailScrollView extends StatefulWidget {
 
-  final Task task;
-  final Sink taskEvent;
-  final CategoryTheme theme;
-  TaskDetailScrollView(this.task,this.taskEvent, this.theme);
 
   @override
   State<StatefulWidget> createState() {
@@ -35,6 +30,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   double appBarHeight = 128;
   DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
 
+
   ScrollController _scrollController;
   StreamController<FabState> _fabStateStream;
   StreamController<List<TaskStep>> _stepListStreamController;
@@ -49,12 +45,15 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
 
-    _dateNotifier = ValueNotifier(widget.task.finalDate);
-    _titleNameNotifier = ValueNotifier(widget.task.name);
+//    _dateNotifier = ValueNotifier(TaskInfo.of(context).task.finalDate);
+//    _titleNameNotifier = ValueNotifier(TaskInfo.of(context).task.name);
+
+    _dateNotifier = ValueNotifier(DateTime.now());
+    _titleNameNotifier = ValueNotifier("sd");
 
 
     _scrollController.addListener(() {
-      final state = FabState(_scrollController.offset, widget.task.isCompleted);
+      final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
       _fabStateStream.add(state);
     });
   }
@@ -77,7 +76,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
           controller: _scrollController,
             slivers: <Widget>[
               SliverAppBar(
-                backgroundColor: Color(widget.theme.primaryColor),
+                backgroundColor: TaskInfo.of(context).theme.primaryColor,
                 pinned: true,
                 expandedHeight: appBarHeight,
                 flexibleSpace: FlexibleSpaceBar(
@@ -110,11 +109,10 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
                     Card(
                       margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
                       child: StreamBuilder<List<TaskStep>>(
-                        initialData: widget.task.steps,
+                        initialData: TaskInfo.of(context).task.steps,
                         stream: _stepListStreamController.stream,
                         builder: (context, snapshot) {
-                          widget.task.steps = snapshot.data;
-                          return StepsCard(snapshot.data, widget.task.createdDate, _stepListStreamController.sink);
+                          return StepsCard(snapshot.data, _stepListStreamController.sink);
                         }
                       ),
                     ),
@@ -155,7 +153,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
               ),
             ]),
         StreamBuilder<FabState>(
-          initialData: FabState(0, widget.task.isCompleted),
+          initialData: FabState(0, false),
           stream: _fabStateStream.stream,
           builder: (context, snapshot) {
             return CustomFloatingButton(snapshot.data.isCompleted, snapshot.data.offset, appBarHeight, _fabPressed );
@@ -165,8 +163,9 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   }
 
   void _fabPressed() {
-    widget.taskEvent.add(OnCompletedTask(widget.task));
-    final state = FabState(_scrollController.offset, !widget.task.isCompleted);
+    final task = TaskInfo.of(context).task;
+    TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
+    final state = FabState(_scrollController.offset, !task.isCompleted);
     _fabStateStream.add(state);
   }
 
@@ -174,14 +173,15 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTask(widget.task);
+//          return NewTask(widget.task);
+        return Container();
         }
     );
     if(task != null) {
-      widget.task.name = task.name;
-      widget.task.finalDate = task.finalDate;
-      _dateNotifier.value = task.finalDate;
-      _titleNameNotifier.value = task.name;
+//      widget.task.name = task.name;
+//      widget.task.finalDate = task.finalDate;
+//      _dateNotifier.value = task.finalDate;
+//      _titleNameNotifier.value = task.name;
     }
   }
 
@@ -217,7 +217,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
     }
 
     if(date != null) {
-      widget.task.finalDate = date;
+//      widget.task.finalDate = date;
       _dateNotifier.value = date;
     }
   }
@@ -225,7 +225,7 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
   _popupMenuButtonPressed(TaskDetailPopupMenuItem item) {
       switch (item) {
         case TaskDetailPopupMenuItem.delete:
-          widget.taskEvent.add(OnRemoveTask(widget.task));
+//          widget.taskEvent.add(OnRemoveTask(widget.task));
           Navigator.of(context).pop();
           break;
         case TaskDetailPopupMenuItem.update:
@@ -234,4 +234,3 @@ class _TaskDetailScrollViewState extends State<TaskDetailScrollView> {
       }
     }
   }
-

@@ -5,8 +5,13 @@ import 'package:todointernship/data/task_data/task_db.dart';
 abstract class TaskRepository {
   Future<List<Task>> getTaskList();
   Future<List<Task>> getIncompletedListTask();
+  Future<int> removeCompletedTask();
   Future<int> saveTask(Task task);
   Future<int> updateTask(Task task);
+  Future<int> removeTask(int id);
+  Future<int> saveStep(TaskStep step);
+  Future<int> updateStep(TaskStep step);
+  Future<int> removeStep(int id);
 }
 
 class TaskDatabaseRepository implements TaskRepository {
@@ -28,8 +33,8 @@ class TaskDatabaseRepository implements TaskRepository {
     return res;
   }
 
-  Future<int> removeTask(Task task) async {
-    final res = await db.deleteTask(task.id);
+  Future<int> removeTask(int id) async {
+    final res = await db.deleteTask(id);
     return res;
   }
 
@@ -42,10 +47,44 @@ class TaskDatabaseRepository implements TaskRepository {
 
   @override
   Future<List<Task>> getTaskList() async {
-    final taskMap = await db.queryTaskList();
-    return taskMap.map((e) => _mapToTask(e)).toList();
-
+    final tasks = await db.queryTaskList();
+    final taskWS =  await Future.wait(tasks.map((task) async {
+      final taskWithSteps = Map<String, dynamic>.from(task);
+      final steps = await db.queryStepList(task['id']);
+      final List<TaskStep> stepList = steps.isEmpty ? [] : steps.map((step) => _mapToStep(step)).toList();
+      taskWithSteps['steps'] = stepList;
+      return taskWithSteps;
+    }));
+    return taskWS.map((e) => _mapToTask(e)).toList();
   }
+
+  @override
+  Future<int> removeCompletedTask() {
+    final res = db.removeCompletedTask();
+    return res;
+  }
+
+  @override
+  Future<int> saveStep(TaskStep step) {
+    final stepMap = _stepToMap(step);
+    final res = db.insertStep(stepMap);
+    return res;
+  }
+
+  @override
+  Future<int> updateStep(TaskStep step) {
+    final stepMap = _stepToMap(step);
+    final res = db.updateStep(stepMap);
+    return res;
+  }
+
+  @override
+  Future<int> removeStep(int id) {
+    final res = db.deleteStep(id);
+    return res;
+  }
+
+
 
   deleteDB() {
     db.delete();
@@ -53,10 +92,11 @@ class TaskDatabaseRepository implements TaskRepository {
 
   Map<String, dynamic> _taskToMap(Task task) {
     return {
-      "title" : task.name,
-      "is_completed": task.isCompleted ? 1 : 0,
-      "created_date": task.createdDate.millisecondsSinceEpoch,
-      "final_date": task.finalDate.millisecondsSinceEpoch
+      'title' : task.name,
+      'is_completed': task.isCompleted ? 1 : 0,
+      'created_date': task.createdDate.millisecondsSinceEpoch,
+      'final_date': task.finalDate.millisecondsSinceEpoch,
+      'id': task.id
     };
   }
 
@@ -66,66 +106,33 @@ class TaskDatabaseRepository implements TaskRepository {
         id: map['id'],
         finalDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
         createdDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
-        isCompleted: map['is_completed'] == 0 ? false : true
+        isCompleted: map['is_completed'] == 0 ? false : true,
+        steps: map['steps']
     );
     return task;
   }
 
+  TaskStep _mapToStep(Map<String, dynamic> map) {
+    return TaskStep(
+      id: map['id'],
+      taskID: map['task_id'],
+      description: map['description'],
+      isCompleted: map['is_completed'] == 1 ? true : false
+    );
+  }
+
+  Map<String, dynamic> _stepToMap(TaskStep step) {
+    Map<String, dynamic> stepMap = {
+      'description' : step.description,
+      'is_completed' : step.isCompleted ? 1 : 0,
+      'task_id' : step.taskID
+    };
+    if(step.id != null) {
+      stepMap['id'] = step.id;
+    }
+    return stepMap;
+  }
 
 
 }
 
-class MockTaskRepository implements TaskRepository {
-
-  static final shared = MockTaskRepository();
-
-
-  List<Task> _taskList = [
-    Task(
-      name: "Дописать тз на стражировку",
-      finalDate: DateTime.now().add(Duration(days: 1)),
-      steps: [
-        TaskStep("Написать часть про главный экран"),
-        TaskStep("Очень сложный длинный шаг, на который легко наткнуться, сложно выполнить и невозможно забыть")
-      ]
-    ),
-    Task(
-        name: "Дорисовать дизайн",
-        finalDate: DateTime.now().add(Duration(days: 1)),
-        steps: []
-    ),
-  ];
-
-  @override
-  Future<List<Task>> getTaskList() {
-    return Future.delayed(Duration(seconds: 2)).then((value) => _taskList);
-  }
-
-  @override
-  Future<int> getCompletedTaskCount() {
-    return Future.delayed(Duration(seconds: 2)).then((value) => _taskList.where((element) => element.isCompleted).length);
-  }
-
-  @override
-  Future<List<Task>> getIncompletedListTask() {
-    return Future.delayed(Duration(seconds: 2)).then((value) => _taskList.where((element) => !element.isCompleted).toList());
-  }
-
-  @override
-  Future<int> getListCount() {
-    return Future.delayed(Duration(seconds: 2)).then((value) => _taskList.length);
-  }
-
-  @override
-  Future<int> saveTask(Task task) {
-    // TODO: implement saveTask
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<int> updateTask(Task task) {
-    // TODO: implement updateTask
-    throw UnimplementedError();
-  }
-
-}

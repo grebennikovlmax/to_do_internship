@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:todointernship/data/task_data/task_repository.dart';
 
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/category_theme.dart';
@@ -35,6 +34,7 @@ class _HomePageState extends State<HomePage> {
     categories.add(cat2);
 
     _categoryListStreamController = StreamController.broadcast();
+
   }
 
   @override
