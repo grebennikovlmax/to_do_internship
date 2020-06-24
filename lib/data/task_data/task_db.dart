@@ -32,6 +32,7 @@ class TaskDatabase {
               "title TEXT,"
               "is_completed INTEGER,"
               "created_date INTEGER,"
+              "notification_date INTEGER,"
               "final_date INTEGER"
               ")"
           );

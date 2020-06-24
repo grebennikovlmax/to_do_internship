@@ -91,13 +91,17 @@ class TaskDatabaseRepository implements TaskRepository {
   }
 
   Map<String, dynamic> _taskToMap(Task task) {
-    return {
+    Map<String, dynamic> taskMap = {
       'title' : task.name,
       'is_completed': task.isCompleted ? 1 : 0,
       'created_date': task.createdDate.millisecondsSinceEpoch,
       'final_date': task.finalDate.millisecondsSinceEpoch,
-      'id': task.id
+      'id': task.id,
     };
+    if(task.notificationDate != null) {
+      taskMap['notification_date'] = task.notificationDate;
+    }
+    return taskMap;
   }
 
   Task _mapToTask(Map<String, dynamic> map) {
@@ -107,6 +111,7 @@ class TaskDatabaseRepository implements TaskRepository {
         finalDate: DateTime.fromMillisecondsSinceEpoch(map['final_date']),
         createdDate: DateTime.fromMillisecondsSinceEpoch(map['created_date']),
         isCompleted: map['is_completed'] == 0 ? false : true,
+        notificationDate: map['notification_date'] == null ? null : DateTime.fromMillisecondsSinceEpoch(map['notification_date']),
         steps: map['steps']
     );
     return task;

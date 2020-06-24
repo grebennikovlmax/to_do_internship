@@ -137,15 +137,9 @@ class _NewTaskState extends State<NewTask> {
     DateTime date = await showDialog<DateTime>(
         context: context,
         builder: (BuildContext context) {
-          return TimePickerDialog();
+          return TimePickerDialog(withTime: false);
         }
         );
-    date ??= await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
-        lastDate: DateTime(2100)
-    );
     if(date != null)
     _dateStreamController.add(date);
     state.didChange(date);
@@ -163,6 +157,7 @@ class _NewTaskState extends State<NewTask> {
     }
   }
 }
+
 
 class CustomDialogTile extends StatelessWidget {
 

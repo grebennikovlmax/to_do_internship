@@ -4,9 +4,10 @@ class Task {
   String name;
   DateTime createdDate;
   DateTime finalDate;
+  DateTime notificationDate;
   List<TaskStep> steps;
 
-  Task({this.id, this.name, this.finalDate, this.createdDate, this.isCompleted = false, this.steps = const []}) {
+  Task({this.id, this.name, this.finalDate, this.createdDate, this.isCompleted = false, this.steps = const [], this.notificationDate}) {
     createdDate ??= DateTime.now();
   }
 }
