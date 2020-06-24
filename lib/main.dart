@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:todointernship/pages/task_detail.dart';
+import 'package:todointernship/pages/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page.dart';
 import 'package:todointernship/pages/home_page.dart';
 
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         initialRoute: "/",
         routes: {
           "/category_detail" : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
-          "/task_detail" : (context) => TaskDetail(ModalRoute.of(context).settings.arguments)
+          "/task_detail" : (context) => TaskDetailPage(arguments: ModalRoute.of(context).settings.arguments)
         },
         theme: ThemeData(
           primaryColor: Color(0xff6202EE),

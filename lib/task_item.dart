@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:todointernship/model/task_event.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/custom_checkbox.dart';
+import 'package:todointernship/pages/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page.dart';
-import 'package:todointernship/pages/task_detail.dart';
 
 
 class TaskItem extends StatelessWidget {

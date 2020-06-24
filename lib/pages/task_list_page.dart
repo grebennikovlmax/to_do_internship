@@ -7,7 +7,7 @@ import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/task_event.dart';
 import 'package:todointernship/task_list.dart';
-import 'package:todointernship/new_task.dart';
+import 'package:todointernship/new_task_dialog.dart';
 import 'package:todointernship/popup_menu.dart';
 import 'package:todointernship/theme_picker.dart';
 import 'package:todointernship/model/task_list_state.dart';
@@ -136,7 +136,7 @@ class _TaskListPageState extends State<TaskListPage> {
     var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTask();
+          return NewTaskDialog();
         }
     );
     if(task != null) {
