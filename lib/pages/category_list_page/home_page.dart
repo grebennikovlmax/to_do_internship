@@ -7,6 +7,7 @@ import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
 import 'package:todointernship/pages/category_list_page/category_card.dart';
+import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -34,6 +35,9 @@ class _HomePageState extends State<HomePage> {
     categories.add(cat2);
 
     _categoryListStreamController = StreamController.broadcast();
+
+    var not = PlatformNotificationChannel();
+    not.setNotification();
 
   }
 

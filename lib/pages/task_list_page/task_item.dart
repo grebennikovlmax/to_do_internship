@@ -4,7 +4,7 @@ import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/widgets/custom_checkbox.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
-import 'package:todointernship/pages/task_detail_page/task_detail.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
 
 class TaskItem extends StatelessWidget {
