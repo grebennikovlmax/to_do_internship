@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/date_state.dart';
+import 'package:todointernship/pages/task_detail_page/photo_list.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
@@ -14,10 +15,6 @@ import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
-
-
-
-
 
 class TaskDetail extends StatefulWidget {
 
@@ -103,7 +100,9 @@ class _TaskDetailState extends State<TaskDetail> {
                           onNotification: _setNotification,
                         );
                       },
-                    )
+                    ),
+                    Divider(color: Colors.transparent, height: 30),
+                    PhotoList()
                   ])
               ),
             ]),
@@ -139,7 +138,6 @@ class _TaskDetailState extends State<TaskDetail> {
       await TaskDatabaseRepository.shared.updateTask(task);
       _titleNameNotifier.value = task.name;
       _dateStateStreamController.add(_getDateState());
-
     }
   }
 

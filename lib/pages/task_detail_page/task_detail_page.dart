@@ -41,7 +41,7 @@ class TaskDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<ThemeData>(
-      future: _getTheme(),
+      future: _getTheme(context),
       builder: (context, snapshot) {
         if(!snapshot.hasData) {
           return Center(
@@ -61,12 +61,16 @@ class TaskDetailPage extends StatelessWidget {
     );
   }
 
-  Future<ThemeData> _getTheme() async {
+  Future<ThemeData> _getTheme(BuildContext context) async {
     final categoryTheme = await prefTheme.loadTheme(0);
-    return ThemeData(
-      backgroundColor: Color(categoryTheme.backgroundColor),
-      primaryColor: Color(categoryTheme.primaryColor)
+    if(categoryTheme.backgroundColor == null || categoryTheme.primaryColor == null) {
+      return Theme.of(context);
+    }
+    final theme = ThemeData(
+        backgroundColor: Color(categoryTheme.backgroundColor),
+        primaryColor: Color(categoryTheme.primaryColor)
     );
+    return theme;
   }
 
 }
