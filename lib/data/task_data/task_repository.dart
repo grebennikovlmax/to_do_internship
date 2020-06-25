@@ -3,8 +3,7 @@ import 'package:todointernship/model/task.dart';
 import 'package:todointernship/data/task_data/task_db.dart';
 
 abstract class TaskRepository {
-  Future<List<Task>> getTaskList();
-  Future<List<Task>> getIncompletedListTask();
+  Future<List<Task>> getTaskList(bool completedIsHidden);
   Future<int> removeCompletedTask();
   Future<int> saveTask(Task task);
   Future<int> updateTask(Task task);
@@ -38,16 +37,11 @@ class TaskDatabaseRepository implements TaskRepository {
     return res;
   }
 
-  @override
-  Future<List<Task>> getIncompletedListTask() {
-    // TODO: implement getIncompletedListTask
-    throw UnimplementedError();
-  }
 
 
   @override
-  Future<List<Task>> getTaskList() async {
-    final tasks = await db.queryTaskList();
+  Future<List<Task>> getTaskList(bool completedIsHidden) async {
+    final tasks = completedIsHidden ? await db.queryIncompletedTaskList() : await db.queryTaskList();
     final taskWS =  await Future.wait(tasks.map((task) async {
       final taskWithSteps = Map<String, dynamic>.from(task);
       final steps = await db.queryStepList(task['id']);

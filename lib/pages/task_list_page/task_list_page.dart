@@ -1,14 +1,12 @@
+import 'package:flutter/material.dart';
+
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:todointernship/data/shared_prefs_theme.dart';
-
-import 'package:todointernship/model/category.dart';
+import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/pages/task_list_page/empty_task_list.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list.dart';
-import 'package:todointernship/pages/task_list_page/task_list_page_state.dart';
 import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/widgets/popup_menu.dart';
 import 'package:todointernship/widgets/theme_picker.dart';
@@ -17,11 +15,9 @@ import 'package:todointernship/data/task_data/task_repository.dart';
 
 class TaskListPage extends StatefulWidget {
 
-  final Category category;
-  final prefTheme = SharedPrefTheme();
+  final String title;
 
-  TaskListPage(this.category);
-
+  TaskListPage(this.title);
 
   @override
   State<StatefulWidget> createState() {
@@ -33,10 +29,9 @@ class TaskListPage extends StatefulWidget {
 class TaskListInfo extends InheritedWidget {
 
   final Sink taskEventSink;
+  static TaskListInfo of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TaskListInfo>();
 
   TaskListInfo({this.taskEventSink, Widget child}) : super(child: child);
-
-  static TaskListInfo of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TaskListInfo>();
 
   @override
   bool updateShouldNotify(TaskListInfo oldWidget) {
@@ -50,7 +45,6 @@ class _TaskListPageState extends State<TaskListPage> {
   StreamController<TaskListState> _taskListStateStreamController;
   StreamController<TaskEvent> _taskEventStreamController;
   StreamController<ThemeData> _themeStreamController;
-
   bool _completedIsHidden;
 
   @override
@@ -79,22 +73,22 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return TaskListInfo(
       taskEventSink: _taskEventStreamController.sink,
-      child: FutureBuilder<TaskListPageState>(
-        future: setPageState(),
-        builder: (context, pageState) {
-          if(!pageState.hasData) {
+      child: FutureBuilder<ThemeData>(
+        future: _getThemeData(),
+        builder: (context, future) {
+          if(!future.hasData) {
             return Center(
               child: CircularProgressIndicator(),
             );
           }
           return StreamBuilder<ThemeData>(
-            initialData: pageState.data.themeData,
+            initialData: future.data,
             stream: _themeStreamController.stream,
             builder: (context, snapshot) {
               return Scaffold(
                   backgroundColor: snapshot.data.backgroundColor,
                   appBar: AppBar(
-                    title: Text(widget.category.name),
+                    title: Text(widget.title),
                     backgroundColor: snapshot.data.primaryColor,
                     actions: <Widget>[
                       PopupMenu(
@@ -106,7 +100,7 @@ class _TaskListPageState extends State<TaskListPage> {
                     ]
                   ),
                   body: FutureBuilder<TaskListState>(
-                    future: setTaskListState(),
+                    future: _setTaskListState(),
                     builder: (context, future) {
                       if(future.hasError) {
                         print(future.error);
@@ -116,13 +110,16 @@ class _TaskListPageState extends State<TaskListPage> {
                         initialData: future.data,
                         stream: _taskListStateStreamController.stream,
                         builder: (context, snapshot) {
+                          if(snapshot.data is EmptyListState) {
+                            return EmptyTaskList();
+                          }
                           return TaskList(snapshot.data.taskList);
                         },
                       );
                     }
                   ),
                   floatingActionButton: FloatingActionButton(
-                      onPressed: newTask,
+                      onPressed: _newTask,
                       child: Icon(Icons.add)
                   )
               );
@@ -133,27 +130,30 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 
-  Future<TaskListPageState> setPageState() async{
-    final pref = await SharedPreferences.getInstance();
-    _completedIsHidden = pref.getBool("is_hidden") ?? false;
-    final categoryTheme = await widget.prefTheme.loadTheme(0);
+  Future<ThemeData> _getThemeData() async{
+    final prefManger = SharedPrefManager();
+    final categoryTheme = await prefManger.loadTheme(0);
+    _completedIsHidden = await prefManger.getHiddenFlag(0);
+    if(categoryTheme.backgroundColor == null || categoryTheme.primaryColor == null) {
+      return Theme.of(context);
+    }
     final theme = ThemeData(
-      backgroundColor: Color(categoryTheme.backgroundColor ?? 0),
-      primaryColor: Color(categoryTheme.primaryColor ?? 0)
+      backgroundColor: Color(categoryTheme.backgroundColor),
+      primaryColor: Color(categoryTheme.primaryColor)
     );
-    return TaskListPageState(completedIsHidden: _completedIsHidden, themeData: theme);
+    return theme;
 
   }
-
-  Future<TaskListState> setTaskListState() async {
-    final taskList = await TaskDatabaseRepository.shared.getTaskList();
-    return TaskListState(
-      _completedIsHidden, taskList
-    );
-
+  
+  Future<TaskListState> _setTaskListState() async {
+    final taskList = await TaskDatabaseRepository.shared.getTaskList(_completedIsHidden);
+    if(taskList.isEmpty) {
+      return EmptyListState();
+    }
+    return FullTaskListState(taskList);
   }
 
-  void newTask() async {
+  void _newTask() async {
     var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
@@ -161,22 +161,23 @@ class _TaskListPageState extends State<TaskListPage> {
         }
     );
     if(task != null) {
-      var t = await setTaskListState();
-      _taskListStateStreamController.add(t);
+      _taskListStateStreamController.add(await _setTaskListState());
     }
   }
 
   void _deleteCompletedTask() async {
     TaskDatabaseRepository.shared.removeCompletedTask();
-    final state = await setTaskListState();
-    _taskListStateStreamController.add(state);
+    _taskListStateStreamController.add(await _setTaskListState());
   }
 
   void _hideCompleted() async{
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setBool('is_hidden', !_completedIsHidden);
-    final state = await setTaskListState();
-    _taskListStateStreamController.add(state);
+    final prefManger = SharedPrefManager();
+    _completedIsHidden = !_completedIsHidden;
+    await prefManger.saveHiddenFlag(_completedIsHidden, 0);
+    _taskListStateStreamController.add(await _setTaskListState());
+    setState(() {
+
+    });
   }
 
   void _changeTheme(BuildContext context) {
@@ -190,30 +191,15 @@ class _TaskListPageState extends State<TaskListPage> {
   void _onCompletedTask(Task task) async {
     task.isCompleted = !task.isCompleted;
     await TaskDatabaseRepository.shared.updateTask(task);
-    final state = await setTaskListState();
-    _taskListStateStreamController.add(state);
+    _taskListStateStreamController.add(await _setTaskListState());
   }
 
   void _onRemoveTask(Task task) async{
     TaskDatabaseRepository.shared.removeTask(task.id);
-    final state = await setTaskListState();
-    _taskListStateStreamController.add(state);
+    _taskListStateStreamController.add(await _setTaskListState());
   }
 
   void _onUpdateTask() async {
-    final state = await setTaskListState();
-    _taskListStateStreamController.add(state);
+    _taskListStateStreamController.add(await _setTaskListState());
   }
-
-  Future<ThemeData> _getTheme() async {
-    final SharedPreferences pref = await SharedPreferences.getInstance();
-    final int backgroundColor = pref.getInt("backgroundColor") ?? 0;
-    final int primaryColor = pref.getInt("primaryColor") ?? 0;
-    return ThemeData(
-        backgroundColor: Color(backgroundColor),
-        primaryColor: Color(primaryColor)
-    );
-}
-
-
 }

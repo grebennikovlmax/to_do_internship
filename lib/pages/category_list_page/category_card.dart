@@ -15,7 +15,7 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category).then((value) => onUpdate(category)),
+      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category.name).then((value) => onUpdate(category)),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 5,

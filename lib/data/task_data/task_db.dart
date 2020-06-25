@@ -57,10 +57,19 @@ class TaskDatabase {
     return res;
   }
 
+  Future<List<Map<String, dynamic>>> queryIncompletedTaskList() async {
+    final db = await database;
+    final taskList = await db.query('tasks',
+      where: 'is_completed = ?',
+      whereArgs: [0]
+    );
+    return taskList;
+  }
+
   Future<int> removeCompletedTask() async {
     final db = await database;
     final res = await db.delete('tasks',
-      where: "is_completed = ?",
+      where: 'is_completed = ?',
       whereArgs: [1]
     );
     return res;

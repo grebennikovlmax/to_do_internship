@@ -1,4 +1,5 @@
 class FabState {
+
   final double offset;
   final bool isCompleted;
 

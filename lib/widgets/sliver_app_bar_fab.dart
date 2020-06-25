@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CustomFloatingButton extends StatelessWidget {
+class SliverAppBarFab extends StatelessWidget {
 
   final bool isCompleted;
   final double offset;
   final double appBarHeight;
   final VoidCallback onPressed;
 
-  CustomFloatingButton(this.isCompleted, this.offset, this.appBarHeight, this.onPressed);
+  SliverAppBarFab(this.isCompleted, this.offset, this.appBarHeight, this.onPressed);
 
 
   @override

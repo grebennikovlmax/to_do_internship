@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:async';
 
-import 'package:todointernship/data/shared_prefs_theme.dart';
+import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/model/category_theme.dart';
 
 
@@ -10,7 +10,7 @@ import 'package:todointernship/model/category_theme.dart';
 class ThemePicker extends StatefulWidget {
 
   final Sink themeSink;
-  final prefTheme = SharedPrefTheme();
+  final prefTheme = SharedPrefManager();
 
   ThemePicker(this.themeSink);
 

@@ -1,13 +1,11 @@
-import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'dart:async';
 
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
 import 'package:todointernship/pages/category_list_page/category_card.dart';
-
 
 class HomePage extends StatefulWidget {
 
@@ -20,7 +18,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   List<Category> categories = [];
-
   StreamController<List<Category>> _categoryListStreamController;
 
   @override

@@ -1,12 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class EmptyTaskList extends StatefulWidget {
-
-  final bool isEmptyTask;
-  EmptyTaskList({this.isEmptyTask});
 
   @override
   State<StatefulWidget> createState() {
@@ -58,7 +53,7 @@ class _EmptyTaskListState extends State<EmptyTaskList> with SingleTickerProvider
                 )
               ],
             ),
-            Text(widget.isEmptyTask ? "На данный момент в этой ветке нет задач " : "Все задачи выполнены")
+            Text("Все задачи выполнены")
           ],
         )
     );

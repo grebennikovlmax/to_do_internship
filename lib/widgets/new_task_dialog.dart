@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
-import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:async';
 
 import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/pages/task_detail_page/date_state.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
+import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 
 
 class NewTaskDialog extends StatefulWidget {
@@ -14,7 +16,7 @@ class NewTaskDialog extends StatefulWidget {
   final DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
 
 
-  NewTaskDialog([this.task]);
+  NewTaskDialog({this.task});
 
   @override
   State<StatefulWidget> createState() {
@@ -26,21 +28,24 @@ class NewTaskDialog extends StatefulWidget {
 class _NewTaskDialogState extends State<NewTaskDialog> {
 
   final _formKey = GlobalKey<FormState>();
-  DateTime date;
+  DateTime finalDate;
+  DateTime notificationDate;
   String taskName;
   
-  StreamController<DateTime> _dateStreamController;
+  StreamController<DateState> _dateStateStreamController;
   
   
   @override
   void initState() {
     super.initState();
-    _dateStreamController = StreamController();
+    finalDate = widget.task?.finalDate;
+    notificationDate = widget.task?.notificationDate;
+    _dateStateStreamController = StreamController();
   }
   
   @override
   void dispose() {
-    _dateStreamController.close();
+    _dateStateStreamController.close();
     super.dispose();
   }
 
@@ -72,41 +77,29 @@ class _NewTaskDialogState extends State<NewTaskDialog> {
                       return value.length > 20 ? "Много символов" : null;
                     },
                   ),
-                  IntrinsicWidth(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        CustomDialogTile(
-                          title: "Напомнить",
-                          icon: Icons.notifications_none,
-                          onTap: () {},
-                        ),
-                        Divider(color: Colors.white),
-                        StreamBuilder<DateTime>(
-                          initialData: widget.task?.finalDate,
-                          stream: _dateStreamController.stream,
-                          builder: (context, snapshot) {
-                            return FormField<DateTime>(
-                              validator: (value) {
-                                return value == null ? "Дата не может быть пустой" : null;
-                              },
-                              onSaved: (val) => date = val,
-                              builder: (state) {
-                              return CustomDialogTile(
-                                title: snapshot.data == null 
-                                    ? "Дата выполнения" 
-                                    : widget.dateFormatter.format(snapshot.data),
-                                icon: Icons.insert_invitation,
-                                onTap: () => _onPickDate(state),
-                              );
-                              },
-                            );
-                          }
-                        ),
-                      ],
-                    ),
+                  StreamBuilder<DateState>(
+                    stream: _dateStateStreamController.stream,
+                    initialData: _getDateState(),
+                    builder: (context, snapshot) {
+                      return Column(
+                        children: <Widget>[
+                          _DateFormField(
+                            title: snapshot.data.notificationDate == null ? 'Напомнить' : snapshot.data.notificationDate,
+                            onTap: _onPickNotification,
+                            icon: Icons.notifications_none,
+                            onSaved: (val) => notificationDate = val ,
+                          ),
+                          Divider(color: Colors.transparent),
+                          _DateFormField(
+                            title: snapshot.data.finalDate == null ? 'Дата выполнения' : snapshot.data.finalDate,
+                            onTap: _onPickDate,
+                            icon:  Icons.insert_invitation,
+                            onSaved: (val) => finalDate = val,
+                          )
+                        ],
+                      );
+                    },
                   ),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
@@ -134,15 +127,40 @@ class _NewTaskDialogState extends State<NewTaskDialog> {
   }
 
   Future<void> _onPickDate(FormFieldState state) async {
-    DateTime date = await showDialog<DateTime>(
+    final date = await showDialog<DateTime>(
         context: context,
         builder: (BuildContext context) {
           return TimePickerDialog(withTime: false);
         }
         );
-    if(date != null)
-    _dateStreamController.add(date);
-    state.didChange(date);
+    if(date != null)  {
+      finalDate = date;
+      _dateStateStreamController.add(_getDateState());
+      state.didChange(date);
+    }
+  }
+
+  Future<void> _onPickNotification(FormFieldState state) async {
+    final dateTime = await showDialog<DateTime>(
+      context: context,
+      builder: (context) {
+        return TimePickerDialog(withTime: true);
+      }
+    );
+    if(dateTime != null) {
+      notificationDate = dateTime;
+      _dateStateStreamController.add(_getDateState());
+      state.didChange(dateTime);
+    }
+  }
+
+  DateState _getDateState() {
+    DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
+    DateFormat dateTimeFormatter = DateFormat("dd.MM.yyyy H:mm");
+    final task = widget.task;
+    final finalDateString = finalDate == null ? null : dateFormatter.format(finalDate);
+    final notificationDateString = notificationDate == null ? null : dateTimeFormatter.format(notificationDate);
+    return DateState(finalDate: finalDateString, notificationDate: notificationDateString);
   }
 
   _onSave() async {
@@ -150,52 +168,63 @@ class _NewTaskDialogState extends State<NewTaskDialog> {
       _formKey.currentState.save();
       final task = Task(
         name: taskName,
-        finalDate: date,
+        finalDate: finalDate,
+        notificationDate: notificationDate,
       );
-      await TaskDatabaseRepository.shared.saveTask(task);
+      final res = await TaskDatabaseRepository.shared.saveTask(task);
+      task.id = res;
+      if(notificationDate != null) {
+        final platformManager = PlatformNotificationChannel();
+        await platformManager.setNotification(task);
+      }
       Navigator.of(context).pop(task);
     }
   }
 }
 
-
-class CustomDialogTile extends StatelessWidget {
-
+class _DateFormField extends StatelessWidget {
+  
   final String title;
   final IconData icon;
-  final VoidCallback onTap;
-
-  CustomDialogTile({this.title, this.icon, this.onTap});
+  final void Function(FormFieldState) onTap;
+  final FormFieldSetter<DateTime> onSaved;
   
+  _DateFormField({this.title, this.onTap, this.icon, this.onSaved});
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: Color(0xffB5C9FD),
-          borderRadius: BorderRadius.circular(16)
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Icon(icon),
-            VerticalDivider(width: 5),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(title,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyText2,
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
+    return FormField<DateTime>(
+      onSaved: onSaved,
+      builder: (FormFieldState state) {
+        return GestureDetector(
+          onTap: () => onTap(state),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+                color: Color(0xffB5C9FD),
+                borderRadius: BorderRadius.circular(16)
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Icon(icon),
+                VerticalDivider(width: 5),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(title,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyText2
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
-  
+
 }

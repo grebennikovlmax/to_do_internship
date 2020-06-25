@@ -2,7 +2,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todointernship/model/category_theme.dart';
 
-class SharedPrefTheme {
+class SharedPrefManager {
 
   final backgroundColor = 'backgroundColor_';
   final primaryColor = 'primaryColor_';
@@ -21,5 +21,16 @@ class SharedPrefTheme {
         backgroundColor: pref.getInt(backgroundColor + stringId),
         primaryColor:  pref.getInt(primaryColor + stringId)
         );
-    }
+  }
+
+  Future<void> saveHiddenFlag(bool flag, int id) async {
+    final pref = await SharedPreferences.getInstance();
+    pref.setBool('hidden_flag_$id', flag);
+  }
+
+  Future<bool> getHiddenFlag(int id) async {
+    final pref = await SharedPreferences.getInstance();
+    final flag =  pref.getBool('hidden_flag_$id') ?? false;
+    return flag;
+  }
 }

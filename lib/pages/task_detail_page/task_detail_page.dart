@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/data/shared_prefs_theme.dart';
 
+import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail.dart';
 
 
 class TaskDetailArguments {
+
   final Task task;
   final Sink taskEventSink;
 
@@ -17,7 +18,6 @@ class TaskInfo extends InheritedWidget {
   final Task task;
   final Sink taskEventSink;
   final ThemeData theme;
-
   static TaskInfo of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TaskInfo>();
 
   TaskInfo({this.task, this.taskEventSink, this.theme, Widget child}) : super(child: child);
@@ -34,10 +34,9 @@ class TaskInfo extends InheritedWidget {
 class TaskDetailPage extends StatelessWidget {
 
   final TaskDetailArguments arguments;
-  final prefTheme = SharedPrefTheme();
+  final prefTheme = SharedPrefManager();
 
   TaskDetailPage(this.arguments);
-
 
   @override
   Widget build(BuildContext context) {

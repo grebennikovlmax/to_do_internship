@@ -1,27 +1,25 @@
-import 'dart:ffi';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
-import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:async';
 
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/pages/task_detail_page/date_state.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
-import 'package:todointernship/widgets/custom_fab.dart';
+import 'package:todointernship/widgets/sliver_app_bar_fab.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
+
 
 
 
 
 class TaskDetail extends StatefulWidget {
-
 
   @override
   State<StatefulWidget> createState() {
@@ -35,13 +33,10 @@ enum _TaskDetailPopupMenuItem {update, delete}
 class _TaskDetailState extends State<TaskDetail> {
 
   final double appBarHeight = 128;
-  DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
-
   ScrollController _scrollController;
   StreamController<FabState> _fabStateStream;
   StreamController<List<TaskStep>> _stepListStreamController;
-
-  ValueNotifier<DateTime> _dateNotifier;
+  StreamController<DateState> _dateStateStreamController;
   ValueNotifier<String> _titleNameNotifier;
 
   @override
@@ -50,10 +45,8 @@ class _TaskDetailState extends State<TaskDetail> {
     _scrollController = ScrollController();
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
-
-    _dateNotifier = ValueNotifier(DateTime.now());
+    _dateStateStreamController = StreamController();
     _titleNameNotifier = ValueNotifier("sd");
-
     _scrollController.addListener(() {
       final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
       _fabStateStream.add(state);
@@ -64,8 +57,8 @@ class _TaskDetailState extends State<TaskDetail> {
   void dispose() {
     _scrollController.dispose();
     _fabStateStream.close();
+    _dateStateStreamController.close();
     _stepListStreamController.close();
-    _dateNotifier.dispose();
     _titleNameNotifier.dispose();
     super.dispose();
   }
@@ -77,20 +70,15 @@ class _TaskDetailState extends State<TaskDetail> {
         CustomScrollView(
           controller: _scrollController,
             slivers: <Widget>[
-              SliverAppBar(
-                backgroundColor: TaskInfo.of(context).theme.primaryColor,
-                pinned: true,
-                expandedHeight: appBarHeight,
-                flexibleSpace: FlexibleSpaceBar(
-                    title: ValueListenableBuilder<String>(
-                      valueListenable: _titleNameNotifier,
-                      builder: (context, value, _) {
-                        return Text(value);
-                      }
-                    )),
-                actions: <Widget>[
-                  _PopupMenu(onSelected: _popupMenuButtonPressed)
-                ],
+              ValueListenableBuilder<String>(
+                valueListenable: _titleNameNotifier,
+                builder: (context, value, _) {
+                  return _TaskDetailSliverAppBar(
+                    title: value,
+                    onSelected: _popupMenuButtonPressed,
+                    height: appBarHeight,
+                  );
+                }
               ),
               SliverList(
                   delegate: SliverChildListDelegate([
@@ -104,12 +92,14 @@ class _TaskDetailState extends State<TaskDetail> {
                         }
                       ),
                     ),
-                    ValueListenableBuilder<DateTime>(
-                      valueListenable: _dateNotifier,
-                      builder: (context, value, _) {
+                    StreamBuilder<DateState>(
+                      stream: _dateStateStreamController.stream,
+                      initialData: _getDateState(),
+                      builder: (context, snapshot) {
                         return _DateNotificationCard(
                           onPickDate: _pickFinalDate,
-                          finalDate: dateFormatter.format(value),
+                          finalDate: snapshot.data.finalDate,
+                          notificationDate: snapshot.data.notificationDate,
                           onNotification: _setNotification,
                         );
                       },
@@ -121,7 +111,7 @@ class _TaskDetailState extends State<TaskDetail> {
           initialData: FabState(0, false),
           stream: _fabStateStream.stream,
           builder: (context, snapshot) {
-            return CustomFloatingButton(snapshot.data.isCompleted, snapshot.data.offset, appBarHeight, _fabPressed );
+            return SliverAppBarFab(snapshot.data.isCompleted, snapshot.data.offset, appBarHeight, _fabPressed );
           }
         )]
       );
@@ -135,18 +125,31 @@ class _TaskDetailState extends State<TaskDetail> {
   }
 
   Future<void> _updateTaskName() async {
-    var task = await showDialog<Task>(
+    final task = TaskInfo.of(context).task;
+    final updatedTask = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTaskDialog();
+          return NewTaskDialog(task: task);
         }
     );
-    if(task != null) {
-//      widget.task.name = task.name;
-//      widget.task.finalDate = task.finalDate;
-//      _dateNotifier.value = task.finalDate;
-//      _titleNameNotifier.value = task.name;
+    if(updatedTask != null) {
+      task.name = updatedTask.name;
+      task.finalDate = updatedTask.finalDate;
+      task.notificationDate = updatedTask.notificationDate;
+      await TaskDatabaseRepository.shared.updateTask(task);
+      _titleNameNotifier.value = task.name;
+      _dateStateStreamController.add(_getDateState());
+
     }
+  }
+
+  DateState _getDateState() {
+    DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
+    DateFormat dateTimeFormatter = DateFormat("dd.MM.yyyy H:mm");
+    final task = TaskInfo.of(context).task;
+    final finalDateString = task.finalDate == null ? null : dateFormatter.format(task.finalDate);
+    final notificationDateString = task.notificationDate == null ? null : dateTimeFormatter.format(task.notificationDate);
+    return DateState(finalDate: finalDateString, notificationDate: notificationDateString);
   }
 
   Future<void> _pickFinalDate() async {
@@ -161,7 +164,7 @@ class _TaskDetailState extends State<TaskDetail> {
       Task task = TaskInfo.of(context).task;
       task.finalDate = date;
       await TaskDatabaseRepository.shared.updateTask(task);
-      _dateNotifier.value = date;
+      _dateStateStreamController.add(_getDateState());
     }
   }
 
@@ -179,6 +182,7 @@ class _TaskDetailState extends State<TaskDetail> {
       task.notificationDate = dateTime;
       await TaskDatabaseRepository.shared.updateTask(task);
       var res = await platform.setNotification(task);
+      _dateStateStreamController.add(_getDateState());
     }
   }
 
@@ -194,14 +198,54 @@ class _TaskDetailState extends State<TaskDetail> {
       }
     }
   }
+
+class _TaskDetailSliverAppBar extends StatelessWidget {
+
+  final double height;
+  final String title;
+  final PopupMenuItemSelected<_TaskDetailPopupMenuItem> onSelected;
+
+  _TaskDetailSliverAppBar({this.height, this.title, this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      backgroundColor: TaskInfo.of(context).theme.primaryColor,
+      pinned: true,
+      expandedHeight: height,
+      flexibleSpace: FlexibleSpaceBar(
+          title: Text(title)
+      ),
+      actions: <Widget>[
+        PopupMenuButton<_TaskDetailPopupMenuItem>(
+        onSelected: onSelected,
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem<_TaskDetailPopupMenuItem>(
+                value: _TaskDetailPopupMenuItem.delete,
+                child: Text('Удалить'),
+              ),
+              PopupMenuItem<_TaskDetailPopupMenuItem>(
+                value: _TaskDetailPopupMenuItem.update,
+                child: Text('Редактировать'),
+              )
+            ];
+          },
+        )
+      ],
+    );
+  }
+}
+
   
 class _DateNotificationCard extends StatelessWidget {
   
   final VoidCallback onPickDate;
   final String finalDate;
+  final String notificationDate;
   final VoidCallback onNotification;
   
-  _DateNotificationCard({this.onPickDate, this.finalDate, this.onNotification});
+  _DateNotificationCard({this.onPickDate, this.finalDate, this.onNotification, this.notificationDate});
   
   @override
   Widget build(BuildContext context) {
@@ -213,7 +257,7 @@ class _DateNotificationCard extends StatelessWidget {
           ListTile(
             onTap: onNotification,
             leading: Icon(Icons.notifications_none),
-            title: Text("Напомнить")
+            title: notificationDate == null ? Text('Напомнить') : Text(notificationDate)
           ),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 40),
@@ -224,38 +268,11 @@ class _DateNotificationCard extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.insert_invitation),
             onTap: onPickDate,
-            title: finalDate == null ? Text("Добавить дату выполнения")
+            title: finalDate == null ? Text('Добавить дату выполнения')
                   : Text(finalDate),
           )
         ],
       ),
-    );
-  }
-}
-  
-  
-class _PopupMenu extends StatelessWidget {
-  
-  final PopupMenuItemSelected<_TaskDetailPopupMenuItem> onSelected;
-
-  _PopupMenu({this.onSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<_TaskDetailPopupMenuItem>(
-      onSelected: onSelected,
-      itemBuilder: (BuildContext context) {
-        return [
-          PopupMenuItem<_TaskDetailPopupMenuItem>(
-            value: _TaskDetailPopupMenuItem.delete,
-            child: Text("Удалить"),
-          ),
-          PopupMenuItem<_TaskDetailPopupMenuItem>(
-            value: _TaskDetailPopupMenuItem.update,
-            child: Text("Редактировать"),
-          )
-        ];
-      },
     );
   }
 }

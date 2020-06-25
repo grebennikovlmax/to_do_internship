@@ -1,13 +1,25 @@
 import 'package:todointernship/model/task.dart';
 
-class TaskListState {
-  final completedIsHidden;
-  final List<Task> _taskList;
+abstract class TaskListState {
 
-  List<Task> get taskList {
-    return completedIsHidden ? _taskList.where((task) => !task.isCompleted).toList() : _taskList;
-  }
+  final List<Task> taskList;
 
-  TaskListState(this.completedIsHidden, this._taskList);
+  TaskListState(this.taskList);
 
 }
+
+
+class FullTaskListState implements TaskListState {
+
+  final List<Task> taskList;
+
+  FullTaskListState(this.taskList);
+
+}
+
+class EmptyListState implements TaskListState {
+
+  List<Task> get taskList => [];
+
+}
+
