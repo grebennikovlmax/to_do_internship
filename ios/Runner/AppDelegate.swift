@@ -10,8 +10,10 @@ import Flutter
   
   override func application( _ application: UIApplication,
                              didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? ) -> Bool {
+    
     notifications.notificationCenter.delegate = notifications
     notifications.notificationsRequest()
+    
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
     let notificationsChannel = FlutterMethodChannel(name: "notifications", binaryMessenger: controller.binaryMessenger)
     

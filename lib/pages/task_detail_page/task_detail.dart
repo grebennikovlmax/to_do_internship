@@ -14,7 +14,9 @@ import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/widgets/custom_fab.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
-import 'package:todointernship/widgets/new_task.dart';
+import 'package:todointernship/widgets/new_task_dialog.dart';
+import 'package:todointernship/platform_channel/notifiaction_channel.dart';
+
 
 
 
@@ -136,7 +138,7 @@ class _TaskDetailState extends State<TaskDetail> {
     var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTask();
+          return NewTaskDialog();
         }
     );
     if(task != null) {
@@ -172,7 +174,11 @@ class _TaskDetailState extends State<TaskDetail> {
     );
 
     if(dateTime != null) {
+      final platform = PlatformNotificationChannel();
       Task task = TaskInfo.of(context).task;
+      task.notificationDate = dateTime;
+      await TaskDatabaseRepository.shared.updateTask(task);
+      var res = await platform.setNotification(task);
     }
   }
 

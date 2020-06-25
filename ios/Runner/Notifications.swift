@@ -22,7 +22,7 @@ class Notifications: NSObject, UNUserNotificationCenterDelegate {
     }
   }
   
-  func scheduleNotification(text: String, timeSince: Int, id: Int) -> Int {
+  func scheduleNotification(text: String, timeSince: Double, id: Int) -> Int {
     
     let id = String(id)
     
@@ -34,7 +34,7 @@ class Notifications: NSObject, UNUserNotificationCenterDelegate {
     content.sound = UNNotificationSound.default
     content.badge = 1
   
-    let interval = Double(timeSince) - Date(timeIntervalSinceNow: 0).timeIntervalSince1970
+    let interval = timeSince / 1000 - Date(timeIntervalSinceNow: 0).timeIntervalSince1970
     
     guard interval > 0 else { return 0 }
     

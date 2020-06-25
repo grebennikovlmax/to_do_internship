@@ -9,7 +9,7 @@ import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_state.dart';
-import 'package:todointernship/widgets/new_task.dart';
+import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/widgets/popup_menu.dart';
 import 'package:todointernship/widgets/theme_picker.dart';
 import 'package:todointernship/pages/task_list_page/task_list_state.dart';
@@ -138,8 +138,8 @@ class _TaskListPageState extends State<TaskListPage> {
     _completedIsHidden = pref.getBool("is_hidden") ?? false;
     final categoryTheme = await widget.prefTheme.loadTheme(0);
     final theme = ThemeData(
-      backgroundColor: Color(categoryTheme.backgroundColor),
-      primaryColor: Color(categoryTheme.primaryColor)
+      backgroundColor: Color(categoryTheme.backgroundColor ?? 0),
+      primaryColor: Color(categoryTheme.primaryColor ?? 0)
     );
     return TaskListPageState(completedIsHidden: _completedIsHidden, themeData: theme);
 
@@ -157,7 +157,7 @@ class _TaskListPageState extends State<TaskListPage> {
     var task = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTask();
+          return NewTaskDialog();
         }
     );
     if(task != null) {

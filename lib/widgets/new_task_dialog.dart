@@ -8,22 +8,22 @@ import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/model/task.dart';
 
 
-class NewTask extends StatefulWidget {
+class NewTaskDialog extends StatefulWidget {
 
   final Task task;
   final DateFormat dateFormatter = DateFormat("dd.MM.yyyy");
 
 
-  NewTask([this.task]);
+  NewTaskDialog([this.task]);
 
   @override
   State<StatefulWidget> createState() {
-    return _NewTaskState();
+    return _NewTaskDialogState();
   }
 
 }
 
-class _NewTaskState extends State<NewTask> {
+class _NewTaskDialogState extends State<NewTaskDialog> {
 
   final _formKey = GlobalKey<FormState>();
   DateTime date;

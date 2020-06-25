@@ -99,7 +99,7 @@ class TaskDatabaseRepository implements TaskRepository {
       'id': task.id,
     };
     if(task.notificationDate != null) {
-      taskMap['notification_date'] = task.notificationDate;
+      taskMap['notification_date'] = task.notificationDate.millisecondsSinceEpoch;
     }
     return taskMap;
   }
