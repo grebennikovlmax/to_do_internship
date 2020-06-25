@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:todointernship/model/category.dart';
+import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/task_event.dart';
 import 'package:todointernship/task_list.dart';
@@ -13,11 +14,20 @@ import 'package:todointernship/theme_picker.dart';
 import 'package:todointernship/model/task_list_state.dart';
 import 'package:todointernship/data/task_repository.dart';
 
+class TaskListArguments {
+
+  List<Task> taskList;
+  CategoryTheme theme;
+  String title;
+
+  TaskListArguments({this.taskList, this.theme, this.title});
+}
+
 class TaskListPage extends StatefulWidget {
 
-  final Category category;
+  final TaskListArguments arguments;
 
-  TaskListPage(this.category);
+  TaskListPage({this.arguments});
 
 
   @override
@@ -29,16 +39,16 @@ class TaskListPage extends StatefulWidget {
 
 class CategoryInfo extends InheritedWidget {
 
-  final Category category;
+  final TaskListArguments arguments;
   final Sink taskEventSink;
 
-  CategoryInfo({this.category, this.taskEventSink, Widget child}) : super(child: child);
+  CategoryInfo({this.arguments, this.taskEventSink, Widget child}) : super(child: child);
 
   static CategoryInfo of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<CategoryInfo>();
 
   @override
   bool updateShouldNotify(CategoryInfo oldWidget) {
-    return oldWidget.category != category;
+    return oldWidget.arguments != arguments;
   }
 
 }
@@ -86,7 +96,7 @@ class _TaskListPageState extends State<TaskListPage> {
               return Scaffold(
                 backgroundColor: future.data.backgroundColor,
                 appBar: AppBar(
-                  title: Text(widget.category.name),
+                  title: Text(widget.arguments.title),
                   backgroundColor: future.data.primaryColor,
                   actions: <Widget>[
                     ValueListenableBuilder<bool>(
@@ -107,7 +117,7 @@ class _TaskListPageState extends State<TaskListPage> {
                   ],
                 ),
                 body: CategoryInfo(
-                  category: widget.category,
+                  arguments: widget.arguments,
                   taskEventSink: _taskEventStreamController.sink,
                   child: FutureBuilder(
                     future: MockTaskRepository.shared.getTaskList(),
@@ -140,20 +150,20 @@ class _TaskListPageState extends State<TaskListPage> {
         }
     );
     if(task != null) {
-      widget.category.tasks.add(task);
-      _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value ,widget.category.tasks));
+      widget.arguments.taskList.add(task);
+      _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value ,widget.arguments.taskList));
     }
   }
 
   void _deleteCompletedTask() {
-    final incompletedTask = widget.category.tasks.where((task) => !task.isCompleted).toList();
-    widget.category.tasks = incompletedTask;
+    final incompletedTask = widget.arguments.taskList.where((task) => !task.isCompleted).toList();
+    widget.arguments.taskList = incompletedTask;
     _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value ,incompletedTask));
   }
 
   void _hideCompleted() {
     _hideCompletedNotifier.value = !_hideCompletedNotifier.value;
-    final state = TaskListState(_hideCompletedNotifier.value, widget.category.tasks);
+    final state = TaskListState(_hideCompletedNotifier.value, widget.arguments.taskList);
     _taskListStateStreamController.add(state);
   }
 
@@ -166,18 +176,18 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   void _onCompletedTask(Task task) {
-    final index = widget.category.tasks.indexWhere((element) => element.name == task.name);
-    widget.category.tasks[index].isCompleted = !widget.category.tasks[index].isCompleted;
-    _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value, widget.category.tasks));
+    final index = widget.arguments.taskList.indexWhere((element) => element.name == task.name);
+    widget.arguments.taskList[index].isCompleted = !widget.arguments.taskList[index].isCompleted;
+    _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value, widget.arguments.taskList));
   }
 
   void _onRemoveTask(Task task) {
-    widget.category.tasks.remove(task);
-    _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value, widget.category.tasks));
+    widget.arguments.taskList.remove(task);
+    _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value, widget.arguments.taskList));
   }
 
   void _onUpdateTask() {
-    _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value, widget.category.tasks));
+    _taskListStateStreamController.add(TaskListState(_hideCompletedNotifier.value, widget.arguments.taskList));
   }
 
   Future<ThemeData> _getTheme() async {

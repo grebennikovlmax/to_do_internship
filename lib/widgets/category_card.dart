@@ -4,18 +4,24 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 import 'package:todointernship/model/category.dart';
+import 'package:todointernship/pages/task_list_page.dart';
 
 class CategoryCard extends StatelessWidget {
 
   final Category category;
   final void Function(Category) onUpdate;
 
-  CategoryCard(this.category, this.onUpdate);
+  CategoryCard({this.category, this.onUpdate});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category).then((value) => onUpdate(category)),
+      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: TaskListArguments(
+        title: category.name,
+        taskList: category.tasks,
+        theme: category.theme
+      ))
+          .then((value) => onUpdate(category)),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 5,

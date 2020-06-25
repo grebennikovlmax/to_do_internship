@@ -42,7 +42,7 @@ class TaskItem extends StatelessWidget {
           child: ListTile(
             onTap: () => Navigator.of(context).pushNamed('/task_detail',arguments:
             TaskDetailArguments(
-                CategoryInfo.of(context).category.theme,
+                CategoryInfo.of(context).arguments.theme,
                 task,
                 CategoryInfo.of(context).taskEventSink)
             ).then((value) => CategoryInfo.of(context).taskEventSink.add(OnUpdateTask(task))),

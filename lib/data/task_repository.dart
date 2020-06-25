@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:todointernship/model/task.dart';
 
-import 'package:todointernship/database/task_db.dart';
 
 abstract class TaskRepository {
   Future<List<Task>> getTaskList();

@@ -86,7 +86,10 @@ class _HomePageState extends State<HomePage> {
                         crossAxisCount: 2,
                       ),
                       itemBuilder: (BuildContext context, index) {
-                        return CategoryCard(snapshot.data[index], _updateCategoryList);
+                        return CategoryCard(
+                            category: snapshot.data[index],
+                            onUpdate: _updateCategoryList
+                        );
                       }
                   );
                 }

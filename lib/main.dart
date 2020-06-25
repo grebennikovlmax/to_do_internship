@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         initialRoute: "/",
         routes: {
-          "/category_detail" : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
+          "/category_detail" : (context) => TaskListPage(arguments: ModalRoute.of(context).settings.arguments),
           "/task_detail" : (context) => TaskDetailPage(arguments: ModalRoute.of(context).settings.arguments)
         },
         theme: ThemeData(
