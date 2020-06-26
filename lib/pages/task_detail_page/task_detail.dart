@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:intl/intl.dart';
 import 'dart:async';
 
+import 'package:intl/intl.dart';
+
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/date_state.dart';
 import 'package:todointernship/pages/task_detail_page/photo_list.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
@@ -34,6 +36,7 @@ class _TaskDetailState extends State<TaskDetail> {
   StreamController<FabState> _fabStateStream;
   StreamController<List<TaskStep>> _stepListStreamController;
   StreamController<DateState> _dateStateStreamController;
+  StreamController<Future<List<TaskImage>>> _imageStreamController;
   ValueNotifier<String> _titleNameNotifier;
 
   @override
@@ -43,6 +46,7 @@ class _TaskDetailState extends State<TaskDetail> {
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
     _dateStateStreamController = StreamController();
+    _imageStreamController = StreamController();
     _titleNameNotifier = ValueNotifier("sd");
     _scrollController.addListener(() {
       final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
@@ -57,6 +61,7 @@ class _TaskDetailState extends State<TaskDetail> {
     _dateStateStreamController.close();
     _stepListStreamController.close();
     _titleNameNotifier.dispose();
+    _imageStreamController.close();
     super.dispose();
   }
 
@@ -102,7 +107,17 @@ class _TaskDetailState extends State<TaskDetail> {
                       },
                     ),
                     Divider(color: Colors.transparent, height: 30),
-                    PhotoList()
+                    StreamBuilder<Future<List<TaskImage>>>(
+                      stream: _imageStreamController.stream,
+                      initialData: _loadImages(),
+                      builder: (context, snapshot) {
+                        return PhotoList(
+                          onDelete: _deleteImage ,
+                          imageList: snapshot.data,
+                          onPickPhoto: _onPickPhoto,
+                        );
+                      }
+                    )
                   ])
               ),
             ]),
@@ -121,6 +136,26 @@ class _TaskDetailState extends State<TaskDetail> {
     TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
     final state = FabState(_scrollController.offset, !task.isCompleted);
     _fabStateStream.add(state);
+  }
+
+  Future<void> _onPickPhoto() async {
+    final url = await Navigator.pushNamed(context, '/photo_picker');
+    if(url != null) {
+      final int taskId = TaskInfo.of(context).task.id;
+      await TaskDatabaseRepository.shared.saveImage(url: url, taskId: taskId);
+      _imageStreamController.add(_loadImages());
+    }
+  }
+
+  Future<List<TaskImage>> _loadImages() async {
+    final task = TaskInfo.of(context).task;
+    final imageList = await TaskDatabaseRepository.shared.fetchImagesForTask(task.id);
+    return imageList;
+  }
+
+  Future<void> _deleteImage(String path) async {
+    final res = await TaskDatabaseRepository.shared.removeImage(path);
+    _imageStreamController.add(_loadImages());
   }
 
   Future<void> _updateTaskName() async {

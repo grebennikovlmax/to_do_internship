@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,9 @@ class FlickrApiService {
   final String _getRecentMethod = '?method=flickr.photos.getRecent&extras=url_m';
   final String _photoSearchMethod = '?method=flickr.photos.search&extras=url_m';
 
-  Future<List<String>> getRecentPhotos() async {
+  static final shared = FlickrApiService();
+
+  Future<List<String>> getRecentImages() async {
     final url = _url + _getRecentMethod + _apiKey + _jsonFormat;
     final response = await http.get(url);
     return compute(_getPhotosURLfromJson, response.body);
@@ -21,6 +24,11 @@ class FlickrApiService {
     final url = _url + _photoSearchMethod + _apiKey + '&text=$searchText' + _jsonFormat;
     final response = await http.get(url);
     return compute(_getPhotosURLfromJson, response.body);
+  }
+
+  Future<Uint8List> loadImage({String url}) async {
+    final response = await http.get(url);
+    return response.bodyBytes;
   }
 
 }

@@ -36,6 +36,12 @@ class TaskDatabase {
               "final_date INTEGER"
               ")"
           );
+          await db.execute("CREATE TABLE images ("
+              "path TEXT PRIMARY KEY,"
+              "task_id INTEGER,"
+              "FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE"
+              ")"
+          );
         },
       version: 1
     );
@@ -123,6 +129,30 @@ class TaskDatabase {
         whereArgs: [id]
     );
     return stepMap;
+  }
+
+  Future<int> insertImage(Map<String, dynamic> image) async {
+    final db = await database;
+    final res = await db.insert('images', image);
+    return res;
+  }
+
+  Future<List<Map<String, dynamic>>> queryImages(int taskId) async {
+    final db = await database;
+    final imagesMap = await db.query('images',
+        where: 'task_id = ?',
+        whereArgs: [taskId]
+    );
+    return imagesMap;
+  }
+
+  Future<int> deleteImage(String path) async {
+    final db = await database;
+    final res = await db.delete('images',
+        where: 'path = ?',
+        whereArgs: [path]
+    );
+    return res;
   }
 
 }
