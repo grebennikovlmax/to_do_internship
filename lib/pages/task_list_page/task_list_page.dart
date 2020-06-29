@@ -42,18 +42,17 @@ class TaskListInfo extends InheritedWidget {
 
 class _TaskListPageState extends State<TaskListPage> {
 
+  final SharedPrefManager _prefManager = SharedPrefManager();
+  final TaskRepository _taskRepository = TaskDatabaseRepository.shared;
   StreamController<TaskListState> _taskListStateStreamController;
   StreamController<TaskEvent> _taskEventStreamController;
   StreamController<ThemeData> _themeStreamController;
   bool _completedIsHidden;
-  SharedPrefManager _prefManager;
-  TaskRepository _taskRepository;
+
 
   @override
   void initState() {
     super.initState();
-    final sharePref = SharedPrefManager();
-    _taskRepository = TaskDatabaseRepository.shared;
     _taskListStateStreamController = StreamController();
     _taskEventStreamController = StreamController();
     _themeStreamController = StreamController();

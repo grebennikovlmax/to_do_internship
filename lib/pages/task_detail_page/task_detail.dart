@@ -28,7 +28,7 @@ enum _TaskDetailPopupMenuItem {update, delete}
 
 class _TaskDetailState extends State<TaskDetail> {
 
-  TaskRepository _taskRepository;
+  final TaskRepository _taskRepository = TaskDatabaseRepository.shared;
   final double appBarHeight = 128;
   ScrollController _scrollController;
   StreamController<FabState> _fabStateStream;
@@ -39,7 +39,6 @@ class _TaskDetailState extends State<TaskDetail> {
   @override
   void initState() {
     super.initState();
-    _taskRepository = TaskDatabaseRepository.shared;
     _scrollController = ScrollController();
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
