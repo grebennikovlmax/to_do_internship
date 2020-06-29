@@ -20,6 +20,7 @@ class ImagePickerBloc {
 
   Sink<ImagePageEvent> get imagePageEventSink => _pageEventStreamController.sink;
 
+  final SharedPrefManager _prefManager = SharedPrefManager();
   List<String> _imageUrl = [];
   int _page = 1;
   String searchText = '';
@@ -29,13 +30,6 @@ class ImagePickerBloc {
     _getTheme().then((value) => _pageThemeStreamController.add(value));
     _refreshImageList();
     _bindEventListener();
-  }
-
-  void dispose() {
-    _pageThemeStreamController.close();
-    _searchStateStreamController.close();
-    _pageEventStreamController.close();
-    _pageStateStreamController.close();
   }
 
   void _bindEventListener() {
@@ -99,14 +93,12 @@ class ImagePickerBloc {
   }
 
   Future<void> _saveSearchRequest(String text) async {
-    final pref = SharedPrefManager();
-    pref.saveSearchRequest(text);
+    _prefManager.saveSearchRequest(text);
   }
 
   Future<void> _openSearch() async {
     isSearching = true;
-    final pref = SharedPrefManager();
-    final text = await pref.loadSearchRequest();
+    final text = await _prefManager.loadSearchRequest();
     _searchStateStreamController.add(OpenSearchState(text));
   }
 
@@ -115,7 +107,12 @@ class ImagePickerBloc {
     _searchStateStreamController.add(ClosedSearchState());
   }
 
-
+  void dispose() {
+    _pageThemeStreamController.close();
+    _searchStateStreamController.close();
+    _pageEventStreamController.close();
+    _pageStateStreamController.close();
+  }
 
 }
 

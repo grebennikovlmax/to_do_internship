@@ -12,7 +12,7 @@ abstract class TaskRepository {
   Future<int> saveStep(TaskStep step);
   Future<int> updateStep(TaskStep step);
   Future<int> removeStep(int id);
-  Future<int> removeImage(String path);
+  Future<void> removeImage(String path);
   Future<List<TaskImage>> fetchImagesForTask(int taskId);
   Future<int> saveImage({String url, int taskId});
 }
@@ -85,26 +85,22 @@ class TaskDatabaseRepository implements TaskRepository {
   @override
   Future<List<TaskImage>> fetchImagesForTask(int taskId) async {
     final data = await db.queryImages(taskId);
-    return data.map((e) => _mapToImage(e)).toList();
+    return data.map((e) => TaskImage.fromMap(e)).toList();
   }
 
   @override
-  Future<int> removeImage(String path) async {
-    final res = await db.deleteImage(path);
-    ImageManager.shared.removeImage(path);
-    return res;
+  Future<void> removeImage(String path) async {
+    await db.deleteImage(path);
+    await ImageManager.shared.removeImage(path);
   }
 
   @override
   Future<int> saveImage({String url, int taskId}) async {
     final path = await ImageManager.shared.saveImage(url);
     final image = TaskImage(taskID: taskId, path: path);
-    final map = _imageToMap(image);
-    final res = await db.insertImage(map);
+    final res = await db.insertImage(image.toMap());
     return res;
   }
-
-
 
   deleteDB() {
     db.delete();
@@ -157,20 +153,5 @@ class TaskDatabaseRepository implements TaskRepository {
     }
     return stepMap;
   }
-
-  Map<String, dynamic> _imageToMap(TaskImage image) {
-    return {
-      'path': image.path,
-      'task_id': image.taskID
-    };
-  }
-
-  TaskImage _mapToImage(Map<String, dynamic> map) {
-    return TaskImage(
-      path: map['path'],
-      taskID: map['task_id']
-    );
-  }
-
 }
 

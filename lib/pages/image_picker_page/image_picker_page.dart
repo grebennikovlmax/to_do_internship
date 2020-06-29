@@ -170,12 +170,6 @@ class _ImagesGridViewState extends State<_ImagesGridView> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
@@ -220,6 +214,12 @@ class _ImagesGridViewState extends State<_ImagesGridView> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _onRefresh() async {
