@@ -17,7 +17,6 @@ class ImageManager {
     final name = _clipUrl(url);
     final file = await _getFileFor(name);
     file.writeAsBytes(data);
-    print(file.path);
     return name;
   }
 

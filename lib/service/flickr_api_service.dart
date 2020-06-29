@@ -14,14 +14,14 @@ class FlickrApiService {
 
   static final shared = FlickrApiService();
 
-  Future<List<String>> getRecentImages() async {
-    final url = _url + _getRecentMethod + _apiKey + _jsonFormat;
+  Future<List<String>> getRecentImages(int page) async {
+    final url = _url + _getRecentMethod + _apiKey + _jsonFormat + '&per_page=10&page=$page';
     final response = await http.get(url);
     return compute(_getPhotosURLfromJson, response.body);
   }
 
-  Future<List<String>> searchPhotos({String searchText}) async {
-    final url = _url + _photoSearchMethod + _apiKey + '&text=$searchText' + _jsonFormat;
+  Future<List<String>> searchPhotos({String searchText, int page}) async {
+    final url = _url + _photoSearchMethod + _apiKey + '&text=$searchText&per_page=10&page=$page' + _jsonFormat;
     final response = await http.get(url);
     return compute(_getPhotosURLfromJson, response.body);
   }
