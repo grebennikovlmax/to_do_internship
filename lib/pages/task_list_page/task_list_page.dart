@@ -46,27 +46,22 @@ class _TaskListPageState extends State<TaskListPage> {
   StreamController<TaskEvent> _taskEventStreamController;
   StreamController<ThemeData> _themeStreamController;
   bool _completedIsHidden;
+  SharedPrefManager _prefManager;
+  TaskRepository _taskRepository;
 
   @override
   void initState() {
     super.initState();
+    final sharePref = SharedPrefManager();
+    _taskRepository = TaskDatabaseRepository.shared;
     _taskListStateStreamController = StreamController();
     _taskEventStreamController = StreamController();
     _themeStreamController = StreamController();
-
     _taskEventStreamController.stream.listen((event) {
       if(event is OnRemoveTask) _onRemoveTask(event.task);
       if(event is OnCompletedTask) _onCompletedTask(event.task);
       if(event is OnUpdateTask) _onUpdateTask();
     });
-  }
-
-  @override
-  void dispose() {
-    _taskListStateStreamController.close();
-    _taskEventStreamController.close();
-    _themeStreamController.close();
-    super.dispose();
   }
 
   @override
@@ -130,10 +125,17 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 
+  @override
+  void dispose() {
+    _taskListStateStreamController.close();
+    _taskEventStreamController.close();
+    _themeStreamController.close();
+    super.dispose();
+  }
+
   Future<ThemeData> _getThemeData() async{
-    final prefManger = SharedPrefManager();
-    final categoryTheme = await prefManger.loadTheme(0);
-    _completedIsHidden = await prefManger.getHiddenFlag(0);
+    final categoryTheme = await _prefManager.loadTheme(0);
+    _completedIsHidden = await _prefManager.getHiddenFlag(0);
     if(categoryTheme.backgroundColor == null || categoryTheme.primaryColor == null) {
       return Theme.of(context);
     }
@@ -143,14 +145,6 @@ class _TaskListPageState extends State<TaskListPage> {
     );
     return theme;
 
-  }
-  
-  Future<TaskListState> _setTaskListState() async {
-    final taskList = await TaskDatabaseRepository.shared.getTaskList(_completedIsHidden);
-    if(taskList.isEmpty) {
-      return EmptyListState();
-    }
-    return FullTaskListState(taskList);
   }
 
   void _newTask() async {
@@ -166,14 +160,13 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   void _deleteCompletedTask() async {
-    TaskDatabaseRepository.shared.removeCompletedTask();
+    _taskRepository.removeCompletedTask();
     _taskListStateStreamController.add(await _setTaskListState());
   }
 
   void _hideCompleted() async{
-    final prefManger = SharedPrefManager();
     _completedIsHidden = !_completedIsHidden;
-    await prefManger.saveHiddenFlag(_completedIsHidden, 0);
+    await _prefManager.saveHiddenFlag(_completedIsHidden, 0);
     _taskListStateStreamController.add(await _setTaskListState());
     setState(() {
 
@@ -190,16 +183,24 @@ class _TaskListPageState extends State<TaskListPage> {
 
   void _onCompletedTask(Task task) async {
     task.isCompleted = !task.isCompleted;
-    await TaskDatabaseRepository.shared.updateTask(task);
+    await _taskRepository.updateTask(task);
     _taskListStateStreamController.add(await _setTaskListState());
   }
 
   void _onRemoveTask(Task task) async{
-    TaskDatabaseRepository.shared.removeTask(task.id);
+    _taskRepository.removeTask(task.id);
     _taskListStateStreamController.add(await _setTaskListState());
   }
 
   void _onUpdateTask() async {
     _taskListStateStreamController.add(await _setTaskListState());
+  }
+
+  Future<TaskListState> _setTaskListState() async {
+    final taskList = await _taskRepository.getTaskList(_completedIsHidden);
+    if(taskList.isEmpty) {
+      return EmptyListState();
+    }
+    return FullTaskListState(taskList);
   }
 }

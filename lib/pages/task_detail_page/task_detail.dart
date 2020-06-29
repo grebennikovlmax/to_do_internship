@@ -15,10 +15,6 @@ import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 
-
-
-
-
 class TaskDetail extends StatefulWidget {
 
   @override
@@ -32,6 +28,7 @@ enum _TaskDetailPopupMenuItem {update, delete}
 
 class _TaskDetailState extends State<TaskDetail> {
 
+  TaskRepository _taskRepository;
   final double appBarHeight = 128;
   ScrollController _scrollController;
   StreamController<FabState> _fabStateStream;
@@ -42,6 +39,7 @@ class _TaskDetailState extends State<TaskDetail> {
   @override
   void initState() {
     super.initState();
+    _taskRepository = TaskDatabaseRepository.shared;
     _scrollController = ScrollController();
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
@@ -51,16 +49,6 @@ class _TaskDetailState extends State<TaskDetail> {
       final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
       _fabStateStream.add(state);
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _fabStateStream.close();
-    _dateStateStreamController.close();
-    _stepListStreamController.close();
-    _titleNameNotifier.dispose();
-    super.dispose();
   }
 
   @override
@@ -117,6 +105,16 @@ class _TaskDetailState extends State<TaskDetail> {
       );
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _fabStateStream.close();
+    _dateStateStreamController.close();
+    _stepListStreamController.close();
+    _titleNameNotifier.dispose();
+    super.dispose();
+  }
+
   void _fabPressed() {
     final task = TaskInfo.of(context).task;
     TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
@@ -136,7 +134,7 @@ class _TaskDetailState extends State<TaskDetail> {
       task.name = updatedTask.name;
       task.finalDate = updatedTask.finalDate;
       task.notificationDate = updatedTask.notificationDate;
-      await TaskDatabaseRepository.shared.updateTask(task);
+      await _taskRepository.updateTask(task);
       _titleNameNotifier.value = task.name;
       _dateStateStreamController.add(_getDateState());
 
@@ -163,7 +161,7 @@ class _TaskDetailState extends State<TaskDetail> {
     if(date != null) {
       Task task = TaskInfo.of(context).task;
       task.finalDate = date;
-      await TaskDatabaseRepository.shared.updateTask(task);
+      await _taskRepository.updateTask(task);
       _dateStateStreamController.add(_getDateState());
     }
   }
@@ -180,7 +178,7 @@ class _TaskDetailState extends State<TaskDetail> {
       final platform = PlatformNotificationChannel();
       Task task = TaskInfo.of(context).task;
       task.notificationDate = dateTime;
-      await TaskDatabaseRepository.shared.updateTask(task);
+      await _taskRepository.updateTask(task);
       var res = await platform.setNotification(task);
       _dateStateStreamController.add(_getDateState());
     }
@@ -189,7 +187,7 @@ class _TaskDetailState extends State<TaskDetail> {
   _popupMenuButtonPressed(_TaskDetailPopupMenuItem item) {
       switch (item) {
         case _TaskDetailPopupMenuItem.delete:
-          TaskDatabaseRepository.shared.removeTask(TaskInfo.of(context).task.id);
+          _taskRepository.removeTask(TaskInfo.of(context).task.id);
           Navigator.of(context).pop();
           break;
         case _TaskDetailPopupMenuItem.update:

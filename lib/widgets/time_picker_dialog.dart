@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-enum _TimeMenu {today, tomorrow, nextWeek, choose}
+import 'package:todointernship/extension/date_time_extension.dart';
 
 class TimePickerDialog extends StatelessWidget {
 
@@ -15,43 +14,25 @@ class TimePickerDialog extends StatelessWidget {
       children: <Widget>[
         DateMenu(
           title: withTime ? 'Сегодня (18:00)': 'Сегодня',
-          onTap: () => _onPickedDate(context, _TimeMenu.today),
+          onTap: () => Navigator.of(context).pop(PickDate.today()),
         ),
         _DialogDivider(),
         DateMenu(
           title: withTime ? 'Завтра (9:00)' : 'Завтра',
-          onTap: () => _onPickedDate(context, _TimeMenu.tomorrow),
+          onTap: () => Navigator.of(context).pop(PickDate.tomorrow()),
         ),
         _DialogDivider(),
         DateMenu(
           title: withTime ? 'На следующей неделе (9:00)' : 'На следующей неделе',
-          onTap: () => _onPickedDate(context, _TimeMenu.nextWeek),
+          onTap: () => Navigator.of(context).pop(PickDate.nextWeek()),
         ),
         _DialogDivider(),
         DateMenu(
           title: withTime ? 'Выбрать дату и время' : 'Выбрать дату' ,
-          onTap: () => _onPickedDate(context, _TimeMenu.choose)
+          onTap: () => _choseDate(context)
         )
       ],
     );
-  }
-
-  void _onPickedDate(BuildContext context, _TimeMenu option) {
-    final dateData = DateTimeData(withTime);
-    switch (option) {
-      case _TimeMenu.today:
-        Navigator.of(context).pop(dateData.today());
-        break;
-      case _TimeMenu.tomorrow:
-        Navigator.of(context).pop(dateData.tomorrow());
-        break;
-      case _TimeMenu.nextWeek:
-        Navigator.of(context).pop(dateData.nextWeek());
-        break;
-      case _TimeMenu.choose:
-        _choseDate(context);
-        break;
-    }
   }
 
   void _choseDate(BuildContext context) async {
@@ -75,32 +56,6 @@ class TimePickerDialog extends StatelessWidget {
 
 }
 
-class DateTimeData {
-
-  final bool withTime;
-
-  DateTimeData(this.withTime);
-
-  DateTime today() {
-    final currentDate = DateTime.now();
-    final date = DateTime(currentDate.year,currentDate.month,currentDate.day);
-    return withTime ? date.add(Duration(hours: 18)) : date;
-  }
-
-  DateTime tomorrow() {
-    final currentDate = DateTime.now();
-    final date = DateTime(currentDate.year,currentDate.month,currentDate.day + 1);
-    return withTime ? date.add(Duration(hours: 9)) : date;
-  }
-
-  DateTime nextWeek() {
-    final currentDate = DateTime.now();
-    final date = DateTime(currentDate.year,currentDate.month,currentDate.day + 7);
-    return withTime ? date.add(Duration(hours: 9)) : date;
-  }
-
-}
-
 class _DialogDivider extends StatelessWidget {
 
   final double height = 10;
@@ -114,7 +69,6 @@ class _DialogDivider extends StatelessWidget {
     );
   }
 }
-
 
 class DateMenu extends StatelessWidget {
 
