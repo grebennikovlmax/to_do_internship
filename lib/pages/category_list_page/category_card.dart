@@ -10,7 +10,7 @@ class CategoryCard extends StatelessWidget {
   final Category category;
   final void Function(Category) onUpdate;
 
-  CategoryCard(this.category, this.onUpdate);
+  CategoryCard({this.category, this.onUpdate});
 
   @override
   Widget build(BuildContext context) {
