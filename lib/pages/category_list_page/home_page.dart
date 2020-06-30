@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                 initialData: categories,
                 builder: (context, snapshot) {
                   return GridView.builder(
-                      itemCount: snapshot.data.length + 1,
+                      itemCount: snapshot.data.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisSpacing: 20,
                         mainAxisSpacing: 20,
@@ -85,7 +85,10 @@ class _HomePageState extends State<HomePage> {
                         if(!snapshot.data.asMap().containsKey(index)) {
                           return _AddButton();
                         }
-                        return CategoryCard(snapshot.data[index], _updateCategoryList);
+                        return CategoryCard(
+                            category: snapshot.data[index],
+                            onUpdate: _updateCategoryList
+                        );
                       }
                   );
                 }

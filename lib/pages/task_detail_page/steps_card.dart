@@ -43,11 +43,11 @@ class StepsCard extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.add,
-                color: Color(0xff1A9FFF)
+                color: const Color(0xff1A9FFF)
             ),
             title: Text("Добавить шаг",
               style: TextStyle(
-                  color: Color(0xff1A9FFF)
+                  color: const Color(0xff1A9FFF)
               ),
             ),
             onTap: () => _onNewStep(context),

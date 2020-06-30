@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:intl/intl.dart';
@@ -18,6 +19,10 @@ import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 
+
+
+
+
 class TaskDetail extends StatefulWidget {
 
   @override
@@ -31,6 +36,7 @@ enum _TaskDetailPopupMenuItem {update, delete}
 
 class _TaskDetailState extends State<TaskDetail> {
 
+  final TaskRepository _taskRepository = TaskDatabaseRepository.shared;
   final double appBarHeight = 128;
   ScrollController _scrollController;
   StreamController<FabState> _fabStateStream;
@@ -52,17 +58,6 @@ class _TaskDetailState extends State<TaskDetail> {
       final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
       _fabStateStream.add(state);
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _fabStateStream.close();
-    _dateStateStreamController.close();
-    _stepListStreamController.close();
-    _titleNameNotifier.dispose();
-    _imageStreamController.close();
-    super.dispose();
   }
 
   @override
@@ -131,6 +126,17 @@ class _TaskDetailState extends State<TaskDetail> {
       );
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _fabStateStream.close();
+    _dateStateStreamController.close();
+    _stepListStreamController.close();
+    _titleNameNotifier.dispose();
+    _imageStreamController.close();
+    super.dispose();
+  }
+
   void _fabPressed() {
     final task = TaskInfo.of(context).task;
     TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
@@ -173,6 +179,7 @@ class _TaskDetailState extends State<TaskDetail> {
       await TaskDatabaseRepository.shared.updateTask(task);
       _titleNameNotifier.value = task.name;
       _dateStateStreamController.add(_getDateState());
+
     }
   }
 

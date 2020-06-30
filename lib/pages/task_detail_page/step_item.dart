@@ -46,7 +46,7 @@ class _StepItemState extends State<StepItem> {
         initialData: widget.step,
         builder: (context, snapshot) {
           return ListTile(
-            onTap: () => _endEditing(null),
+            onTap: () => _endEditing(),
             leading: CustomCheckBox(
               value: snapshot.data.isCompleted,
               onChange: _onChange,
@@ -77,7 +77,7 @@ class _StepItemState extends State<StepItem> {
     _stepStreamController.add(widget.step);
   }
 
-  void _endEditing(String val) async {
+  void _endEditing([String val]) async {
     isEditing = !isEditing;
     if (val != null) {
       widget.step.description = val;
