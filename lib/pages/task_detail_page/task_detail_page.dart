@@ -64,8 +64,8 @@ class TaskDetailPage extends StatelessWidget {
   Future<ThemeData> _getTheme() async {
     final categoryTheme = await prefTheme.loadTheme(0);
     return ThemeData(
-      backgroundColor: Color(categoryTheme.backgroundColor),
-      primaryColor: Color(categoryTheme.primaryColor)
+      backgroundColor: Color(categoryTheme.backgroundColor ?? 0),
+      primaryColor: Color(categoryTheme.primaryColor ?? 0)
     );
   }
 
