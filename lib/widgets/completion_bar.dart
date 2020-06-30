@@ -4,17 +4,15 @@ class CompletionBar extends StatelessWidget {
 
   final double height;
   final double width;
-  final int amountTasks;
-  final int completedTasks;
+  final double completionRate;
 
-  CompletionBar({this.height,this.width,this.completedTasks,this.amountTasks});
+  CompletionBar({this.height,this.width,this.completionRate});
 
   @override
   Widget build(BuildContext context) {
-    double completion = amountTasks == 0 ? 0 : completedTasks / amountTasks * width;
     return TweenAnimationBuilder<double>(
       duration: Duration(seconds: 1),
-      tween: Tween(begin: 0,end: completion),
+      tween: Tween(begin: 0,end: completionRate),
       builder: (_, value, __) {
         return CustomPaint(
           size: Size(width,height),

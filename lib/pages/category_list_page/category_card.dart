@@ -8,14 +8,13 @@ import 'package:todointernship/model/category.dart';
 class CategoryCard extends StatelessWidget {
 
   final Category category;
-  final void Function(Category) onUpdate;
 
-  CategoryCard({this.category, this.onUpdate});
+  CategoryCard({this.category});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category.name).then((value) => onUpdate(category)),
+      onTap: () => Navigator.pushNamed(context, '/category_detail',arguments: category.name),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 5,
@@ -30,7 +29,7 @@ class CategoryCard extends StatelessWidget {
               Container(
                 width: 56,
                 height: 56,
-                child: ProgressBar(category.completion, category.theme.primaryColor),
+                child: ProgressBar(category.completionRate,category.theme.primaryColor),
               ),
               Divider(
                 height: 13,
@@ -43,7 +42,7 @@ class CategoryCard extends StatelessWidget {
                 height: 5,
                 color: Colors.transparent,
               ),
-              Text("${category.taskCount} задач(и)",
+              Text("${category.amountTask} задач(и)",
                 style: Theme.of(context).textTheme.headline5.copyWith(color: Color(0xff979797))
               ),
               Divider(
@@ -60,7 +59,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                      child: Text("${category.completedTasks} сделано",
+                      child: Text("${category.completedTask} сделано",
                         style: Theme.of(context).textTheme.headline5.copyWith(
                             fontSize:10,
                             color: Color(0xff386895)
@@ -75,7 +74,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                      child: Text("${category.incompletedTasks} осталось",
+                      child: Text("${category.incompletedTask} осталось",
                           style: Theme.of(context).textTheme.headline5.copyWith(
                               fontSize:10,
                               color: Color(0xffFD3535)

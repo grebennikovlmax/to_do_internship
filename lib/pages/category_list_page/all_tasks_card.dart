@@ -8,14 +8,15 @@ import 'package:todointernship/model/category.dart';
 
 class AllTasksCard extends StatelessWidget {
 
-  final List<Category> categoryList;
+  final int amountTask;
+  final int completedTask;
+  final int incompletedTask;
+  final double completionRate;
 
-  AllTasksCard(this.categoryList);
+  AllTasksCard({this.amountTask, this.completedTask, this.incompletedTask, this.completionRate});
 
   @override
   Widget build(BuildContext context) {
-    final int allTask = categoryList.fold(0, (previousValue, element) => previousValue + element.taskCount);
-    final int completed = categoryList.fold(0, (previousValue, element) => previousValue + element.completedTasks);
     return  Card(
         margin: EdgeInsets.zero,
         color: Color(0xff86A5F5),
@@ -42,7 +43,7 @@ class AllTasksCard extends StatelessWidget {
                         height: 52,
                         color: Colors.transparent,
                       ),
-                      Text("Завершенно $completed задач из $allTask",
+                      Text("Завершенно $completedTask задач из $amountTask",
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold
@@ -55,8 +56,7 @@ class AllTasksCard extends StatelessWidget {
                       CompletionBar(
                           height: 16,
                           width: 176,
-                          amountTasks: allTask,
-                          completedTasks: completed
+                          completionRate: completionRate
                       ),
                     ],
                   ),

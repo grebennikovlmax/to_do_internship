@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
-import 'package:todointernship/pages/category_list_page/home_page.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
             )
           )
         ),
-        home: HomePage()
+        home: CategoryListPage()
     );
   }
 

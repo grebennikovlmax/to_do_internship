@@ -1,17 +1,25 @@
-import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/category_theme.dart';
 
 class Category {
   String name;
-  List<Task> tasks = [];
+  int id;
+  int completedTask = 0;
+  int incompletedTask = 0;
+  int amountTask = 0;
+  double completionRate = 0;
   CategoryTheme theme;
 
-  Category(this.name,this.theme);
+  Category({this.name, this.id});
 
-  int get taskCount => tasks.length;
-  int get completedTasks => tasks.where((task) => task.isCompleted).length;
-  int get incompletedTasks => taskCount - completedTasks;
-  double get completion => taskCount == 0 ? 0 : completedTasks / taskCount;
+  Category.fromMap(Map<String, dynamic> map)
+      : name = map['title'],
+        id = map['id'];
 
-  set newTask(Task task) => tasks.add(task);
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> map  = {'title': name};
+    if(id != null) {
+      map['id'] = id;
+    }
+    return map;
+  }
 }

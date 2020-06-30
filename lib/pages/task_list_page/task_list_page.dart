@@ -196,7 +196,7 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   Future<TaskListState> _setTaskListState() async {
-    final taskList = await _taskRepository.getTaskList(_completedIsHidden);
+    final taskList = await _taskRepository.getTaskListForCategory(0);
     if(taskList.isEmpty) {
       return EmptyListState();
     }

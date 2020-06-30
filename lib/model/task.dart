@@ -1,18 +1,20 @@
 class Task {
   bool isCompleted;
   int id;
+  int categoryId;
   String name;
   DateTime createdDate;
   DateTime finalDate;
   DateTime notificationDate;
   List<TaskStep> steps;
 
-  Task({this.id, this.name, this.finalDate, this.createdDate, this.isCompleted = false, this.steps = const [], this.notificationDate}) {
+  Task({this.id, this.name, this.finalDate, this.createdDate, this.isCompleted = false, this.steps = const [], this.notificationDate, this.categoryId}) {
     createdDate ??= DateTime.now();
   }
 
   Task.fromMap(Map<String, dynamic> map)
       : name = map['title'],
+        categoryId = map['category_id'],
         id = map['id'],
         finalDate = DateTime.fromMillisecondsSinceEpoch(map['final_date']),
         createdDate = DateTime.fromMillisecondsSinceEpoch(map['created_date']),
@@ -27,6 +29,7 @@ class Task {
       'created_date': createdDate.millisecondsSinceEpoch,
       'final_date': finalDate.millisecondsSinceEpoch,
       'id': id,
+      'category_id': categoryId
     };
     if(notificationDate != null) {
       map['notification_date'] = notificationDate.millisecondsSinceEpoch;

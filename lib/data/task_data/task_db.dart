@@ -11,36 +11,42 @@ class TaskDatabase {
   }
 
   delete() async {
-    return deleteDatabase(join(await getDatabasesPath(), "task_database"));
+    return deleteDatabase(join(await getDatabasesPath(), 'task_database'));
   }
 
   Future<Database> _initDB() async {
     return openDatabase(
-        join(await getDatabasesPath(), "task_database"),
+        join(await getDatabasesPath(), 'task_database'),
         onCreate: (db, version) async {
-          await db.execute("CREATE TABLE steps ("
-              "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-              "description TEXT,"
-              "is_completed INTEGER,"
-              "task_id INTEGER,"
-              "FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE"
-              ")"
-
+          await db.execute('CREATE TABLE steps ('
+              'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+              'description TEXT,'
+              'is_completed INTEGER,'
+              'task_id INTEGER,'
+              'FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE'
+              ')'
           );
-          await db.execute("CREATE TABLE tasks ("
-              "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-              "title TEXT,"
-              "is_completed INTEGER,"
-              "created_date INTEGER,"
-              "notification_date INTEGER,"
-              "final_date INTEGER"
-              ")"
+          await db.execute('CREATE TABLE tasks ('
+              'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+              'category_id INTEGER'
+              'title TEXT,'
+              'is_completed INTEGER,'
+              'created_date INTEGER,'
+              'notification_date INTEGER,'
+              'final_date INTEGER,'
+              'FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE'
+              ')'
           );
-          await db.execute("CREATE TABLE images ("
-              "path TEXT PRIMARY KEY,"
-              "task_id INTEGER,"
-              "FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE"
-              ")"
+          await db.execute('CREATE TABLE images ('
+              'path TEXT PRIMARY KEY,'
+              'task_id INTEGER,'
+              'FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE'
+              ')'
+          );
+          await db.execute('CREATE TABLE categories ('
+              'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+              'title TEXT'
+              ')'
           );
         },
       version: 1
@@ -63,11 +69,11 @@ class TaskDatabase {
     return res;
   }
 
-  Future<List<Map<String, dynamic>>> queryIncompletedTaskList() async {
+  Future<List<Map<String, dynamic>>> queryAllTaskList(bool completed) async {
     final db = await database;
     final taskList = await db.query('tasks',
       where: 'is_completed = ?',
-      whereArgs: [0]
+      whereArgs: [completed ? 1 : 0]
     );
     return taskList;
   }
@@ -155,5 +161,14 @@ class TaskDatabase {
     return res;
   }
 
+  Future<int> insertCategory(Map<String, dynamic> map) async {
+    var db = await database;
+    return await db.insert('categories', map);
+  }
+
+  Future<List<Map<String, dynamic>>> queryCategories() async {
+    var db = await database;
+    return await db.query('categories');
+  }
 }
 

@@ -1,21 +1,25 @@
 import 'package:todointernship/data/ImageManager.dart';
+import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/data/task_data/task_db.dart';
 import 'package:todointernship/model/task_image.dart';
 
 abstract class TaskRepository {
-  Future<List<Task>> getTaskList(bool completedIsHidden);
+  Future<List<Task>> getTaskListForCategory(int id);
   Future<void> removeCompletedTask();
   Future<void> updateTask(Task task);
   Future<void> removeTask(int id);
   Future<void> updateStep(TaskStep step);
   Future<void> removeStep(int id);
+  Future<void> removeImage(String path);
+  Future<List<TaskImage>> fetchImagesForTask(int taskId);
+  Future<List<Task>> getAllTask(bool completed);
   // Возвращает id при сохранение в БД
   Future<int> saveTask(Task task);
   Future<int> saveStep(TaskStep step);
-  Future<void> removeImage(String path);
-  Future<List<TaskImage>> fetchImagesForTask(int taskId);
+  Future<int> saveCategory(Category category);
   Future<int> saveImage({String url, int taskId});
+  Future<List<Category>> getAllCategories();
 }
 
 class TaskDatabaseRepository implements TaskRepository {
@@ -40,8 +44,8 @@ class TaskDatabaseRepository implements TaskRepository {
 
 
   @override
-  Future<List<Task>> getTaskList(bool completedIsHidden) async {
-    final tasks = completedIsHidden ? await db.queryIncompletedTaskList() : await db.queryTaskList();
+  Future<List<Task>> getTaskListForCategory(int id) async {
+    final tasks = await db.queryTaskList();
     final taskWS =  await Future.wait(tasks.map((task) async {
       final taskWithSteps = Map<String, dynamic>.from(task);
       final steps = await db.queryStepList(task['id']);
@@ -90,6 +94,23 @@ class TaskDatabaseRepository implements TaskRepository {
     final image = TaskImage(taskID: taskId, path: path);
     final res = await db.insertImage(image.toMap());
     return res;
+  }
+
+  @override
+  Future<List<Task>> getAllTask(bool completed) async {
+    var taskMapList = await db.queryAllTaskList(completed);
+    return taskMapList.map((e) => Task.fromMap(e)).toList();
+  }
+
+  @override
+  Future<int> saveCategory(Category category) async {
+    return await db.insertCategory(category.toMap());
+  }
+
+  @override
+  Future<List<Category>> getAllCategories() async {
+    var mapList = await db.queryCategories();
+    return mapList.map((e) => Category.fromMap(e)).toList();
   }
 }
 
