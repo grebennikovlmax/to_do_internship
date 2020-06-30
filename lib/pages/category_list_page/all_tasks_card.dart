@@ -76,7 +76,6 @@ class AllTasksCard extends StatelessWidget {
 
 }
 
-
 class MountPainter extends CustomPainter {
 
   Paint backgroundPaint = Paint()
@@ -133,5 +132,4 @@ class MountPainter extends CustomPainter {
 
     return path;
   }
-
 }

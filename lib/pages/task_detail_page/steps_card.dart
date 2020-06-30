@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
 
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/step_item.dart';
+import 'package:todointernship/pages/task_detail_page/step_item.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
 class StepsCard extends StatelessWidget {
 
   final List<TaskStep> stepList;
-  final DateTime createdDate;
   final Sink stepListSink;
 
-  StepsCard(this.stepList, this.createdDate, this.stepListSink);
+  StepsCard(this.stepList, this.stepListSink);
 
   @override
   Widget build(BuildContext context) {
-    String formatDate = DateFormat("dd.MM.yyyy").format(createdDate);
+    String formatDate = DateFormat("dd.MM.yyyy").format(TaskInfo.of(context).task.createdDate);
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -42,14 +43,14 @@ class StepsCard extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.add,
-                color: Color(0xff1A9FFF)
+                color: const Color(0xff1A9FFF)
             ),
             title: Text("Добавить шаг",
               style: TextStyle(
-                  color: Color(0xff1A9FFF)
+                  color: const Color(0xff1A9FFF)
               ),
             ),
-            onTap: _onNewStep,
+            onTap: () => _onNewStep(context),
           ),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 40),
@@ -65,15 +66,21 @@ class StepsCard extends StatelessWidget {
     );
   }
 
-  void _onDelete(int index) {
+  void _onDelete(int index) async {
+    await TaskDatabaseRepository.shared.removeStep(stepList[index].id);
     stepList.removeAt(index);
     stepListSink.add(stepList);
   }
 
-  void _onNewStep() {
-    stepList.add(TaskStep(""));
+  void _onNewStep(BuildContext context) async {
+    final newStep = TaskStep(
+      description: "",
+      taskID: TaskInfo.of(context).task.id
+    );
+    final id = await TaskDatabaseRepository.shared.saveStep(newStep);
+    newStep.id = id;
+    stepList.add(newStep);
     stepListSink.add(stepList);
+
   }
-
-
 }

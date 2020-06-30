@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
+
+import 'package:todointernship/data/shared_prefs_manager.dart';
+import 'package:todointernship/model/category_theme.dart';
 
 
 
 class ThemePicker extends StatefulWidget {
 
   final Sink themeSink;
+  final prefTheme = SharedPrefManager();
 
   ThemePicker(this.themeSink);
 
@@ -117,10 +120,12 @@ class _ThemePickerState extends State<ThemePicker> {
 
   _changeTheme(ThemeData theme) async{
     _themeStreamController.add(theme);
-    widget.themeSink.add(Future.value(theme));
-    final SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setInt("backgroundColor", theme.backgroundColor.value);
-    pref.setInt("primaryColor", theme.primaryColor.value);
+    widget.themeSink.add((theme));
+    final categoryTheme = CategoryTheme(
+      primaryColor: theme.primaryColor.value,
+      backgroundColor: theme.backgroundColor.value
+    );
+    await widget.prefTheme.saveTheme(categoryTheme, 0);
   }
 
 }

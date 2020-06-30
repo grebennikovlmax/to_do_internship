@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:todointernship/pages/task_detail_page.dart';
-import 'package:todointernship/pages/task_list_page.dart';
-import 'package:todointernship/pages/home_page.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
+import 'package:todointernship/pages/task_list_page/task_list_page.dart';
+import 'package:todointernship/pages/category_list_page/home_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,8 +15,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         initialRoute: "/",
         routes: {
-          "/category_detail" : (context) => TaskListPage(arguments: ModalRoute.of(context).settings.arguments),
-          "/task_detail" : (context) => TaskDetailPage(arguments: ModalRoute.of(context).settings.arguments)
+          "/category_detail" : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
+          "/task_detail" : (context) => TaskDetailPage(ModalRoute.of(context).settings.arguments)
         },
         theme: ThemeData(
           primaryColor: Color(0xff6202EE),

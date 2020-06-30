@@ -1,9 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-
-import 'model/task.dart';
+import '../../model/task.dart';
 import 'task_item.dart';
 
 class TaskList extends StatelessWidget {
@@ -17,7 +14,7 @@ class TaskList extends StatelessWidget {
     return ListView.separated(
         itemCount: taskList.length,
         padding: EdgeInsets.all(10),
-        separatorBuilder: (BuildContext context, int index) => Divider(height: 4),
+        separatorBuilder: (BuildContext context, int index) => Divider(color: Colors.transparent,height: 4),
         itemBuilder: (context, index) {
           return  TaskItem(task: taskList[index]);
         }

@@ -1,14 +1,11 @@
-import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:todointernship/data/task_repository.dart';
+
+import 'dart:async';
 
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/category_theme.dart';
-import 'package:todointernship/widgets/all_tasks_card.dart';
-import 'package:todointernship/widgets/category_card.dart';
-
+import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
+import 'package:todointernship/pages/category_list_page/category_card.dart';
 
 class HomePage extends StatefulWidget {
 
@@ -21,29 +18,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   List<Category> categories = [];
-
   StreamController<List<Category>> _categoryListStreamController;
 
   @override
   void initState() {
     super.initState();
-    Category cat1 = Category("Здоровье",CategoryTheme(Color(0xff6002ee).value,Color(0xff90ee02).value));
+    Category cat1 = Category("Здоровье",CategoryTheme(backgroundColor:  Colors.yellow.value,primaryColor: Colors.green.value));
 
-
-    Category cat2 = Category("Работа",CategoryTheme(Colors.yellow.value,Colors.green.value));
+    Category cat2 = Category("Работа",CategoryTheme(backgroundColor:  Colors.yellow.value,primaryColor: Colors.green.value));
     categories.add(cat1);
     categories.add(cat2);
 
     _categoryListStreamController = StreamController.broadcast();
 
   }
-
-  @override
-  void dispose() {
-    _categoryListStreamController.close();
-    super.dispose();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +89,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _updateCategoryList(Category category) {
+  @override
+  void dispose() {
+    _categoryListStreamController.close();
+    super.dispose();
+  }
+
+  void _updateCategoryList(Category category) {
     final int index = categories.indexWhere((element) => element.name == category.name);
     categories[index] = category;
     _categoryListStreamController.add(categories);
