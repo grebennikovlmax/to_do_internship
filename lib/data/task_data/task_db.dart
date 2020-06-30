@@ -87,9 +87,12 @@ class TaskDatabase {
     return res;
   }
 
-  Future<List<Map<String, dynamic>>> queryTaskList() async {
+  Future<List<Map<String, dynamic>>> queryTaskList(int categoryId) async {
     final db = await database;
-    final taskMap = await db.query('tasks');
+    final taskMap = await db.query('tasks',
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+    );
     return  taskMap;
   }
 

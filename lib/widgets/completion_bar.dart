@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 class CompletionBar extends StatelessWidget {
 
   final double height;
-  final double width;
   final double completionRate;
 
-  CompletionBar({this.height,this.width,this.completionRate});
+  CompletionBar({this.height,this.completionRate});
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +14,8 @@ class CompletionBar extends StatelessWidget {
       tween: Tween(begin: 0,end: completionRate),
       builder: (_, value, __) {
         return CustomPaint(
-          size: Size(width,height),
-          painter: CompletionBarPainter(height,value),
+          size: Size(double.infinity,height),
+          painter: CompletionBarPainter(value),
         );
       },
     );
@@ -25,12 +24,11 @@ class CompletionBar extends StatelessWidget {
 }
 
 class CompletionBarPainter extends CustomPainter {
-  final double height;
   final double completion;
   final Color barColor = Color(0xff01A39D);
   Paint paintRect;
 
-  CompletionBarPainter(this.height, this.completion) {
+  CompletionBarPainter(this.completion) {
     paintRect = Paint()
       ..color = barColor
       ..style = PaintingStyle.stroke
@@ -38,22 +36,30 @@ class CompletionBarPainter extends CustomPainter {
   }
 
 
-  Paint _paint({Color color, double offset}) {
+  Paint _paint({Color color, double height}) {
     Paint barPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = height + offset;
+      ..strokeWidth = height;
     return barPaint;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    Offset leftOffset = Offset(height / 2, 0);
-    RRect rect = RRect.fromLTRBR(0, size.height, size.width, 0, Radius.circular(height));
+    Offset leftOffset = Offset(size.height / 2, 0);
+    RRect rect = RRect.fromLTRBR(0, size.height, size.width, 0, Radius.circular(size.height));
     canvas.drawRRect(rect, paintRect);
-    canvas.drawLine(size.centerLeft(leftOffset), size.centerRight(Offset(-height / 2, 0)), _paint(color: Colors.white,offset: 0));
-    canvas.drawLine(size.centerLeft(leftOffset), size.centerLeft(Offset((completion - height / 2) < height / 2 ?  height / 2 : completion - height / 2, 0)), _paint(color: barColor, offset: 1));
+    canvas.drawLine(size.centerLeft(leftOffset),
+        size.centerRight(Offset(-size.height / 2, 0)),
+        _paint(color: Colors.white, height: size.height));
+
+    canvas.drawLine(size.centerLeft(leftOffset),
+        size.centerLeft(Offset(
+            (completion - size.height / 2) < size.height / 2
+                ?  size.height / 2
+                : completion - size.height / 2, 0)),
+        _paint(color: barColor, height: size.height + 1));
   }
 
   @override

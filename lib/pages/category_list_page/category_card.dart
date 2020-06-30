@@ -22,67 +22,71 @@ class CategoryCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16)
         ),
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Container(
-                width: 56,
-                height: 56,
-                child: ProgressBar(category.completionRate,category.theme.primaryColor),
+              Expanded(
+                child: ProgressBar(
+                    completion: category.completionRate,
+                    color: category.theme.primaryColor
+                ),
               ),
-              Divider(
-                height: 13,
-                color: Colors.transparent,
-              ),
-              Text(category.name,
-                style: Theme.of(context).textTheme.headline1
-              ),
-              Divider(
-                height: 5,
-                color: Colors.transparent,
+              SizedBox(height: 10),
+              FittedBox(
+                fit: BoxFit.fitHeight,
+                child: Text(category.name,
+                  style: Theme.of(context).textTheme.headline1
+                ),
               ),
               Text("${category.amountTask} задач(и)",
-                style: Theme.of(context).textTheme.headline5.copyWith(color: Color(0xff979797))
+                style: Theme.of(context).textTheme.headline5.copyWith(
+                    color: const Color(0xff979797)
+                )
               ),
-              Divider(
-                height: 7,
-                color: Colors.transparent,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      color: Colors.teal
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                      child: Text("${category.completedTask} сделано",
-                        style: Theme.of(context).textTheme.headline5.copyWith(
-                            fontSize:10,
-                            color: Color(0xff386895)
-                        )
-                      )
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
+              SizedBox(height: 5),
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(30),
-                        color: Color.fromRGBO(253, 53, 53, 0.51)
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
-                      child: Text("${category.incompletedTask} осталось",
+                        color: Color(category.theme.primaryColor).withOpacity(0.3)
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
+                        child: Text("${category.completedTask} сделано",
                           style: Theme.of(context).textTheme.headline5.copyWith(
                               fontSize:10,
-                              color: Color(0xffFD3535)
-                          ),
+                              color: Color(category.theme.primaryColor)
+                          )
+                        )
                       ),
                     ),
-                  )
-                ],
+                    SizedBox(width: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: Color.fromRGBO(253, 53, 53, 0.3)
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 2,horizontal: 10),
+                          child: Text("${category.incompletedTask} осталось",
+                              style: Theme.of(context).textTheme.headline5.copyWith(
+                                  fontSize:10,
+                                  color: const Color(0xffFD3535)
+                              ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               )
             ],
           ),
@@ -98,7 +102,7 @@ class ProgressBar extends StatelessWidget {
   final double completion;
   final int color;
 
-  ProgressBar(this.completion, this.color);
+  ProgressBar({this.completion, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -107,17 +111,22 @@ class ProgressBar extends StatelessWidget {
       tween: Tween(begin: 0, end: completion),
       builder: (_, value, __) {
         int progress = (value * 100).toInt();
-        return CustomPaint (
-          size: Size.infinite,
-          painter: ProgressBarPainter(value, color),
-          child: Center(
-              child: Text("$progress%",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Color(color)
+        return AspectRatio(
+          aspectRatio: 1,
+          child: CustomPaint (
+            painter: ProgressBarPainter(value, color),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Center(
+                child: Text("$progress%",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Color(color)
+                  ),
                 ),
-              )
+              ),
+            )
           ),
         );
       },
@@ -143,8 +152,12 @@ class ProgressBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawCircle(Offset(size.height / 2, size.width / 2), size.width / 2, _painter(Color(0xffC4C4C4)));
-    Rect rect = Rect.fromCircle(center: Offset(size.height / 2, size.width / 2),radius: size.width / 2);
+    var radius = size.height / 2;
+//    canvas.drawCircle(Offset(size.height / 2, size.width / 2), size.width / 2, _painter(Color(0xffC4C4C4)));
+//    Rect rect = Rect.fromCircle(center: Offset(size.height / 2, size.width / 2),radius: size.width / 2);
+//    canvas.drawArc(rect, -pi / 2, -2 * pi * completion, false, _painter(Color(color)));
+    canvas.drawCircle(Offset(radius, radius), radius - 6, _painter(Color(0xffC4C4C4)));
+    Rect rect = Rect.fromCircle(center: Offset(radius, radius),radius: radius - 6);
     canvas.drawArc(rect, -pi / 2, -2 * pi * completion, false, _painter(Color(color)));
   }
 

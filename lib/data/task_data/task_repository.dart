@@ -45,7 +45,7 @@ class TaskDatabaseRepository implements TaskRepository {
 
   @override
   Future<List<Task>> getTaskListForCategory(int id) async {
-    final tasks = await db.queryTaskList();
+    final tasks = await db.queryTaskList(id);
     final taskWS =  await Future.wait(tasks.map((task) async {
       final taskWithSteps = Map<String, dynamic>.from(task);
       final steps = await db.queryStepList(task['id']);

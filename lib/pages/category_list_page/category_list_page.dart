@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'dart:async';
 
-import 'package:todointernship/model/category.dart';
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
 import 'package:todointernship/pages/category_list_page/category_card.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
 import 'package:todointernship/pages/category_list_page/add_new_category_dialog.dart';
+import 'package:todointernship/pages/category_list_page//category_list_page_bloc.dart';
 
-import 'category_list_page_bloc.dart';
 
 class CategoryListBlocProvider extends InheritedWidget {
 
@@ -108,13 +106,14 @@ class _CategoryList extends StatelessWidget {
                   fontSize: 24,
                 )
             ),
+            Divider(height: 20, color:  Colors.transparent),
             Expanded(
                 child: GridView.builder(
                     itemCount: state.categoryList.length + 1,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20,
-                      crossAxisCount: 2,
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
                     ),
                     itemBuilder: (BuildContext context, index) {
                       if(!state.categoryList.asMap().containsKey(index)) {

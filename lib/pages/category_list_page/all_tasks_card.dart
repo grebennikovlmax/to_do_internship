@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'dart:math';
 
 import 'package:todointernship/widgets/completion_bar.dart';
-import 'package:todointernship/model/category.dart';
 
 
 class AllTasksCard extends StatelessWidget {
@@ -19,16 +19,15 @@ class AllTasksCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return  Card(
         margin: EdgeInsets.zero,
-        color: Color(0xff86A5F5),
+        color: const Color(0xff86A5F5),
         elevation: 10,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)
         ),
         child: Container(
-          margin: EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
                   flex: 2,
@@ -53,22 +52,24 @@ class AllTasksCard extends StatelessWidget {
                         height: 10,
                         color: Colors.transparent,
                       ),
-                      CompletionBar(
-                          height: 16,
-                          width: 176,
-                          completionRate: completionRate
+                      FractionallySizedBox(
+                        widthFactor: 0.8,
+                        child: CompletionBar(
+                            height: 16,
+                            completionRate: completionRate
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Expanded(
                   flex: 1,
-                  child: FractionallySizedBox(
-                    child: CustomPaint(
-                      size: Size(double.infinity,120),
-                      painter: MountPainter(),
-                    ),
-                  ),
+                  child: SvgPicture.asset('assets/svg/mountain.svg',
+                    fit: BoxFit.fitHeight,),
+//                  child: CustomPaint(
+//                    size: Size(double.infinity,120),
+//                    painter: MountPainter(),
+//                  ),
                 )
               ]
           ),
@@ -82,16 +83,16 @@ class MountPainter extends CustomPainter {
 
   Paint backgroundPaint = Paint()
     ..style = PaintingStyle.fill
-    ..color = Color(0xff71E2EF);
+    ..color = const Color(0xff71E2EF);
 
   Paint line = Paint()
     ..style = PaintingStyle.fill
-    ..color = Color(0xff273B7A)
+    ..color = const Color(0xff273B7A)
     ..strokeWidth = 10;
 
   Paint cloudPaint = Paint()
     ..style = PaintingStyle.fill
-    ..color = Colors.white;
+    ..color = const Color(0xffffffff);
 
   @override
   void paint(Canvas canvas, Size size) {
