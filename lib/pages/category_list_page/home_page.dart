@@ -25,7 +25,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     Category cat1 = Category("Здоровье",CategoryTheme(backgroundColor:  Colors.yellow.value,primaryColor: Colors.green.value));
 
-
     Category cat2 = Category("Работа",CategoryTheme(backgroundColor:  Colors.yellow.value,primaryColor: Colors.green.value));
     categories.add(cat1);
     categories.add(cat2);
@@ -33,13 +32,6 @@ class _HomePageState extends State<HomePage> {
     _categoryListStreamController = StreamController.broadcast();
 
   }
-
-  @override
-  void dispose() {
-    _categoryListStreamController.close();
-    super.dispose();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +74,10 @@ class _HomePageState extends State<HomePage> {
                         crossAxisCount: 2,
                       ),
                       itemBuilder: (BuildContext context, index) {
-                        return CategoryCard(snapshot.data[index], _updateCategoryList);
+                        return CategoryCard(
+                            category: snapshot.data[index],
+                            onUpdate: _updateCategoryList
+                        );
                       }
                   );
                 }
@@ -94,7 +89,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _updateCategoryList(Category category) {
+  @override
+  void dispose() {
+    _categoryListStreamController.close();
+    super.dispose();
+  }
+
+  void _updateCategoryList(Category category) {
     final int index = categories.indexWhere((element) => element.name == category.name);
     categories[index] = category;
     _categoryListStreamController.add(categories);
