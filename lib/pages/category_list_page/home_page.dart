@@ -75,13 +75,16 @@ class _HomePageState extends State<HomePage> {
                 initialData: categories,
                 builder: (context, snapshot) {
                   return GridView.builder(
-                      itemCount: snapshot.data.length,
+                      itemCount: snapshot.data.length + 1,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisSpacing: 20,
                         mainAxisSpacing: 20,
                         crossAxisCount: 2,
                       ),
                       itemBuilder: (BuildContext context, index) {
+                        if(!snapshot.data.asMap().containsKey(index)) {
+                          return _AddButton();
+                        }
                         return CategoryCard(snapshot.data[index], _updateCategoryList);
                       }
                   );
@@ -98,5 +101,28 @@ class _HomePageState extends State<HomePage> {
     final int index = categories.indexWhere((element) => element.name == category.name);
     categories[index] = category;
     _categoryListStreamController.add(categories);
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: 0.5,
+      alignment: Alignment.centerLeft,
+      child: GestureDetector(
+        child: Container(
+          decoration: BoxDecoration(
+              color: const Color(0xff01A39D),
+              borderRadius: BorderRadius.circular(16)
+          ),
+          child: Center(
+            child: Icon(Icons.add,
+              color: const Color(0xffffffff)
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

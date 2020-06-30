@@ -63,9 +63,11 @@ class AllTasksCard extends StatelessWidget {
                 ),
                 Expanded(
                   flex: 1,
-                  child: CustomPaint(
-                    size: Size(double.infinity,120),
-                    painter: MountPainter(),
+                  child: FractionallySizedBox(
+                    child: CustomPaint(
+                      size: Size(double.infinity,120),
+                      painter: MountPainter(),
+                    ),
                   ),
                 )
               ]
