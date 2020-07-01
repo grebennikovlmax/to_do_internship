@@ -18,7 +18,9 @@ class NewCategoryDialog extends StatefulWidget {
 class _NewCategoryDialogState extends State<NewCategoryDialog> {
 
   final _key = GlobalKey<FormState>();
-  final _themePickerBloc = ThemePickerBloc();
+  final _themePickerBloc;
+
+  _NewCategoryDialogState() : _themePickerBloc = ThemePickerBloc();
 
   String text;
   int color;

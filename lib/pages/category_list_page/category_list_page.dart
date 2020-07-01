@@ -5,8 +5,8 @@ import 'dart:async';
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
 import 'package:todointernship/pages/category_list_page/category_card.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
-import 'package:todointernship/pages/category_list_page/add_new_category_dialog.dart';
-import 'package:todointernship/pages/category_list_page//category_list_page_bloc.dart';
+import 'package:todointernship/pages/category_list_page/new_category_dialog.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
 
 
 class CategoryListBlocProvider extends InheritedWidget {
@@ -33,7 +33,9 @@ class CategoryListPage extends StatefulWidget {
 
 class _CategoryListPageState extends State<CategoryListPage> {
   
-  final _categoryListBloc = CategoryListPageBloc();
+  final _categoryListBloc;
+
+  _CategoryListPageState() : _categoryListBloc = CategoryListPageBloc();
 
   @override
   void dispose() {
@@ -58,6 +60,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
               return _CategoryList(
                 state: snapshot.data as LoadedPageState,
                 onAddNew: _showNewCategoryDialog,
+                onPickCategory: _onPickCategory,
               );
             }
             return Container();
@@ -65,6 +68,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
         ),
       ),
     );
+  }
+
+  void _onPickCategory() {
+
   }
 
   Future<void> _showNewCategoryDialog() async {
@@ -82,9 +89,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
 class _CategoryList extends StatelessWidget {
 
   final VoidCallback onAddNew;
+  final VoidCallback onPickCategory;
   final LoadedPageState state;
 
-  _CategoryList({this.onAddNew, this.state});
+  _CategoryList({this.onAddNew, this.state, this.onPickCategory});
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +130,7 @@ class _CategoryList extends StatelessWidget {
                         );
                       }
                       return CategoryCard(
+                        onTap: onPickCategory,
                         category: state.categoryList[index],
                       );
                     }
