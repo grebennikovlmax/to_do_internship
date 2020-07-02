@@ -35,6 +35,9 @@ class CategoryListPageBloc {
           var createEvent = event as CreateNewCategoryEvent;
           _saveCategory(createEvent.name, createEvent.color);
           break;
+        case UpdatePageEvent:
+          _loadCategories();
+          break;
       }
     });
   }
@@ -49,7 +52,7 @@ class CategoryListPageBloc {
       category.incompletedTask = incompletedTask.where((task) => task.categoryId == category.id).length;
       category.completedTask = completedTask.where((task) => task.categoryId == category.id).length;
       category.amountTask = category.incompletedTask + category.completedTask;
-      if(category.amountTask != 0) category.completionRate = category.incompletedTask / category.amountTask;
+      if(category.amountTask != 0) category.completionRate = category.completedTask / category.amountTask;
       category.theme = await _loadCategoryTheme(category.id);
     }));
     var taskAmount = incompletedTaskCount + completedTaskCount;
@@ -63,9 +66,6 @@ class CategoryListPageBloc {
     var id = await repository.saveCategory(category);
     var theme = _setupCategoryTheme(color);
     await sharedPref.saveTheme(theme, id);
-//    category.id = id;
-//    category.theme = theme;
-//    _categoryList.add(category);
   _loadCategories();
   }
 

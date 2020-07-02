@@ -11,3 +11,6 @@ class CreateNewCategoryEvent implements CategoryListPageEvent {
 
 }
 
+class UpdatePageEvent implements CategoryListPageEvent {
+
+}

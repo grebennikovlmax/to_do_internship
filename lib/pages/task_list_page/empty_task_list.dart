@@ -3,6 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class EmptyTaskList extends StatefulWidget {
 
+  final String description;
+
+  EmptyTaskList(this.description);
+
   @override
   State<StatefulWidget> createState() {
     return _EmptyTaskListState();
@@ -53,7 +57,18 @@ class _EmptyTaskListState extends State<EmptyTaskList> with SingleTickerProvider
                 )
               ],
             ),
-            Text("Все задачи выполнены")
+            SizedBox(height: 20),
+            FractionallySizedBox(
+                widthFactor: 0.3,
+                alignment: Alignment.center,
+                child: Text(widget.description,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyText2.copyWith(
+                      fontSize: 18,
+                      color: const Color(0xff545454)
+                  ),
+                )
+            )
           ],
         )
     );

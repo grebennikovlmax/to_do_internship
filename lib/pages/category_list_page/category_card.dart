@@ -1,21 +1,23 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:math';
 
 import 'package:todointernship/model/category.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
+import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
+
 
 class CategoryCard extends StatelessWidget {
 
   final Category category;
-  final VoidCallback onTap;
 
-  CategoryCard({this.category, this.onTap});
+  CategoryCard({this.category});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => _toTaskList(context),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 5,
@@ -38,7 +40,7 @@ class CategoryCard extends StatelessWidget {
 //              SizedBox(height: 10),
               Spacer(flex: 1),
               Expanded(
-                flex: 3,
+                flex: 5,
                 child: FittedBox(
                   child: Text(category.name,
                     style: Theme.of(context).textTheme.headline1
@@ -116,6 +118,12 @@ class CategoryCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _toTaskList(BuildContext context) {
+    var block = TaskListPageBloc(category.id, category.name);
+    Navigator.of(context).pushNamed('/category_detail', arguments: block)
+        .then((value) => CategoryListBlocProvider.of(context).bloc.categoryListPageEventSink.add(UpdatePageEvent()));
   }
 
 }

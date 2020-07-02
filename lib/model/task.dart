@@ -8,6 +8,9 @@ class Task {
   DateTime notificationDate;
   List<TaskStep> steps;
 
+  get completedStep => steps.where((element) => element.isCompleted).length;
+  get amountSteps => steps.length;
+
   Task({this.id, this.name, this.finalDate, this.createdDate, this.isCompleted = false, this.steps = const [], this.notificationDate, this.categoryId}) {
     createdDate ??= DateTime.now();
   }

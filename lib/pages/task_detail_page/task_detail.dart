@@ -3,25 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
-import 'package:intl/intl.dart';
-
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/date_state.dart';
 import 'package:todointernship/pages/task_detail_page/photo_list.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
-import 'package:todointernship/pages/task_list_page/task_event.dart';
+import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
 import 'package:todointernship/widgets/sliver_app_bar_fab.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
-import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
-
-
-
-
 
 class TaskDetail extends StatefulWidget {
 
@@ -139,7 +132,7 @@ class _TaskDetailState extends State<TaskDetail> {
 
   void _fabPressed() {
     final task = TaskInfo.of(context).task;
-    TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
+//    TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
     final state = FabState(_scrollController.offset, !task.isCompleted);
     _fabStateStream.add(state);
   }
@@ -169,7 +162,7 @@ class _TaskDetailState extends State<TaskDetail> {
     final updatedTask = await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
-          return NewTaskDialog(task: task);
+          return TaskCreationDialog(edit: true);
         }
     );
     if(updatedTask != null) {

@@ -11,9 +11,9 @@ import 'package:todointernship/pages/category_list_page/category_list_page_bloc.
 
 class CategoryListBlocProvider extends InheritedWidget {
 
-  final CategoryListPageBloc block;
+  final CategoryListPageBloc bloc;
   
-  const CategoryListBlocProvider({Key key, Widget child, @required this.block}) : super(child: child);
+  const CategoryListBlocProvider({Key key, Widget child, @required this.bloc}) : super(child: child);
 
   static CategoryListBlocProvider of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<CategoryListBlocProvider>();
 
@@ -47,7 +47,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
   @override
   Widget build(BuildContext context) {
     return CategoryListBlocProvider(
-      block: _categoryListBloc,
+      bloc: _categoryListBloc,
       child: Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
@@ -60,7 +60,6 @@ class _CategoryListPageState extends State<CategoryListPage> {
               return _CategoryList(
                 state: snapshot.data as LoadedPageState,
                 onAddNew: _showNewCategoryDialog,
-                onPickCategory: _onPickCategory,
               );
             }
             return Container();
@@ -68,10 +67,6 @@ class _CategoryListPageState extends State<CategoryListPage> {
         ),
       ),
     );
-  }
-
-  void _onPickCategory() {
-
   }
 
   Future<void> _showNewCategoryDialog() async {
@@ -89,10 +84,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
 class _CategoryList extends StatelessWidget {
 
   final VoidCallback onAddNew;
-  final VoidCallback onPickCategory;
   final LoadedPageState state;
 
-  _CategoryList({this.onAddNew, this.state, this.onPickCategory});
+  _CategoryList({this.onAddNew, this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +124,6 @@ class _CategoryList extends StatelessWidget {
                         );
                       }
                       return CategoryCard(
-                        onTap: onPickCategory,
                         category: state.categoryList[index],
                       );
                     }

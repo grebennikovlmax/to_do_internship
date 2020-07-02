@@ -6,12 +6,12 @@ class PopupMenu extends StatelessWidget {
 
   final VoidCallback onDelete;
   final VoidCallback onHide;
-  final Function(BuildContext) onChangeTheme;
+  final VoidCallback onChangeTheme;
   final bool isHidden;
 
   PopupMenu({this.isHidden, this.onDelete, this.onHide, this.onChangeTheme});
 
-  _popupMenuButtonPressed(PopBarMenuItem item, BuildContext context) {
+  _popupMenuButtonPressed(PopBarMenuItem item) {
     switch(item){
       case PopBarMenuItem.delete:
         onDelete();
@@ -20,7 +20,7 @@ class PopupMenu extends StatelessWidget {
         onHide();
         break;
       case PopBarMenuItem.theme:
-        onChangeTheme(context);
+        onChangeTheme();
         break;
     }
   }
@@ -28,7 +28,7 @@ class PopupMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<PopBarMenuItem>(
-      onSelected: (value) => _popupMenuButtonPressed(value, context),
+      onSelected: _popupMenuButtonPressed,
       itemBuilder: (BuildContext context) {
         return [
           PopupMenuItem<PopBarMenuItem>(

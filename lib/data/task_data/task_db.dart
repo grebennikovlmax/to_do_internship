@@ -28,7 +28,7 @@ class TaskDatabase {
           );
           await db.execute('CREATE TABLE tasks ('
               'id INTEGER PRIMARY KEY AUTOINCREMENT,'
-              'category_id INTEGER'
+              'category_id INTEGER,'
               'title TEXT,'
               'is_completed INTEGER,'
               'created_date INTEGER,'

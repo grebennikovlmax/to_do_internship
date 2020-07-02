@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/widgets/custom_checkbox.dart';
+import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
+import 'package:todointernship/widgets/custom_checkbox.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
 
@@ -15,8 +15,6 @@ class TaskItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int stepsCount = task.steps.length;
-    final int completedStepsCount = task.steps.where((element) => element.isCompleted).length;
     return Dismissible(
       direction: DismissDirection.endToStart,
       background: Container(
@@ -32,9 +30,7 @@ class TaskItem extends StatelessWidget {
           ),
         ),
       ),
-      onDismissed: (dir) => {
-        TaskListInfo.of(context).taskEventSink.add(OnRemoveTask(task))
-      },
+      onDismissed: (dir) => TaskListBlocProvider.of(context).bloc.taskEventSink.add(RemoveTaskEvent(task.id)),
       key: ValueKey(task.id),
       child: Container(
           decoration: BoxDecoration(
@@ -42,24 +38,32 @@ class TaskItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(8)
           ),
           child: ListTile(
-            onTap: () => Navigator.of(context).pushNamed('/task_detail',
-                arguments: TaskDetailArguments(
-                  task: task,
-                  taskEventSink: TaskListInfo.of(context).taskEventSink
-                )
-              ).then((value) => TaskListInfo.of(context).taskEventSink.add(OnUpdateTask(task))),
-            title: Text(task.name),
-            subtitle: task.steps.isEmpty ? null : Text("$completedStepsCount из $stepsCount"),
+            onTap: () => _toStepList(context),
+            title: Text(task.name,
+              style: Theme.of(context).textTheme.bodyText2.copyWith(
+                fontSize: 18
+              ),
+            ),
+            subtitle: task.steps.isEmpty ? null : Text("${task.completedStep} из ${task.amountSteps}",
+              style: Theme.of(context).textTheme.bodyText2.copyWith(
+                fontSize: 18,
+                color: const Color(0xff979797)
+              ),
+            ),
             leading: CustomCheckBox(
               value: task.isCompleted,
               color: Scaffold.of(context).widget.backgroundColor,
-              onChange: () {
-                TaskListInfo.of(context).taskEventSink.add(OnCompletedTask(task));
-              },
+              onChange: () => TaskListBlocProvider.of(context).bloc.taskEventSink.add(CompletedTaskEvent(task.id)),
             ),
           )
       ),
     );
+  }
+
+  void _toStepList(BuildContext context) {
+    Navigator.of(context).pushNamed('/task_detail', arguments: TaskDetailArguments(
+      task: task,
+    )).then((value) => TaskListBlocProvider.of(context).bloc.taskEventSink.add((UpdateTaskListEvent())));
   }
 
 }

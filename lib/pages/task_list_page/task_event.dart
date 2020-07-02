@@ -1,24 +1,29 @@
-import 'package:todointernship/model/task.dart';
-
 abstract class TaskEvent {
-  final Task task;
-  TaskEvent(this.task);
-}
-
-class OnCompletedTask extends TaskEvent {
-
-  OnCompletedTask(Task task) : super(task);
 
 }
 
-class OnRemoveTask extends TaskEvent {
+class CompletedTaskEvent extends TaskEvent {
+  final int taskId;
 
-  OnRemoveTask(Task task) : super(task);
+  CompletedTaskEvent(this.taskId);
 
 }
 
-class OnUpdateTask extends TaskEvent {
+class RemoveTaskEvent extends TaskEvent {
+  final int taskId;
 
-  OnUpdateTask(Task task) : super(task);
+  RemoveTaskEvent(this.taskId);
+
+}
+
+class UpdateTaskEvent extends TaskEvent {
+
+}
+
+class RemoveCompletedEvent extends TaskEvent {
+
+}
+
+class UpdateTaskListEvent extends TaskEvent {
 
 }

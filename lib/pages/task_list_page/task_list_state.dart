@@ -2,10 +2,6 @@ import 'package:todointernship/model/task.dart';
 
 abstract class TaskListState {
 
-  final List<Task> taskList;
-
-  TaskListState(this.taskList);
-
 }
 
 
@@ -18,8 +14,9 @@ class FullTaskListState implements TaskListState {
 }
 
 class EmptyListState implements TaskListState {
+  final String description;
 
-  List<Task> get taskList => [];
-
+  EmptyListState(this.description);
 }
+
 

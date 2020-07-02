@@ -47,6 +47,7 @@ class CompletionBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    var width = completion * size.width;
     Offset leftOffset = Offset(size.height / 2, 0);
     RRect rect = RRect.fromLTRBR(0, size.height, size.width, 0, Radius.circular(size.height));
     canvas.drawRRect(rect, paintRect);
@@ -56,9 +57,9 @@ class CompletionBarPainter extends CustomPainter {
 
     canvas.drawLine(size.centerLeft(leftOffset),
         size.centerLeft(Offset(
-            (completion - size.height / 2) < size.height / 2
+            (width - size.height / 2) < size.height / 2
                 ?  size.height / 2
-                : completion - size.height / 2, 0)),
+                : width - size.height / 2, 0)),
         _paint(color: barColor, height: size.height + 1));
   }
 
