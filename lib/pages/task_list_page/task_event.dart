@@ -3,21 +3,33 @@ abstract class TaskEvent {
 }
 
 class CompletedTaskEvent extends TaskEvent {
-  final int taskId;
 
-  CompletedTaskEvent(this.taskId);
+  int taskId;
+
+  CompletedTaskEvent([this.taskId]);
 
 }
 
 class RemoveTaskEvent extends TaskEvent {
-  final int taskId;
 
-  RemoveTaskEvent(this.taskId);
+  int taskId;
+
+  RemoveTaskEvent([this.taskId]);
 
 }
 
-class UpdateTaskEvent extends TaskEvent {
+class NewTaskEvent implements TaskEvent {
+  final DateTime finalDate;
+  final DateTime notificationDate;
+  final String name;
 
+  NewTaskEvent(this.finalDate, this.notificationDate, this.name);
+}
+
+class UpdateTaskNameEvent extends TaskEvent {
+  final String name;
+  int id;
+  UpdateTaskNameEvent(this.name);
 }
 
 class RemoveCompletedEvent extends TaskEvent {

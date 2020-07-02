@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';
 
-class TaskCreationBloc {
+class DatePickerBloc {
 
   final _dateStateStreamController = StreamController<DateState>();
   final _dateEventStreamController = StreamController<DateEvent>();
@@ -15,10 +15,13 @@ class TaskCreationBloc {
 
   Sink get dateEventSink => _dateEventStreamController.sink;
 
-  String _finalDate = 'Дата выполнения';
-  String _notificationDate = 'Напомнить';
+  String _finalDate;
+  String _notificationDate;
 
-  TaskCreationBloc() {
+  DatePickerBloc({DateTime finalDate,DateTime notificationDate}) {
+    _finalDate = finalDate != null ? dateFormatter.format(finalDate) : 'Дата выполнения';
+    _notificationDate = notificationDate != null ? dateTimeFormatter.format(notificationDate) : 'Напомнить';
+    _dateStateStreamController.add(DateState(_notificationDate, _finalDate));
     _dateEventStreamController.stream.listen((event) {
       _setDateState(event);
     });

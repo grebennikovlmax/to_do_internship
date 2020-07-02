@@ -5,25 +5,23 @@ import 'package:intl/intl.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/step_item.dart';
-import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
 class StepsCard extends StatelessWidget {
 
   final List<TaskStep> stepList;
-  final Sink stepListSink;
 
-  StepsCard(this.stepList, this.stepListSink);
+  StepsCard({this.stepList});
 
   @override
   Widget build(BuildContext context) {
-    String formatDate = DateFormat("dd.MM.yyyy").format(TaskInfo.of(context).task.createdDate);
+//    String formatDate = DateFormat("dd.MM.yyyy").format(TaskInfo.of(context).task.createdDate);
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(14.0),
-            child: Text("Создано: $formatDate",
+            child: Text("Создано: 1",
               style: TextStyle(
                   color: Color.fromRGBO(0, 0, 0, 0.6)
               ),
@@ -69,18 +67,16 @@ class StepsCard extends StatelessWidget {
   void _onDelete(int index) async {
     await TaskDatabaseRepository.shared.removeStep(stepList[index].id);
     stepList.removeAt(index);
-    stepListSink.add(stepList);
   }
 
   void _onNewStep(BuildContext context) async {
     final newStep = TaskStep(
       description: "",
-      taskID: TaskInfo.of(context).task.id
+//      taskID: TaskInfo.of(context).task.id
     );
     final id = await TaskDatabaseRepository.shared.saveStep(newStep);
     newStep.id = id;
     stepList.add(newStep);
-    stepListSink.add(stepList);
 
   }
 }

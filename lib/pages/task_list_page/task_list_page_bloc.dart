@@ -11,7 +11,6 @@ import 'package:todointernship/pages/task_list_page/task_list_page_state.dart';
 import 'package:todointernship/pages/task_list_page/hidden_task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_state.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
-import 'package:todointernship/widgets/task_creation_dialog/task_creation_event.dart';
 
 class TaskListPageBloc {
 
@@ -24,7 +23,6 @@ class TaskListPageBloc {
   final _taskListStateStreamController = StreamController<TaskListState>();
   final _hideTaskEventStreamController = StreamController<HiddenTaskEvent>();
   final _hiddenTaskStateStreamController = StreamController<HiddenTaskState>();
-  final _taskCreationEventStreamController = StreamController<NewTaskEvent>();
   final _taskEventStreamController = StreamController<TaskEvent>();
   final _themeStreamController = StreamController<CategoryTheme>();
   final _pickedThemeStreamController = StreamController<int>();
@@ -33,9 +31,8 @@ class TaskListPageBloc {
   Stream get hiddenTaskStateStream => _hiddenTaskStateStreamController.stream;
   Stream get taskListStateStream => _taskListStateStreamController.stream;
   Stream get themeStream => _themeStreamController.stream;
-  
+
   Sink get hideTaskEventSink => _hideTaskEventStreamController.sink;
-  Sink get taskCreationEventSink => _taskCreationEventStreamController.sink;
   Sink get taskEventSink => _taskEventStreamController.sink;
   Sink get pickerThemeSink => _pickedThemeStreamController.sink;
 
@@ -50,7 +47,6 @@ class TaskListPageBloc {
     _loadPage().then((value) => _taskListPageStateStreamController.add(value));
     _loadTaskList().then((_) => _setTaskListState());
     _bindHiddenEventListener();
-    _bindTaskCreationEventListener();
     _bindTaskEventListener();
     _bindThemePicker();
   }
@@ -70,15 +66,12 @@ class TaskListPageBloc {
     });
   }
 
-  _bindTaskCreationEventListener() {
-    _taskCreationEventStreamController.stream.listen((event) {
-      _saveNewTask(event);
-    });
-  }
-
   _bindTaskEventListener() {
     _taskEventStreamController.stream.listen((event) { 
       switch(event.runtimeType) {
+        case NewTaskEvent:
+          _saveNewTask(event);
+          break;
         case CompletedTaskEvent:
           _completeTask(event);
           break;
@@ -91,6 +84,8 @@ class TaskListPageBloc {
         case UpdateTaskListEvent:
           _setTaskListState();
           break;
+        case UpdateTaskNameEvent:
+          _updateTaskName(event);
       }
     });
   }
@@ -136,7 +131,7 @@ class TaskListPageBloc {
     _taskList.add(task);
     _setTaskListState();
   }
-  
+
   void _completeTask(CompletedTaskEvent event) {
     var task = _taskList.firstWhere((element) => element.id == event.taskId);
     task.isCompleted = !task.isCompleted;
@@ -155,6 +150,12 @@ class TaskListPageBloc {
     _taskList.removeWhere((element) => element.id == id);
     _taskRepository.removeTask(id);
     _setTaskListState();
+  }
+
+  void _updateTaskName(UpdateTaskNameEvent event) {
+    var task = _taskList.firstWhere((element) => element.id == event.id);
+    task.name = event.name;
+    _taskRepository.updateTask(task);
   }
 
   Future<CategoryTheme> _getTheme() async {
@@ -179,7 +180,6 @@ class TaskListPageBloc {
     _taskListPageStateStreamController.close();
     _hideTaskEventStreamController.close();
     _hiddenTaskStateStreamController.close();
-    _taskCreationEventStreamController.close();
     _taskListStateStreamController.close();
     _taskEventStreamController.close();
     _themeStreamController.close();

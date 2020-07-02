@@ -174,7 +174,7 @@ class _TaskList extends StatelessWidget {
 
   void _newTask(BuildContext context) async {
     // ignore: close_sinks
-    var sink = TaskListBlocProvider.of(context).bloc.taskCreationEventSink;
+    var sink = TaskListBlocProvider.of(context).bloc.taskEventSink;
     await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {

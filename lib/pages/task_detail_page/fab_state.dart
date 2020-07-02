@@ -1,7 +1,8 @@
 class FabState {
 
-  final double offset;
+  final double top;
+  final double scale;
   final bool isCompleted;
 
-  FabState(this.offset, this.isCompleted);
+  FabState(this.top, this.scale, this.isCompleted);
 }

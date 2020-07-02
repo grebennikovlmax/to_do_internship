@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/data/ImageManager.dart';
 
 import 'dart:io';
 import 'dart:math';
@@ -10,7 +9,7 @@ class PhotoList extends StatelessWidget {
 
   final VoidCallback onPickPhoto;
   final void Function(String) onDelete;
-  final Future<List<TaskImage>> imageList;
+  final List<TaskImage> imageList;
   final double height = 150;
 
   PhotoList({this.onPickPhoto, this.imageList, this.onDelete});
@@ -22,37 +21,29 @@ class PhotoList extends StatelessWidget {
       height: height,
       child: Container(
         padding: EdgeInsets.all(16),
-        child: FutureBuilder<List<TaskImage>>(
-          future: imageList,
-          builder: (context, snapshot) {
-            if(!snapshot.hasData) {
-              return Container();
+        child: GridView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: imageList.length + 1,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              crossAxisCount: 1,
+            ),
+            itemBuilder: (context, index) {
+              if(!imageList.asMap().containsKey(index)) {
+                return _AddImageButton(
+                  padding: height / 2.5,
+                  onTap: onPickPhoto
+                );
+              }
+              return _ImageItem(
+                onDelete: () => {},
+                image: imageList[index],
+              );
             }
-            return GridView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: snapshot.data.length + 1,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  crossAxisCount: 1,
-                ),
-                itemBuilder: (context, index) {
-                  if(!snapshot.data.asMap().containsKey(index)) {
-                    return _AddImageButton(
-                      padding: height / 2.5,
-                      onTap: onPickPhoto
-                    );
-                  }
-                  return _ImageItem(
-                    onDelete: () => onDelete(snapshot.data[index].path),
-                    path: snapshot.data[index].path,
-                  );
-                }
-            );
-          }
-        ),
-      )
-    );
+        )
+    ),
+      );
   }
 
 }
@@ -60,25 +51,17 @@ class PhotoList extends StatelessWidget {
 class _ImageItem extends StatelessWidget {
 
   final VoidCallback onDelete;
-  final String path;
+  final TaskImage image;
 
-  _ImageItem({this.onDelete, this.path});
+  _ImageItem({this.onDelete, this.image});
 
   @override
   Widget build(BuildContext context) {
     return Stack(
         children: <Widget>[
           Positioned.fill(
-            child: FutureBuilder<String>(
-              future: ImageManager.shared.path,
-              builder: (context, snapshot) {
-                if(!snapshot.hasData) {
-                  return Container();
-                }
-                return Image.file(File(snapshot.data + path),
-                      fit: BoxFit.cover
-                );
-              }
+              child: Image.file(File(image.path),
+                fit: BoxFit.cover
             ),
           ),
           Align(

@@ -49,11 +49,11 @@ class CategoryListPageBloc {
     var incompletedTaskCount = incompletedTask.length;
     _categoryList = await repository.getAllCategories();
     Future.wait(_categoryList.map((category) async {
+      category.theme = await _loadCategoryTheme(category.id);
       category.incompletedTask = incompletedTask.where((task) => task.categoryId == category.id).length;
       category.completedTask = completedTask.where((task) => task.categoryId == category.id).length;
       category.amountTask = category.incompletedTask + category.completedTask;
       if(category.amountTask != 0) category.completionRate = category.completedTask / category.amountTask;
-      category.theme = await _loadCategoryTheme(category.id);
     }));
     var taskAmount = incompletedTaskCount + completedTaskCount;
     var completionRate = taskAmount == 0 ? 0.0 : completedTaskCount / taskAmount;

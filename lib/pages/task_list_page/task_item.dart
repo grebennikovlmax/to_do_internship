@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail_page_block.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
 import 'package:todointernship/widgets/custom_checkbox.dart';
-import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
-
 
 class TaskItem extends StatelessWidget {
 
@@ -61,9 +60,12 @@ class TaskItem extends StatelessWidget {
   }
 
   void _toStepList(BuildContext context) {
-    Navigator.of(context).pushNamed('/task_detail', arguments: TaskDetailArguments(
-      task: task,
-    )).then((value) => TaskListBlocProvider.of(context).bloc.taskEventSink.add((UpdateTaskListEvent())));
+    var bloc = TaskDetailPageBloc(
+        task,
+        TaskListBlocProvider.of(context).bloc.taskEventSink,
+    );
+    Navigator.of(context).pushNamed('/task_detail', arguments: bloc)
+        .then((value) => TaskListBlocProvider.of(context).bloc.taskEventSink.add((UpdateTaskListEvent())));
   }
 
 }

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:todointernship/pages/task_list_page/task_event.dart';
 
 import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
-import 'package:todointernship/widgets/task_creation_dialog/task_creation_bloc.dart';
+import 'package:todointernship/widgets/task_creation_dialog/date_picker_bloc.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';
-import 'package:todointernship/widgets/task_creation_dialog/task_creation_event.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
 
 class TaskCreationDialog extends StatefulWidget {
 
   final bool edit;
   final String name;
-  final Sink<TaskCreationEvent> creationEventSink;
+  final Sink<TaskEvent> creationEventSink;
 
   TaskCreationDialog({this.name, @required this.edit, this.creationEventSink});
 
@@ -21,7 +21,7 @@ class TaskCreationDialog extends StatefulWidget {
 class _TaskCreationDialogState extends State<TaskCreationDialog> {
 
   final _formKey = GlobalKey<FormState>();
-  final _block = TaskCreationBloc();
+  final _block = DatePickerBloc();
 
   String name;
   DateTime finalDate;
@@ -144,7 +144,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
     if(_formKey.currentState.validate()) {
       _formKey.currentState.save();
       var event = widget.edit
-          ? EditTaskEvent(name)
+          ? UpdateTaskNameEvent(name)
           : NewTaskEvent(finalDate,notificationDate,name);
       widget.creationEventSink.add(event);
       Navigator.of(context).pop();
