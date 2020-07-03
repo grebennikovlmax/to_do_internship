@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/image_list.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_block.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
-import 'package:todointernship/pages/task_list_page/task_list.dart';
-import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
-import 'package:todointernship/widgets/task_creation_dialog/date_picker_bloc.dart';
-import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
-import 'package:todointernship/widgets/time_picker_dialog.dart';
 
 import 'date_notification_card.dart';
 

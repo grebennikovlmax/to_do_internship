@@ -91,44 +91,57 @@ class _CategoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 29, 16, 0),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            AllTasksCard(
-              completedTask: state.completedTask,
-              incompletedTask: state.incompletedTask,
-              completionRate: state.complitionTaskRate,
-              amountTask: state.taskAmount,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: CustomScrollView(
+          slivers: <Widget>[
+            SliverList(
+              delegate: SliverChildListDelegate([
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 20, 8, 20),
+                  child: AllTasksCard(
+                    completedTask: state.completedTask,
+                    incompletedTask: state.incompletedTask,
+                    completionRate: state.complitionTaskRate,
+                    amountTask: state.taskAmount,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text("Ветки задач",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      )
+                  ),
+                ),
+              ]),
             ),
-            Divider(height: 20, color:  Colors.transparent),
-            Text("Ветки задач",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                )
-            ),
-            Divider(height: 20, color:  Colors.transparent),
-            Expanded(
-                child: GridView.builder(
-                    itemCount: state.categoryList.length + 1,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
-                    ),
-                    itemBuilder: (BuildContext context, index) {
-                      if(!state.categoryList.asMap().containsKey(index)) {
-                        return _AddButton(
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if(!state.categoryList.asMap().containsKey(index)) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _AddButton(
                           onTap: onAddNew,
-                        );
-                      }
-                      return CategoryCard(
-                        category: state.categoryList[index],
+                        ),
                       );
                     }
-                )
-            ),
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CategoryCard(
+                        category: state.categoryList[index],
+                      ),
+                    );
+                  },
+                  childCount: state.categoryList.length + 1
+              ),
+            )
         ]
       ),
     );

@@ -4,7 +4,6 @@ import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/data/theme_list_data.dart';
 import 'package:todointernship/model/category.dart';
-import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
