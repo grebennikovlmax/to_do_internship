@@ -4,40 +4,68 @@ import 'package:intl/intl.dart';
 
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/pages/task_detail_page/step_event.dart';
 import 'package:todointernship/pages/task_detail_page/step_item.dart';
+import 'package:todointernship/pages/task_detail_page/steps_card_bloc.dart';
+import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
-class StepsCard extends StatelessWidget {
+class StepsCard extends StatefulWidget {
 
-  final List<TaskStep> stepList;
+  final String creationDate;
 
-  StepsCard({this.stepList});
+  StepsCard({this.creationDate});
+
+  @override
+  _StepsCardState createState() => _StepsCardState();
+}
+
+class _StepsCardState extends State<StepsCard> {
+
+  StepsCardBloc _bloc;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bloc = StepsCardBloc(
+        TaskDetailBlocProvider.of(context).stepList,
+        TaskDetailBlocProvider.of(context).taskId
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-//    String formatDate = DateFormat("dd.MM.yyyy").format(TaskInfo.of(context).task.createdDate);
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(14.0),
-            child: Text("Создано: 1",
+            child: Text("Создано: ${widget.creationDate}",
               style: TextStyle(
                   color: Color.fromRGBO(0, 0, 0, 0.6)
               ),
             ),
           ),
-          ListView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: stepList.length,
-              itemBuilder: (context, index) {
-                return StepItem(
-                  onDelete: () => _onDelete(index),
-                  step: stepList[index],
-                );
-              }
+          StreamBuilder<List<TaskStep>>(
+            stream: _bloc.taskStepListStream,
+            initialData: TaskDetailBlocProvider.of(context).stepList,
+            builder: (context, snapshot) {
+              if(!snapshot.hasData) return Container();
+              return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (context, index) {
+                    return StepItem(
+                      onCompleted: () => _onCompleted(snapshot.data[index].id),
+                      onDelete: () => _onDelete(snapshot.data[index].id),
+                      onTextEditing: ([text]) => _updateStep(text, snapshot.data[index].id),
+                      step: snapshot.data[index],
+                    );
+                  }
+              );
+            }
           ),
           ListTile(
             leading: Icon(Icons.add,
@@ -48,7 +76,7 @@ class StepsCard extends StatelessWidget {
                   color: const Color(0xff1A9FFF)
               ),
             ),
-            onTap: () => _onNewStep(context),
+            onTap: () => _bloc.stepEventSink.add(AddStepEvent()),
           ),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 40),
@@ -64,19 +92,21 @@ class StepsCard extends StatelessWidget {
     );
   }
 
-  void _onDelete(int index) async {
-    await TaskDatabaseRepository.shared.removeStep(stepList[index].id);
-    stepList.removeAt(index);
+  @override
+  void dispose() {
+    _bloc.dispose();
+    super.dispose();
   }
 
-  void _onNewStep(BuildContext context) async {
-    final newStep = TaskStep(
-      description: "",
-//      taskID: TaskInfo.of(context).task.id
-    );
-    final id = await TaskDatabaseRepository.shared.saveStep(newStep);
-    newStep.id = id;
-    stepList.add(newStep);
+  void _onDelete(int id) {
+    _bloc.stepEventSink.add(DeleteStepEvent(id));
+  }
 
+  void _updateStep(String text, int id) {
+    _bloc.stepEventSink.add(EditStepEvent(text,id));
+  }
+
+  void _onCompleted(int id) {
+    _bloc.stepEventSink.add(CompletedStepEvent(id));
   }
 }

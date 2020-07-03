@@ -28,8 +28,19 @@ class NewTaskEvent implements TaskEvent {
 
 class UpdateTaskNameEvent extends TaskEvent {
   final String name;
-  int id;
   UpdateTaskNameEvent(this.name);
+}
+
+class UpdateTaskFinalDateEvent extends TaskEvent {
+  final DateTime newDate;
+
+  UpdateTaskFinalDateEvent(this.newDate);
+}
+
+class UpdateTaskNotificationDateEvent extends TaskEvent {
+  final DateTime newDate;
+
+  UpdateTaskNotificationDateEvent(this.newDate);
 }
 
 class RemoveCompletedEvent extends TaskEvent {

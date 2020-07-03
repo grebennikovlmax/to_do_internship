@@ -84,8 +84,6 @@ class TaskListPageBloc {
         case UpdateTaskListEvent:
           _setTaskListState();
           break;
-        case UpdateTaskNameEvent:
-          _updateTaskName(event);
       }
     });
   }
@@ -150,12 +148,6 @@ class TaskListPageBloc {
     _taskList.removeWhere((element) => element.id == id);
     _taskRepository.removeTask(id);
     _setTaskListState();
-  }
-
-  void _updateTaskName(UpdateTaskNameEvent event) {
-    var task = _taskList.firstWhere((element) => element.id == event.id);
-    task.name = event.name;
-    _taskRepository.updateTask(task);
   }
 
   Future<CategoryTheme> _getTheme() async {

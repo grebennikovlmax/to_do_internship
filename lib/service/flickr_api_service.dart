@@ -9,8 +9,8 @@ class FlickrApiService {
   final String _url = 'https://www.flickr.com/services/rest/';
   final String _jsonFormat = '&format=json&nojsoncallback=?';
   final String _apiKey = '&api_key=d328bb24cdf0fb1358182bd72884f361';
-  final String _getRecentMethod = '?method=flickr.photos.getRecent&extras=url_m';
-  final String _photoSearchMethod = '?method=flickr.photos.search&extras=url_m';
+  final String _getRecentMethod = '?method=flickr.photos.getRecent';
+  final String _photoSearchMethod = '?method=flickr.photos.search';
 
   static final shared = FlickrApiService();
 

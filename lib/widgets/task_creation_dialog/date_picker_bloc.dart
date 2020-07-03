@@ -17,24 +17,28 @@ class DatePickerBloc {
 
   String _finalDate;
   String _notificationDate;
+  bool _finalDayIsExpired;
+  bool _notificationDayIsExpired;
 
   DatePickerBloc({DateTime finalDate,DateTime notificationDate}) {
     _finalDate = finalDate != null ? dateFormatter.format(finalDate) : 'Дата выполнения';
     _notificationDate = notificationDate != null ? dateTimeFormatter.format(notificationDate) : 'Напомнить';
-    _dateStateStreamController.add(DateState(_notificationDate, _finalDate));
+    _setDateState(finalDate, notificationDate);
     _dateEventStreamController.stream.listen((event) {
-      _setDateState(event);
+      _setDateState(event.finalDate, event.notificationDate);
     });
   }
 
-  void _setDateState(DateEvent event) {
-    if(event.finalDate != null) {
-      _finalDate = dateFormatter.format(event.finalDate);
+  void _setDateState(DateTime finalDate, DateTime notificationDate) {
+    if(finalDate != null) {
+      _finalDayIsExpired = finalDate.isBefore(DateTime.now());
+      _finalDate = dateFormatter.format(finalDate);
     }
-    if(event.notificationDate != null) {
-      _notificationDate = dateTimeFormatter.format(event.notificationDate);
+    if(notificationDate != null) {
+      _notificationDayIsExpired = notificationDate.isBefore(DateTime.now());
+      _notificationDate = dateTimeFormatter.format(notificationDate);
     }
-    _dateStateStreamController.add(DateState(_notificationDate, _finalDate));
+    _dateStateStreamController.add(DateState(_notificationDate, _finalDate, _finalDayIsExpired, _notificationDayIsExpired));
    }
 
   void dispose() {

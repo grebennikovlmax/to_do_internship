@@ -2,6 +2,7 @@ class TaskImage {
   
   final int taskID;
   final String path;
+  String pathToFile;
   
   TaskImage({this.taskID, this.path});
 

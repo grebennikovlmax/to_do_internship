@@ -65,7 +65,7 @@ class AllTasksCard extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: SvgPicture.asset('assets/svg/mountain.svg',
-                    fit: BoxFit.fitHeight,),
+                    fit: BoxFit.scaleDown,),
 //                  child: CustomPaint(
 //                    size: Size(double.infinity,120),
 //                    painter: MountPainter(),

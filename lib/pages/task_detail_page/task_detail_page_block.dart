@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:todointernship/data/ImageManager.dart';
+import 'package:intl/intl.dart';
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
+import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 
 class TaskDetailPageBloc {
 
@@ -18,17 +18,13 @@ class TaskDetailPageBloc {
 
   final _taskRepository = TaskDatabaseRepository.shared;
   final _taskDetailPageStateStreamController = StreamController<TaskDetailPageState>();
-  final _taskStepListStreamController = StreamController<List<TaskStep>>();
   final _fabPositionStreamController = StreamController<double>();
   final _fabStateStreamController = StreamController<FabState>();
-  final _imageListStreamController = StreamController<List<TaskImage>>();
   final _taskEditingStreamController = StreamController<TaskEvent>();
   final _titleStreamController = StreamController<String>();
 
   Stream get taskDetailPageStateStream => _taskDetailPageStateStreamController.stream;
-  Stream get taskStepListStream => _taskStepListStreamController.stream;
   Stream get fabStateStream => _fabStateStreamController.stream;
-  Stream get imageListStream => _imageListStreamController.stream;
   Stream get titleStream => _titleStreamController.stream;
 
   Sink get fabPositionSink => _fabPositionStreamController.sink;
@@ -43,14 +39,11 @@ class TaskDetailPageBloc {
   {
     _loadPage().then((value) => _taskDetailPageStateStreamController.add(value));
     _bindTaskEventListeners();
-    _updateStepList();
     _bindFabPositionListener();
     _setFabState();
-    _loadImagesPath();
-
   }
 
-  _bindTaskEventListeners() {
+  void _bindTaskEventListeners() {
     _taskEditingStreamController.stream.listen((event) {
       switch(event.runtimeType) {
         case UpdateTaskNameEvent:
@@ -62,28 +55,25 @@ class TaskDetailPageBloc {
         case CompletedTaskEvent:
           _onCompletedTask();
           break;
+        case UpdateTaskNotificationDateEvent:
+          _onUpdateNotificationDate(event);
+          break;
+        case UpdateTaskFinalDateEvent:
+          _onUpdateFinalDate(event);
+          break;
       }
     });
   }
 
-  Future<void> _loadImagesPath() async{
-    var imageList = await _taskRepository.fetchImagesForTask(_task.id);
-    var path = await ImageManager.shared.path;
-    imageList.map((e) => path + e.path).toList();
-    _imageListStreamController.add(imageList);
-  }
-
   Future<LoadedPageState> _loadPage() async{
     var theme = await _getTheme();
-    return LoadedPageState(theme,_task.name,_task.finalDate,_task.notificationDate);;
+    var dateFormatter = DateFormat("dd.MM.yyyy");
+    var creationDate = dateFormatter.format(_task.createdDate);
+    return LoadedPageState(theme,_task.name,_task.finalDate,_task.notificationDate, creationDate, _task.id, _task.steps);
   }
 
   Future<CategoryTheme> _getTheme() async {
     return await _pref.loadTheme(_task.categoryId);
-  }
-
-  void _updateStepList() {
-    _taskStepListStreamController.add(_task.steps);
   }
 
   void _bindFabPositionListener() {
@@ -116,21 +106,32 @@ class TaskDetailPageBloc {
 
   void _updateTaskName(UpdateTaskNameEvent event) {
     _titleStreamController.add(event.name);
-    event.id = _task.id;
-    taskEventSink.add(event);
+    _task.name = event.name;
+    _taskRepository.updateTask(_task);
   }
 
   void _onCompletedTask() {
-    taskEventSink.add(CompletedTaskEvent(_task.id));
+    _task.isCompleted = !_task.isCompleted;
+    _taskRepository.updateTask(_task);
     _setFabState();
+  }
+
+  void _onUpdateNotificationDate(UpdateTaskNotificationDateEvent event) {
+    _task.notificationDate = event.newDate;
+    _taskRepository.updateTask(_task);
+    var pm = PlatformNotificationChannel();
+    pm.setNotification(_task);
+  }
+
+  void _onUpdateFinalDate(UpdateTaskFinalDateEvent event) {
+    _task.finalDate = event.newDate;
+    _taskRepository.updateTask(_task);
   }
 
   void dispose() {
     _taskDetailPageStateStreamController.close();
-    _taskStepListStreamController.close();
     _fabPositionStreamController.close();
     _fabStateStreamController.close();
-    _imageListStreamController.close();
     _taskEditingStreamController.close();
     _titleStreamController.close();
   }

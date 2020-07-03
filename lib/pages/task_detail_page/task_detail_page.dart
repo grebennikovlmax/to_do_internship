@@ -2,23 +2,29 @@ import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/model/task_image.dart';
-import 'package:todointernship/pages/task_detail_page/photo_list.dart';
+import 'package:todointernship/pages/task_detail_page/image_list.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_block.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
+import 'package:todointernship/pages/task_list_page/task_list.dart';
+import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_picker_bloc.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
+import 'package:todointernship/widgets/time_picker_dialog.dart';
+
+import 'date_notification_card.dart';
 
 class TaskDetailBlocProvider extends InheritedWidget {
 
   final TaskDetailPageBloc bloc;
-
+  final List<TaskStep> stepList;
+  final int taskId;
   static TaskDetailBlocProvider of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TaskDetailBlocProvider>();
 
-  TaskDetailBlocProvider({this.bloc, Widget child}) : super(child: child);
+  TaskDetailBlocProvider({this.bloc,this.stepList, this.taskId, Widget child}) : super(child: child);
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) {
@@ -41,17 +47,20 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return TaskDetailBlocProvider(
-        bloc: widget.bloc,
-        child: StreamBuilder<TaskDetailPageState>(
-            stream: widget.bloc.taskDetailPageStateStream,
-            builder: (context, snapshot) {
-              if(snapshot.data is LoadedPageState) {
-                return _StepList(state: snapshot.data);
-              }
-              return Container();
-            }
-        )
+    return StreamBuilder<TaskDetailPageState>(
+        stream: widget.bloc.taskDetailPageStateStream,
+        builder: (context, snapshot) {
+          if(snapshot.data is LoadedPageState) {
+            var state = snapshot.data as LoadedPageState;
+            return TaskDetailBlocProvider(
+                bloc: widget.bloc,
+                stepList: state.stepList,
+                taskId: state.taskId,
+                child: _StepList(state: snapshot.data)
+            );
+          }
+          return Container();
+        }
     );
   }
 
@@ -81,15 +90,10 @@ class _StepListState extends State<_StepList> {
   final double _appBarHeight = 128;
   TaskDetailPageBloc _taskDetailBloc;
   ScrollController _scrollController;
-  DatePickerBloc _datePickerBloc;
 
   @override
   void initState() {
     super.initState();
-    _datePickerBloc = DatePickerBloc(
-        finalDate: widget.state.finalDate,
-        notificationDate: widget.state.notificationDate
-    );
     _scrollController = ScrollController();
   }
 
@@ -118,14 +122,28 @@ class _StepListState extends State<_StepList> {
                     return _TaskDetailSliverAppBar(
                       title: snapshot.data,
                       color: Color(widget.state.theme.primaryColor),
-                      onSelected: _onSelectedMenuItem,
+                      taskEditingSink: _taskDetailBloc.taskEditingSink,
                       height: _appBarHeight,
                     );
                   }
               ),
-              _TaskDetailPageBody(
-                taskDetailBloc: _taskDetailBloc,
-                datePickerBloc: _datePickerBloc,
+              SliverList(
+                  delegate: SliverChildListDelegate([
+                    Card(
+                      margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
+                      child: StepsCard(
+                        creationDate: widget.state.creationDate
+                      )
+                    ),
+                    DateNotificationCard(
+                      finalDate: widget.state.finalDate,
+                      notificationDate: widget.state.notificationDate,
+                      taskEditingSink: _taskDetailBloc.taskEditingSink,
+                    ),
+                    SizedBox(height: 30),
+                    ImageList(),
+                  ]
+                )
               )
             ]
           ),
@@ -155,36 +173,8 @@ class _StepListState extends State<_StepList> {
 
   @override
   void dispose() {
-    _datePickerBloc.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onSelectedMenuItem(_TaskDetailPopupMenuItem item) {
-    switch(item) {
-      case _TaskDetailPopupMenuItem.update:
-        _updateTask();
-        break;
-      case _TaskDetailPopupMenuItem.delete:
-        _deleteTask();
-    }
-  }
-
-  Future<void> _updateTask() async {
-    await showDialog(
-        context: context,
-        builder: (context) {
-          return TaskCreationDialog(
-            edit: true,
-            creationEventSink: _taskDetailBloc.taskEditingSink,
-          );
-        }
-    );
-  }
-
-  void _deleteTask() {
-    _taskDetailBloc.taskEditingSink.add(RemoveTaskEvent());
-    Navigator.of(context).pop();
   }
 
   void _onCompleted() {
@@ -193,55 +183,6 @@ class _StepListState extends State<_StepList> {
 
 }
 
-class _TaskDetailPageBody extends StatelessWidget {
-
-  final TaskDetailPageBloc taskDetailBloc;
-  final DatePickerBloc datePickerBloc;
-
-  _TaskDetailPageBody({this.taskDetailBloc, this.datePickerBloc});
-  @override
-  Widget build(BuildContext context) {
-    return SliverList(
-        delegate: SliverChildListDelegate([
-          Card(
-            margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
-            child: StreamBuilder<List<TaskStep>>(
-                stream: taskDetailBloc.taskStepListStream,
-                builder: (context, snapshot) {
-                  if(!snapshot.hasData) return Container();
-                  return StepsCard(stepList: snapshot.data);
-                }
-            ),
-          ),
-          StreamBuilder<DateState>(
-            stream: datePickerBloc.dateStateStream,
-            builder: (context, snapshot) {
-              return _DateNotificationCard(
-                onPickDate: () {},
-                state: snapshot.data,
-                onNotification: () {},
-              );
-            },
-          ),
-          SizedBox(height: 30),
-          StreamBuilder<List<TaskImage>>(
-              stream: taskDetailBloc.imageListStream,
-              builder: (context, snapshot) {
-                if(!snapshot.hasData) return Container();
-                return PhotoList(
-                  onDelete: (val) {} ,
-                  imageList: snapshot.data,
-                  onPickPhoto: () {},
-                );
-              }
-          )
-        ]
-      )
-    );
-  }
-}
-
-
 enum _TaskDetailPopupMenuItem {update, delete}
 
 class _TaskDetailSliverAppBar extends StatelessWidget {
@@ -249,9 +190,9 @@ class _TaskDetailSliverAppBar extends StatelessWidget {
   final double height;
   final String title;
   final Color color;
-  final PopupMenuItemSelected<_TaskDetailPopupMenuItem> onSelected;
+  final Sink<TaskEvent> taskEditingSink;
 
-  _TaskDetailSliverAppBar({this.height, this.title, this.onSelected, this.color});
+  _TaskDetailSliverAppBar({this.height, this.title, this.taskEditingSink, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +205,7 @@ class _TaskDetailSliverAppBar extends StatelessWidget {
       ),
       actions: <Widget>[
         PopupMenuButton<_TaskDetailPopupMenuItem>(
-          onSelected: onSelected,
+          onSelected: (item) => _onSelectedMenuItem(item, context),
           itemBuilder: (BuildContext context) {
             return [
               PopupMenuItem<_TaskDetailPopupMenuItem>(
@@ -281,44 +222,36 @@ class _TaskDetailSliverAppBar extends StatelessWidget {
       ],
     );
   }
-}
 
-class _DateNotificationCard extends StatelessWidget {
+  void _onSelectedMenuItem(_TaskDetailPopupMenuItem item, BuildContext context) {
+    switch(item) {
+      case _TaskDetailPopupMenuItem.update:
+        _updateTask(context);
+        break;
+      case _TaskDetailPopupMenuItem.delete:
+        _deleteTask(context);
+    }
+  }
 
-  final VoidCallback onPickDate;
-  final DateState state;
-  final VoidCallback onNotification;
-
-  _DateNotificationCard({this.onPickDate, this.onNotification, this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.fromLTRB(16, 10, 16, 5),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ListTile(
-              onTap: onNotification,
-              leading: Icon(Icons.notifications_none),
-              title: state == null ? Text('Напомнить') : Text(state.notificationDate)
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 40),
-            child: Divider(
-              thickness: 2,
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.insert_invitation),
-            onTap: onPickDate,
-            title: state == null ? Text('Добавить дату выполнения')
-                : Text(state.finalDate),
-          )
-        ],
-      ),
+  Future<void> _updateTask(BuildContext context) async {
+    await showDialog(
+        context: context,
+        builder: (context) {
+          return TaskCreationDialog(
+            edit: true,
+            name: title,
+            creationEventSink: taskEditingSink,
+          );
+        }
     );
   }
+
+  void _deleteTask(BuildContext context) {
+    taskEditingSink.add(RemoveTaskEvent());
+    Navigator.of(context).pop();
+  }
+
 }
+
 
 

@@ -45,10 +45,6 @@ class TaskListBlocProvider extends InheritedWidget {
 
 class _TaskListPageState extends State<TaskListPage> {
 
-  final ThemePickerBloc _themePickerBloc;
-
-  _TaskListPageState() : _themePickerBloc = ThemePickerBloc();
-
   @override
   Widget build(BuildContext context) {
     return TaskListBlocProvider(
@@ -58,7 +54,6 @@ class _TaskListPageState extends State<TaskListPage> {
         builder: (context, pageState) {
           if(pageState.data is LoadedPageState) {
             return _TaskList(
-              themePickerBloc: _themePickerBloc,
               state: pageState.data as LoadedPageState,
             );
           }
@@ -73,7 +68,6 @@ class _TaskListPageState extends State<TaskListPage> {
   @override
   void dispose() {
     widget.bloc.dispose();
-    _themePickerBloc.dispose();
     super.dispose();
   }
 
@@ -82,9 +76,8 @@ class _TaskListPageState extends State<TaskListPage> {
 class _TaskList extends StatelessWidget {
 
   final LoadedPageState state;
-  final ThemePickerBloc themePickerBloc;
 
-  _TaskList({this.state, this.themePickerBloc});
+  _TaskList({this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +98,7 @@ class _TaskList extends StatelessWidget {
                         return PopupMenu(
                           isHidden: snapshot.data.state,
                           onDelete: () => _deleteCompletedTask(context),
-                          onChangeTheme: () => _showThemePicker(context),
+                          onChangeTheme: () => _showThemePicker(context, themeSnapshot.data.primaryColor),
                           onHide: () => _onHideCompleted(context),
                         );
                       }
@@ -138,38 +131,17 @@ class _TaskList extends StatelessWidget {
     TaskListBlocProvider.of(context).bloc.hideTaskEventSink.add(HideTaskEvent());
   }
 
-  void _showThemePicker(BuildContext context) {
+  void _showThemePicker(BuildContext context, int color) {
     showBottomSheet(
         context: context,
         builder: (context) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Выбор темы',
-                  style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 18),
-                ),
-                SizedBox(height: 20),
-                ThemePicker(
-                  onPick: (index) => _onPickTheme(index, context),
-                  eventSink: themePickerBloc.themePickerEventSink,
-                  stateStream: themePickerBloc.themePickerStateStream,
-                )
-              ],
-            ),
-          );
+          return _ThemePickerBottomSheet(pickedColor: color);
         }
     );
   }
 
   void _deleteCompletedTask(BuildContext context) {
     TaskListBlocProvider.of(context).bloc.taskEventSink.add(RemoveCompletedEvent());
-  }
-
-  void _onPickTheme(int index, BuildContext context) {
-    TaskListBlocProvider.of(context).bloc.pickerThemeSink.add(index);
   }
 
   void _newTask(BuildContext context) async {
@@ -184,5 +156,59 @@ class _TaskList extends StatelessWidget {
           );
         }
     );
+  }
+}
+
+class _ThemePickerBottomSheet extends StatefulWidget {
+
+  final int pickedColor;
+
+  _ThemePickerBottomSheet({this.pickedColor});
+
+  @override
+  _ThemePickerBottomSheetState createState() => _ThemePickerBottomSheetState();
+}
+
+class _ThemePickerBottomSheetState extends State<_ThemePickerBottomSheet> {
+
+  ThemePickerBloc _themePickerBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _themePickerBloc = ThemePickerBloc(pickedColor: widget.pickedColor);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.all(16),
+        child:
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('Выбор темы',
+              style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 18),
+            ),
+            SizedBox(height: 20),
+            ThemePicker(
+              onPick: _onPickTheme,
+              eventSink: _themePickerBloc.themePickerEventSink,
+              stateStream: _themePickerBloc.themePickerStateStream,
+            )
+          ],
+        ),
+      );
+  }
+
+  @override
+  void dispose() {
+    _themePickerBloc.dispose();
+    super.dispose();
+  }
+
+  void _onPickTheme(int index) {
+    TaskListBlocProvider.of(context).bloc.pickerThemeSink.add(index);
   }
 }
