@@ -67,7 +67,7 @@ class ThemeBloc {
     if(color == null) {
       return ThemeListData.all.mainTheme;
     }
-    return ThemeListData.all.themes.firstWhere((element) => element.primaryColor == color);
+    return ThemeListData.all.themes.firstWhere((element) => element.backgroundColor == color);
   }
 
   void _refreshList() {

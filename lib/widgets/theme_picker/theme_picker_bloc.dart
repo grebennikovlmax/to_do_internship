@@ -36,7 +36,7 @@ class ThemePickerBloc {
 
   void _initColorList() {
     var categoryThemeList = ThemeListData.all.themes;
-    _colorList = categoryThemeList.map((e) => e.primaryColor).toList();
+    _colorList = categoryThemeList.map((e) => e.backgroundColor).toList();
     _pickedColor ??= _colorList.last;
     _themePickerStateStreamController.add(ThemePickerState(_pickedColor, _colorList));
   }

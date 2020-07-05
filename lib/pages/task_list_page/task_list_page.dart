@@ -103,7 +103,7 @@ class _TaskList extends StatelessWidget {
                         return PopupMenu(
                           isHidden: snapshot.data.state,
                           onDelete: () => _deleteCompletedTask(context),
-                          onChangeTheme: () => _showThemePicker(context, themeSnapshot.data[state.categoryId].primaryColor),
+                          onChangeTheme: () => _showThemePicker(context, themeSnapshot.data[state.categoryId].backgroundColor),
                           onHide: () => _onHideCompleted(context),
                         );
                       }
@@ -218,6 +218,6 @@ class _ThemePickerBottomSheetState extends State<_ThemePickerBottomSheet> {
   }
 
   void _onPickTheme(int color) {
-    ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(ChangeThemeEvent(1, color));
+    ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(ChangeThemeEvent(widget.categoryId, color));
   }
 }
