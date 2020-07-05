@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todointernship/model/category_theme.dart';
 
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/image_list.dart';
@@ -8,6 +9,8 @@ import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dar
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
+import 'package:todointernship/theme_bloc_provider.dart';
+import 'package:todointernship/theme_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
 import 'package:todointernship/pages/task_detail_page/date_notification_card.dart';
 
@@ -104,51 +107,61 @@ class _StepListState extends State<_StepList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(widget.state.theme.backgroundColor),
-      body: Stack(
-        children: <Widget>[
-          CustomScrollView(
-            controller: _scrollController,
-            slivers: <Widget>[
-              StreamBuilder<String>(
-                stream: _taskDetailBloc.titleStream,
-                initialData: widget.state.title,
-                builder: (context, snapshot) {
-                    return _TaskDetailSliverAppBar(
-                      title: snapshot.data,
-                      color: Color(widget.state.theme.primaryColor),
-                      taskEditingSink: _taskDetailBloc.taskEditingSink,
-                      height: _appBarHeight,
-                    );
-                  }
+    return StreamBuilder<Map<int, CategoryTheme>>(
+      stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
+      builder: (context, snapshot) {
+        if(!snapshot.hasData) {
+          ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(RefreshThemeEvent());
+          return Container();
+        }
+        var theme = snapshot.data[widget.state.categoryId];
+        return Scaffold(
+          backgroundColor: Color(theme.backgroundColor),
+          body: Stack(
+            children: <Widget>[
+              CustomScrollView(
+                controller: _scrollController,
+                slivers: <Widget>[
+                  StreamBuilder<String>(
+                    stream: _taskDetailBloc.titleStream,
+                    initialData: widget.state.title,
+                    builder: (context, snapshot) {
+                        return _TaskDetailSliverAppBar(
+                          title: snapshot.data,
+                          color: Color(theme.primaryColor),
+                          taskEditingSink: _taskDetailBloc.taskEditingSink,
+                          height: _appBarHeight,
+                        );
+                      }
+                  ),
+                  SliverList(
+                      delegate: SliverChildListDelegate([
+                        Card(
+                          margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
+                          child: StepsCard(
+                            creationDate: widget.state.creationDate
+                          )
+                        ),
+                        DateNotificationCard(
+                          finalDate: widget.state.finalDate,
+                          notificationDate: widget.state.notificationDate,
+                          taskEditingSink: _taskDetailBloc.taskEditingSink,
+                        ),
+                        SizedBox(height: 30),
+                        ImageList(categoryId: widget.state.categoryId),
+                      ]
+                    )
+                  )
+                ]
               ),
-              SliverList(
-                  delegate: SliverChildListDelegate([
-                    Card(
-                      margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
-                      child: StepsCard(
-                        creationDate: widget.state.creationDate
-                      )
-                    ),
-                    DateNotificationCard(
-                      finalDate: widget.state.finalDate,
-                      notificationDate: widget.state.notificationDate,
-                      taskEditingSink: _taskDetailBloc.taskEditingSink,
-                    ),
-                    SizedBox(height: 30),
-                    ImageList(),
-                  ]
-                )
+              _SliverFab(
+                onTap: _onCompleted,
+                fabStateStream: _sliverFabBloc.fabStateStream,
               )
             ]
-          ),
-          _SliverFab(
-            onTap: _onCompleted,
-            fabStateStream: _sliverFabBloc.fabStateStream,
           )
-        ]
-      )
+        );
+      }
     );
   }
 

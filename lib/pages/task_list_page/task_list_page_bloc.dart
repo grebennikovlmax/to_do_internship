@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
-import 'package:todointernship/data/theme_list_data.dart';
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
@@ -23,17 +21,13 @@ class TaskListPageBloc {
   final _hideTaskEventStreamController = StreamController<HiddenTaskEvent>();
   final _hiddenTaskStateStreamController = StreamController<HiddenTaskState>();
   final _taskEventStreamController = StreamController<TaskEvent>();
-  final _themeStreamController = StreamController<CategoryTheme>();
-  final _pickedThemeStreamController = StreamController<int>();
 
   Stream get taskListPageStream => _taskListPageStateStreamController.stream;
   Stream get hiddenTaskStateStream => _hiddenTaskStateStreamController.stream;
   Stream get taskListStateStream => _taskListStateStreamController.stream;
-  Stream get themeStream => _themeStreamController.stream;
 
   Sink get hideTaskEventSink => _hideTaskEventStreamController.sink;
   Sink get taskEventSink => _taskEventStreamController.sink;
-  Sink get pickerThemeSink => _pickedThemeStreamController.sink;
 
   bool _isHidden;
   List<Task> _taskList = [];
@@ -47,13 +41,11 @@ class TaskListPageBloc {
     _loadTaskList().then((_) => _setTaskListState());
     _bindHiddenEventListener();
     _bindTaskEventListener();
-    _bindThemePicker();
   }
 
   Future<LoadedPageState> _loadPage() async {
-    var theme = await _getTheme();
     _isHidden = await _getHiddenFlag();
-    return LoadedPageState(theme: theme, title: _title, hiddenState: HiddenTaskState(_isHidden));
+    return LoadedPageState(categoryId: _categoryId, title: _title, hiddenState: HiddenTaskState(_isHidden));
   }
 
   _bindHiddenEventListener() {
@@ -84,12 +76,6 @@ class TaskListPageBloc {
           _setTaskListState();
           break;
       }
-    });
-  }
-
-  _bindThemePicker() {
-    _pickedThemeStreamController.stream.listen((event) {
-      _changeTheme(event);
     });
   }
 
@@ -149,16 +135,6 @@ class TaskListPageBloc {
     _setTaskListState();
   }
 
-  Future<CategoryTheme> _getTheme() async {
-    return await _pref.loadTheme(_categoryId);
-  }
-
-  Future<void> _changeTheme(int color) async {
-    var theme = ThemeListData.all.themes.firstWhere((element) => element.primaryColor == color);
-    _themeStreamController.add(theme);
-    await _pref.saveTheme(theme, _categoryId);
-  }
-
   Future<bool> _getHiddenFlag() async {
     return await _pref.getHiddenFlag(_categoryId);
   }
@@ -173,8 +149,6 @@ class TaskListPageBloc {
     _hiddenTaskStateStreamController.close();
     _taskListStateStreamController.close();
     _taskEventStreamController.close();
-    _themeStreamController.close();
-    _pickedThemeStreamController.close();
   }
 
 }

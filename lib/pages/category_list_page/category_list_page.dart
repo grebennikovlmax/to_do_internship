@@ -7,6 +7,8 @@ import 'package:todointernship/pages/category_list_page/category_card.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
 import 'package:todointernship/pages/category_list_page/new_category_dialog.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
+import 'package:todointernship/model/category_theme.dart';
+import 'package:todointernship/theme_bloc_provider.dart';
 
 
 class CategoryListBlocProvider extends InheritedWidget {
@@ -33,16 +35,15 @@ class CategoryListPage extends StatefulWidget {
 
 class _CategoryListPageState extends State<CategoryListPage> {
   
-  final _categoryListBloc;
-
-  _CategoryListPageState() : _categoryListBloc = CategoryListPageBloc();
+  CategoryListPageBloc _categoryListBloc;
 
   @override
-  void dispose() {
-    _categoryListBloc.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ignore: close_sinks
+    var themeSink = ThemeBlocProvider.of(context).themeBloc.themeEventSink;
+    _categoryListBloc = CategoryListPageBloc(themeSink);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +68,12 @@ class _CategoryListPageState extends State<CategoryListPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _categoryListBloc.dispose();
+    super.dispose();
   }
 
   Future<void> _showNewCategoryDialog() async {
@@ -116,31 +123,38 @@ class _CategoryList extends StatelessWidget {
                 ),
               ]),
             ),
-            SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if(!state.categoryList.asMap().containsKey(index)) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: _AddButton(
-                          onTap: onAddNew,
-                        ),
-                      );
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CategoryCard(
-                        category: state.categoryList[index],
-                      ),
-                    );
-                  },
-                  childCount: state.categoryList.length + 1
-              ),
+            StreamBuilder<Map<int, CategoryTheme>>(
+              stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
+              builder: (context, snapshot) {
+                if(!snapshot.hasData) return SliverPadding(padding: EdgeInsets.zero);
+                return SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if(!state.categoryList.asMap().containsKey(index)) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: _AddButton(
+                              onTap: onAddNew,
+                            ),
+                          );
+                        }
+                        return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CategoryCard(
+                              category: state.categoryList[index],
+                              theme: snapshot.data[state.categoryList[index].id],
+                            ),
+                        );
+                      },
+                      childCount: state.categoryList.length + 1
+                  ),
+                );
+              }
             )
         ]
       ),

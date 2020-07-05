@@ -1,5 +1,3 @@
-import 'package:todointernship/model/category_theme.dart';
-
 class Category {
   String name;
   int id;
@@ -7,7 +5,6 @@ class Category {
   int incompletedTask = 0;
   int amountTask = 0;
   double completionRate = 0;
-  CategoryTheme theme;
 
   Category({this.name, this.id});
 

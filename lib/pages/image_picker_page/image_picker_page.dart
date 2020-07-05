@@ -8,6 +8,8 @@ import 'package:todointernship/pages/image_picker_page/custom_search_app_bar.dar
 import 'package:todointernship/pages/image_picker_page/image_page_event.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_bloc.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page_state.dart';
+import 'package:todointernship/theme_bloc_provider.dart';
+import 'package:todointernship/theme_event.dart';
 
 class ImagePickerBlockProvider extends InheritedWidget {
   
@@ -26,6 +28,10 @@ class ImagePickerBlockProvider extends InheritedWidget {
 }
 
 class  ImagePickerPage extends StatefulWidget {
+
+  final int categoryId;
+
+  ImagePickerPage(this.categoryId);
 
   @override
   _ImagePickerPageState createState() => _ImagePickerPageState();
@@ -48,15 +54,18 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
   Widget build(BuildContext context) {
     return ImagePickerBlockProvider(
       block: _imagePickerBloc,
-      child: StreamBuilder(
-          stream: _imagePickerBloc.pageThemeStream,
+      child: StreamBuilder<Map<int, CategoryTheme>>(
+          stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
           builder: (context, themeSnapshot) {
-            if(!themeSnapshot.hasData) return Container();
-            final theme = _setTheme(themeSnapshot.data);
+            if(!themeSnapshot.hasData) {
+              ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(RefreshThemeEvent());
+              return Container();
+            }
+            var theme = themeSnapshot.data[widget.categoryId];
             return Scaffold(
-                backgroundColor: theme.backgroundColor,
+                backgroundColor: Color(theme.backgroundColor),
                 appBar: SearchAppBar(
-                  color: theme.primaryColor,
+                  color: Color(theme.primaryColor),
                 ),
                 body: StreamBuilder<ImagePickerPageState>(
                   stream: _imagePickerBloc.pageStateStream,
@@ -85,17 +94,6 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
             );
           }
       ),
-    );
-
-  }
-
-  ThemeData _setTheme(CategoryTheme categoryTheme) {
-    if(categoryTheme.backgroundColor == null || categoryTheme.primaryColor == null) {
-      return Theme.of(context);
-    }
-    return ThemeData(
-        backgroundColor: Color(categoryTheme.backgroundColor),
-        primaryColor: Color(categoryTheme.primaryColor)
     );
 
   }

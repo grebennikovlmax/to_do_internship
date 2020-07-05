@@ -7,9 +7,9 @@ abstract class TaskListPageState {
 
 class LoadedPageState implements TaskListPageState {
 
-  final CategoryTheme theme;
+  final int categoryId;
   final HiddenTaskState hiddenState;
   final String title;
 
-  LoadedPageState({this.theme, this.hiddenState, this.title});
+  LoadedPageState({this.categoryId, this.hiddenState, this.title});
 }

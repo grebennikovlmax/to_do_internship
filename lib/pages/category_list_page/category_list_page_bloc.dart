@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
-import 'package:todointernship/data/theme_list_data.dart';
 import 'package:todointernship/model/category.dart';
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
+import 'package:todointernship/theme_event.dart';
 
 class CategoryListPageBloc {
 
   final repository = TaskDatabaseRepository.shared;
   final sharedPref = SharedPrefManager();
+  final Sink<ThemeEvent> themeEventSink;
 
   final _categoryListPageStateStreamController = StreamController<CategoryListPageState>();
   final _categoryListPageEventStreamController = StreamController<CategoryListPageEvent>();
@@ -22,7 +22,7 @@ class CategoryListPageBloc {
 
   List<Category> _categoryList = [];
 
-  CategoryListPageBloc() {
+  CategoryListPageBloc(this.themeEventSink) {
     _bindEventListener();
     _loadCategories();
   }
@@ -48,7 +48,7 @@ class CategoryListPageBloc {
     var incompletedTaskCount = incompletedTask.length;
     _categoryList = await repository.getAllCategories();
     await Future.wait(_categoryList.map((category) async {
-      category.theme = await _loadCategoryTheme(category.id);
+      themeEventSink.add(LoadThemeEvent(category.id));
       category.incompletedTask = incompletedTask.where((task) => task.categoryId == category.id).length;
       category.completedTask = completedTask.where((task) => task.categoryId == category.id).length;
       category.amountTask = category.incompletedTask + category.completedTask;
@@ -63,20 +63,8 @@ class CategoryListPageBloc {
   Future<void> _saveCategory(String name, int color) async {
     var category = Category(name: name);
     var id = await repository.saveCategory(category);
-    var theme = _setupCategoryTheme(color);
-    await sharedPref.saveTheme(theme, id);
-  _loadCategories();
-  }
-
-  Future<CategoryTheme> _loadCategoryTheme(int id) async {
-    return await sharedPref.loadTheme(id);
-  }
-
-  CategoryTheme _setupCategoryTheme(int color) {
-    if(color == null) {
-      return ThemeListData.all.mainTheme;
-    }
-    return ThemeListData.all.themes.firstWhere((element) => element.primaryColor == color);
+    themeEventSink.add(SaveThemeEvent(color,id));
+    _loadCategories();
   }
 
   void dispose() {

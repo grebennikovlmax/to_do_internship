@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/model/category_theme.dart';
 
+import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_list_page/empty_task_list.dart';
 import 'package:todointernship/pages/task_list_page/hidden_task_event.dart';
@@ -14,6 +14,8 @@ import 'package:todointernship/widgets/theme_picker/theme_picker.dart';
 import 'package:todointernship/pages/task_list_page/task_list_state.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker_bloc.dart';
 import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
+import 'package:todointernship/theme_event.dart';
+import 'package:todointernship/theme_bloc_provider.dart';
 
 
 class TaskListPage extends StatefulWidget {
@@ -81,15 +83,18 @@ class _TaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CategoryTheme>(
-      stream: TaskListBlocProvider.of(context).bloc.themeStream,
-      initialData: state.theme,
+    return StreamBuilder<Map<int, CategoryTheme>>(
+      stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
       builder: (context, themeSnapshot) {
+        if(!themeSnapshot.hasData) {
+          ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(RefreshThemeEvent());
+          return Container();
+        }
         return Scaffold(
-            backgroundColor: Color(themeSnapshot.data.backgroundColor),
+            backgroundColor: Color(themeSnapshot.data[state.categoryId].backgroundColor),
             appBar: AppBar(
                 title: Text(state.title),
-                backgroundColor: Color(themeSnapshot.data.primaryColor),
+                backgroundColor: Color(themeSnapshot.data[state.categoryId].primaryColor),
                 actions: <Widget>[
                   StreamBuilder<HiddenTaskState>(
                       stream: TaskListBlocProvider.of(context).bloc.hiddenTaskStateStream,
@@ -98,7 +103,7 @@ class _TaskList extends StatelessWidget {
                         return PopupMenu(
                           isHidden: snapshot.data.state,
                           onDelete: () => _deleteCompletedTask(context),
-                          onChangeTheme: () => _showThemePicker(context, themeSnapshot.data.primaryColor),
+                          onChangeTheme: () => _showThemePicker(context, themeSnapshot.data[state.categoryId].primaryColor),
                           onHide: () => _onHideCompleted(context),
                         );
                       }
@@ -135,7 +140,10 @@ class _TaskList extends StatelessWidget {
     showBottomSheet(
         context: context,
         builder: (context) {
-          return _ThemePickerBottomSheet(pickedColor: color);
+          return _ThemePickerBottomSheet(
+              pickedColor: color,
+              categoryId: state.categoryId,
+          );
         }
     );
   }
@@ -162,8 +170,9 @@ class _TaskList extends StatelessWidget {
 class _ThemePickerBottomSheet extends StatefulWidget {
 
   final int pickedColor;
+  final int categoryId;
 
-  _ThemePickerBottomSheet({this.pickedColor});
+  _ThemePickerBottomSheet({this.pickedColor, this.categoryId});
 
   @override
   _ThemePickerBottomSheetState createState() => _ThemePickerBottomSheetState();
@@ -208,7 +217,7 @@ class _ThemePickerBottomSheetState extends State<_ThemePickerBottomSheet> {
     super.dispose();
   }
 
-  void _onPickTheme(int index) {
-    TaskListBlocProvider.of(context).bloc.pickerThemeSink.add(index);
+  void _onPickTheme(int color) {
+    ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(ChangeThemeEvent(1, color));
   }
 }

@@ -9,6 +9,11 @@ import 'package:todointernship/pages/task_detail_page/image_list_bloc.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
 class ImageList extends StatefulWidget {
+
+  final int categoryId;
+
+  ImageList({this.categoryId});
+
   @override
   _ImageListState createState() => _ImageListState();
 }
@@ -74,7 +79,7 @@ class _ImageListState extends State<ImageList> {
   }
 
   Future<void> _onAddImage() async{
-    var url = await Navigator.of(context).pushNamed('/photo_picker');
+    var url = await Navigator.of(context).pushNamed('/photo_picker', arguments: widget.categoryId);
     if(url != null) {
       _imageListBloc.imageEvent.add(NewImageEvent(url));
     }

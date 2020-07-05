@@ -4,6 +4,8 @@ import 'package:todointernship/pages/image_picker_page/image_picker_page.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page.dart';
+import 'package:todointernship/theme_bloc.dart';
+import 'package:todointernship/theme_bloc_provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,39 +13,44 @@ void main() {
 
 class MyApp extends StatelessWidget {
 
+  final _themeBlock = ThemeBloc();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        initialRoute: '/',
-        routes: {
-          '/category_detail' : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
-          '/task_detail' : (context) => TaskDetailPage(ModalRoute.of(context).settings.arguments),
-          '/photo_picker': (context) => ImagePickerPage()
-        },
-        theme: ThemeData(
-          primaryColor: Color(0xff6202EE),
-          accentColor: Color(0xff01A39D),
-          backgroundColor: Colors.indigo[100],
-          textTheme: TextTheme(
-            headline5: TextStyle(
-              fontFamily: "Roboto",
-              fontWeight: FontWeight.w500,
-              fontSize: 14
-            ),
-            bodyText2: TextStyle(
-              fontFamily: "Roboto",
-              fontSize: 14
-            ),
-            headline1: TextStyle(
-              fontFamily: "Roboto",
-              letterSpacing: 0.15,
-              fontSize: 24,
-              color: Colors.black,
-              fontWeight: FontWeight.w900
+    return ThemeBlocProvider(
+      themeBloc: _themeBlock,
+      child: MaterialApp(
+          initialRoute: '/',
+          routes: {
+            '/category_detail' : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
+            '/task_detail' : (context) => TaskDetailPage(ModalRoute.of(context).settings.arguments),
+            '/photo_picker': (context) => ImagePickerPage(ModalRoute.of(context).settings.arguments)
+          },
+          theme: ThemeData(
+            primaryColor: Color(0xff6202EE),
+            accentColor: Color(0xff01A39D),
+            backgroundColor: Colors.indigo[100],
+            textTheme: TextTheme(
+              headline5: TextStyle(
+                fontFamily: "Roboto",
+                fontWeight: FontWeight.w500,
+                fontSize: 14
+              ),
+              bodyText2: TextStyle(
+                fontFamily: "Roboto",
+                fontSize: 14
+              ),
+              headline1: TextStyle(
+                fontFamily: "Roboto",
+                letterSpacing: 0.15,
+                fontSize: 24,
+                color: Colors.black,
+                fontWeight: FontWeight.w900
+              )
             )
-          )
-        ),
-        home: CategoryListPage()
+          ),
+          home: CategoryListPage()
+      ),
     );
   }
 

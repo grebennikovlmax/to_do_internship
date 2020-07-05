@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:todointernship/main.dart';
 
 import 'dart:math';
 
 import 'package:todointernship/model/category.dart';
+import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
@@ -11,114 +13,115 @@ import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
 class CategoryCard extends StatelessWidget {
 
   final Category category;
+  final CategoryTheme theme;
 
-  CategoryCard({this.category});
+  CategoryCard({this.category, this.theme});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _toTaskList(context),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                flex: 13,
-                child: ProgressBar(
-                    completion: category.completionRate,
-                    color: category.theme.primaryColor
-                ),
-              ),
+          onTap: () => _toTaskList(context),
+          child: Card(
+            margin: EdgeInsets.zero,
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                    flex: 13,
+                    child: ProgressBar(
+                        completion: category.completionRate,
+                        color: theme.primaryColor
+                    ),
+                  ),
 //              SizedBox(height: 10),
-              Spacer(flex: 1),
-              Expanded(
-                flex: 5,
-                child: FittedBox(
-                  child: Text(category.name,
-                    style: Theme.of(context).textTheme.headline1
-                  ),
-                ),
-              ),
-              Spacer(flex: 1),
-              Flexible(
-                fit: FlexFit.tight,
-                flex: 2,
-                child: FittedBox(
-                  child: Text("${category.amountTask} задач(и)",
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                        color: const Color(0xff979797)
-                    )
-                  ),
-                ),
-              ),
-              Spacer(flex: 1),
-              Expanded(
-                flex: 2,
-                child: FractionallySizedBox(
-                  widthFactor: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 10,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            color: Color(category.theme.primaryColor).withOpacity(0.3)
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Text("${category.completedTask} сделано",
-                                style: Theme.of(context).textTheme.headline5.copyWith(
-                                    color: Color(category.theme.primaryColor)
-                                )
-                              ),
-                            ),
-                          ),
-                        ),
+                  Spacer(flex: 1),
+                  Expanded(
+                    flex: 5,
+                    child: FittedBox(
+                      child: Text(category.name,
+                        style: Theme.of(context).textTheme.headline1
                       ),
-                      Spacer(flex: 1),
-                      Expanded(
-                        flex: 10,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: const Color(0xfffec2c2)
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: Text("${category.incompletedTask} осталось",
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.headline5.copyWith(
-                                      color: const Color(0xffFD3535)
+                    ),
+                  ),
+                  Spacer(flex: 1),
+                  Flexible(
+                    fit: FlexFit.tight,
+                    flex: 2,
+                    child: FittedBox(
+                      child: Text("${category.amountTask} задач(и)",
+                        style: Theme.of(context).textTheme.headline5.copyWith(
+                            color: const Color(0xff979797)
+                        )
+                      ),
+                    ),
+                  ),
+                  Spacer(flex: 1),
+                  Expanded(
+                    flex: 2,
+                    child: FractionallySizedBox(
+                      widthFactor: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 10,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                color: Color(theme.primaryColor).withOpacity(0.3)
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2),
+                                  child: Text("${category.completedTask} сделано",
+                                    style: Theme.of(context).textTheme.headline5.copyWith(
+                                        color: Color(theme.primaryColor)
+                                    )
                                   ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              )
-            ],
+                          Spacer(flex: 1),
+                          Expanded(
+                            flex: 10,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  color: const Color(0xfffec2c2)
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                  child: Text("${category.incompletedTask} осталось",
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context).textTheme.headline5.copyWith(
+                                          color: const Color(0xffFD3535)
+                                      ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-  }
+        );
+      }
 
   void _toTaskList(BuildContext context) {
     var block = TaskListPageBloc(category.id, category.name);

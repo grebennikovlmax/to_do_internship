@@ -1,19 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:todointernship/data/shared_prefs_manager.dart';
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/image_picker_page/image_page_event.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page_state.dart';
 import 'package:todointernship/data/flickr_api_service.dart';
 
 class ImagePickerBloc {
 
-  StreamController<CategoryTheme> _pageThemeStreamController = StreamController();
   StreamController<ImagePageEvent> _pageEventStreamController = StreamController();
   StreamController<ImagePickerPageState> _pageStateStreamController = StreamController();
 
-  Stream<CategoryTheme> get pageThemeStream => _pageThemeStreamController.stream;
   Stream<ImagePickerPageState> get pageStateStream => _pageStateStreamController.stream;
 
   Sink<ImagePageEvent> get imagePageEventSink => _pageEventStreamController.sink;
@@ -24,7 +20,6 @@ class ImagePickerBloc {
   bool _isSearching = false;
 
   ImagePickerBloc() {
-    _getTheme().then((value) => _pageThemeStreamController.add(value));
     _refreshImageList();
     _bindEventListener();
   }
@@ -43,12 +38,6 @@ class ImagePickerBloc {
           break;
       }
     });
-  }
-
-  Future<CategoryTheme> _getTheme() async {
-    final pref = SharedPrefManager();
-    final categoryTheme = await pref.loadTheme(0);
-    return categoryTheme;
   }
 
   Future<void> _refreshImageList() async {
@@ -101,7 +90,6 @@ class ImagePickerBloc {
   }
   
   void dispose() {
-    _pageThemeStreamController.close();
     _pageEventStreamController.close();
     _pageStateStreamController.close();
   }

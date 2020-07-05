@@ -1,18 +1,16 @@
 import 'dart:async';
 
 import 'package:intl/intl.dart';
-import 'package:todointernship/data/shared_prefs_manager.dart';
+
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dart';
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 
 class TaskDetailPageBloc {
 
   final Task _task;
-  final _pref;
   final Sink<TaskEvent> taskEventSink;
 
   final _taskRepository = TaskDatabaseRepository.shared;
@@ -26,8 +24,7 @@ class TaskDetailPageBloc {
   Sink get taskEditingSink => _taskEditingStreamController.sink;
 
   TaskDetailPageBloc(Task task, this.taskEventSink)
-      : _task = task,
-        _pref = SharedPrefManager()
+      : _task = task
   {
     _loadPage().then((value) => _taskDetailPageStateStreamController.add(value));
     _bindTaskEventListeners();
@@ -56,14 +53,9 @@ class TaskDetailPageBloc {
   }
 
   Future<LoadedPageState> _loadPage() async{
-    var theme = await _getTheme();
     var dateFormatter = DateFormat("dd.MM.yyyy");
     var creationDate = dateFormatter.format(_task.createdDate);
-    return LoadedPageState(theme,_task.name,_task.finalDate,_task.notificationDate, creationDate, _task.id, _task.steps, _task.isCompleted);
-  }
-
-  Future<CategoryTheme> _getTheme() async {
-    return await _pref.loadTheme(_task.categoryId);
+    return LoadedPageState(_task.categoryId,_task.name,_task.finalDate,_task.notificationDate, creationDate, _task.id, _task.steps, _task.isCompleted);
   }
 
   void _updateTaskName(UpdateTaskNameEvent event) {
