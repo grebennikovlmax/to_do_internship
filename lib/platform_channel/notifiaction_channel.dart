@@ -8,7 +8,7 @@ class PlatformNotificationChannel {
 
   final platform =  MethodChannel('notifications');
 
-  Future<int> setNotification(Task task) async {
+  Future<dynamic> setNotification(Task task) async {
     final arg = {
       'timeSince': task.notificationDate.millisecondsSinceEpoch,
       'title': task.name,
