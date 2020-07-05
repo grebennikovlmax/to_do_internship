@@ -47,7 +47,7 @@ class CategoryListPageBloc {
     var incompletedTask = await repository.getAllTask(false);
     var incompletedTaskCount = incompletedTask.length;
     _categoryList = await repository.getAllCategories();
-    Future.wait(_categoryList.map((category) async {
+    await Future.wait(_categoryList.map((category) async {
       category.theme = await _loadCategoryTheme(category.id);
       category.incompletedTask = incompletedTask.where((task) => task.categoryId == category.id).length;
       category.completedTask = completedTask.where((task) => task.categoryId == category.id).length;

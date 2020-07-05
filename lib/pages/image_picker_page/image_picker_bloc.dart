@@ -1,30 +1,27 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/image_picker_page/image_page_event.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page_state.dart';
-import 'package:todointernship/pages/image_picker_page/search_state.dart';
-import 'package:todointernship/service/flickr_api_service.dart';
+import 'package:todointernship/data/flickr_api_service.dart';
 
 class ImagePickerBloc {
 
   StreamController<CategoryTheme> _pageThemeStreamController = StreamController();
-  StreamController<SearchState> _searchStateStreamController = StreamController();
   StreamController<ImagePageEvent> _pageEventStreamController = StreamController();
   StreamController<ImagePickerPageState> _pageStateStreamController = StreamController();
 
   Stream<CategoryTheme> get pageThemeStream => _pageThemeStreamController.stream;
-  Stream<SearchState> get searchStateStream => _searchStateStreamController.stream;
   Stream<ImagePickerPageState> get pageStateStream => _pageStateStreamController.stream;
 
   Sink<ImagePageEvent> get imagePageEventSink => _pageEventStreamController.sink;
 
-  final SharedPrefManager _prefManager = SharedPrefManager();
   List<String> _imageUrl = [];
   int _page = 1;
-  String searchText = '';
-  bool isSearching = false;
+  String _searchText = '';
+  bool _isSearching = false;
 
   ImagePickerBloc() {
     _getTheme().then((value) => _pageThemeStreamController.add(value));
@@ -38,20 +35,12 @@ class ImagePickerBloc {
         case RefreshPageEvent:
           _refreshImageList();
           break;
-        case SearchEvent:
-          final text = (event as SearchEvent).text;
-          _saveSearchRequest(text);
-          _searchImage(text);
-          break;
         case NextImagePage:
           _nextPage();
           break;
-        case OpenSearchEvent:
-          _openSearch();
+        case SearchImageEvent:
+          _searchImage(event);
           break;
-        case CloseSearchEvent:
-          _closeSearch();
-
       }
     });
   }
@@ -63,53 +52,56 @@ class ImagePickerBloc {
   }
 
   Future<void> _refreshImageList() async {
+    _isSearching = false;
     _page = 1;
     _pageStateStreamController.add(LoadingState());
-    final imageList = await FlickrApiService.shared.getRecentImages(_page);
-    _imageUrl = imageList;
-    _pageStateStreamController.add(LoadedImageListState(urlList: imageList));
+    try {
+      final imageList = await FlickrApiService.shared.getRecentImages(_page).timeout(Duration(seconds: 4));
+      _imageUrl = imageList;
+      _pageStateStreamController.add(LoadedImageListState(urlList: imageList));
+    } catch(e) {
+      _checkError(e);
+    }
   }
 
-  Future<void> _searchImage(String text) async {
-    searchText = text;
+  Future<void> _searchImage(SearchImageEvent event) async {
+    _searchText = event.text;
+    _isSearching = true;
     _page = 1;
     _pageStateStreamController.add(LoadingState());
-    final findedImages = await FlickrApiService.shared.searchPhotos(searchText: searchText,page: _page);
-    _imageUrl = findedImages;
-    if(_imageUrl.isEmpty) {
-      _pageStateStreamController.add(EmptyImageListState());
+    try {
+      final findedImages = await FlickrApiService.shared.searchPhotos(searchText: event.text,page: _page);
+      _imageUrl = findedImages;
+      if(_imageUrl.isEmpty) {
+        _pageStateStreamController.add(EmptyImageListState('Ничего не найдено'));
+      } else {
+        _pageStateStreamController.add(LoadedImageListState(urlList: _imageUrl));
+      }
+    } catch(e) {
+      _checkError(e);
+    }
+
+  }
+
+  void _checkError (Exception err) {
+    if(err.runtimeType == SocketException) {
+      _pageStateStreamController.add(EmptyImageListState('Проблема с подключением попробуйте позже'));
     } else {
-      _pageStateStreamController.add(LoadedImageListState(urlList: _imageUrl));
+      _pageStateStreamController.add(EmptyImageListState('Возникла проблема с сервисом попробуйте позже'));
     }
   }
 
   Future<void> _nextPage() async {
     _page++;
-    final imageList = isSearching
-        ? await FlickrApiService.shared.searchPhotos(searchText: searchText,page: _page)
+    final imageList = _isSearching
+        ? await FlickrApiService.shared.searchPhotos(searchText: _searchText,page: _page)
         : await FlickrApiService.shared.getRecentImages(_page);
     _imageUrl.addAll(imageList);
     _pageStateStreamController.add(LoadedImageListState(urlList: _imageUrl));
   }
-
-  Future<void> _saveSearchRequest(String text) async {
-    _prefManager.saveSearchRequest(text);
-  }
-
-  Future<void> _openSearch() async {
-    isSearching = true;
-    final text = await _prefManager.loadSearchRequest();
-    _searchStateStreamController.add(OpenSearchState(text));
-  }
-
-  void _closeSearch() {
-    isSearching = false;
-    _searchStateStreamController.add(ClosedSearchState());
-  }
-
+  
   void dispose() {
     _pageThemeStreamController.close();
-    _searchStateStreamController.close();
     _pageEventStreamController.close();
     _pageStateStreamController.close();
   }

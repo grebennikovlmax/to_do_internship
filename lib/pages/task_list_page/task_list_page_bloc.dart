@@ -18,7 +18,6 @@ class TaskListPageBloc {
   final int _categoryId;
   final String _title;
   final _taskRepository = TaskDatabaseRepository.shared;
-
   final _taskListPageStateStreamController = StreamController<TaskListPageState>();
   final _taskListStateStreamController = StreamController<TaskListState>();
   final _hideTaskEventStreamController = StreamController<HiddenTaskEvent>();

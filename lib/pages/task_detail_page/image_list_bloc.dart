@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:todointernship/data/ImageManager.dart';
+import 'package:todointernship/data/image_manager.dart';
 import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/pages/task_detail_page/image_event.dart';

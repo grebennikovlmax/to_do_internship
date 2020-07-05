@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/image_list.dart';
+import 'package:todointernship/pages/task_detail_page/sliver_fab_bloc.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_block.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
-
-import 'date_notification_card.dart';
+import 'package:todointernship/pages/task_detail_page/date_notification_card.dart';
 
 class TaskDetailBlocProvider extends InheritedWidget {
 
@@ -82,22 +82,24 @@ class _StepList extends StatefulWidget {
 class _StepListState extends State<_StepList> {
 
   final double _appBarHeight = 128;
-  TaskDetailPageBloc _taskDetailBloc;
   ScrollController _scrollController;
+  SliverFabBloc _sliverFabBloc;
+  TaskDetailPageBloc _taskDetailBloc;
 
   @override
   void initState() {
     super.initState();
+    _sliverFabBloc = SliverFabBloc(widget.state.isCompleted);
     _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      _sliverFabBloc.fabPositionSink.add(_scrollController.offset);
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _taskDetailBloc = TaskDetailBlocProvider.of(context).bloc;
-    _scrollController.addListener(() {
-      _taskDetailBloc.fabPositionSink.add(_scrollController.offset);
-    });
   }
 
   @override
@@ -141,24 +143,9 @@ class _StepListState extends State<_StepList> {
               )
             ]
           ),
-          StreamBuilder<FabState>(
-            stream: TaskDetailBlocProvider.of(context).bloc.fabStateStream,
-            builder: (context, snapshot) {
-              if(!snapshot.hasData) return Container();
-              return Positioned(
-                top: snapshot.data.top,
-                left: 16,
-                child: Transform(
-                  transform: Matrix4.identity()
-                    ..scale(snapshot.data.scale),
-                  alignment: Alignment.center,
-                  child: FloatingActionButton(
-                    onPressed: _onCompleted,
-                    child: Icon(snapshot.data.isCompleted ? Icons.clear : Icons.check),
-                  ),
-                ),
-              );
-            }
+          _SliverFab(
+            onTap: _onCompleted,
+            fabStateStream: _sliverFabBloc.fabStateStream,
           )
         ]
       )
@@ -168,14 +155,48 @@ class _StepListState extends State<_StepList> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _sliverFabBloc.dispose();
     super.dispose();
   }
 
   void _onCompleted() {
     _taskDetailBloc.taskEditingSink.add(CompletedTaskEvent());
+    _sliverFabBloc.fabEventSink.add(FabTapEvent());
   }
 
 }
+
+class _SliverFab extends StatelessWidget {
+
+  final VoidCallback onTap;
+  final Stream fabStateStream;
+
+  _SliverFab({this.onTap, this.fabStateStream});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<FabState>(
+        stream: fabStateStream,
+        builder: (context, snapshot) {
+          if(!snapshot.hasData) return Container();
+          return Positioned(
+            top: snapshot.data.top,
+            left: 16,
+            child: Transform(
+              transform: Matrix4.identity()
+                ..scale(snapshot.data.scale),
+              alignment: Alignment.center,
+              child: FloatingActionButton(
+                onPressed: onTap,
+                child: Icon(snapshot.data.isCompleted ? Icons.clear : Icons.check),
+              ),
+            ),
+          );
+        }
+    );
+  }
+}
+
 
 enum _TaskDetailPopupMenuItem {update, delete}
 

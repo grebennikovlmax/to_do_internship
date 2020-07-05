@@ -14,7 +14,8 @@ class LoadedPageState implements TaskDetailPageState {
   final String creationDate;
   final int taskId;
   final List<TaskStep> stepList;
+  final bool isCompleted;
 
-  LoadedPageState(this.theme, this.title, this.finalDate, this.notificationDate, this.creationDate, this.taskId, this.stepList);
+  LoadedPageState(this.theme, this.title, this.finalDate, this.notificationDate, this.creationDate, this.taskId, this.stepList, this.isCompleted);
 
 }

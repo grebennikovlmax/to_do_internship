@@ -1,4 +1,4 @@
-import 'package:todointernship/data/ImageManager.dart';
+import 'package:todointernship/data/image_manager.dart';
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/data/task_data/task_db.dart';
@@ -24,9 +24,11 @@ abstract class TaskRepository {
 
 class TaskDatabaseRepository implements TaskRepository {
 
-  static final shared = TaskDatabaseRepository();
+  static final shared = TaskDatabaseRepository._privateConstructor();
 
   final TaskDatabase db = TaskDatabase();
+
+  TaskDatabaseRepository._privateConstructor();
 
   @override
   Future<int> saveTask(Task task) async {
@@ -40,8 +42,6 @@ class TaskDatabaseRepository implements TaskRepository {
   Future<void> removeTask(int id) async {
     return await db.deleteTask(id);
   }
-
-
 
   @override
   Future<List<Task>> getTaskListForCategory(int id) async {

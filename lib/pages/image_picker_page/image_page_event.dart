@@ -6,20 +6,10 @@ class RefreshPageEvent implements ImagePageEvent {
 
 }
 
-class SearchEvent implements ImagePageEvent {
+class SearchImageEvent implements ImagePageEvent {
   final String text;
 
-  SearchEvent({this.text});
+  SearchImageEvent({this.text});
 }
 
-class NextImagePage implements ImagePageEvent {
-
-}
-
-class OpenSearchEvent implements ImagePageEvent {
-
-}
-
-class CloseSearchEvent implements ImagePageEvent {
-
-}
+class NextImagePage implements ImagePageEvent {}

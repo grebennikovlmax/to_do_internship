@@ -12,7 +12,9 @@ class FlickrApiService {
   final String _getRecentMethod = '?method=flickr.photos.getRecent';
   final String _photoSearchMethod = '?method=flickr.photos.search';
 
-  static final shared = FlickrApiService();
+  static final shared = FlickrApiService._privateConstructor();
+
+  FlickrApiService._privateConstructor();
 
   Future<List<String>> getRecentImages(int page) async {
     final url = _url + _getRecentMethod + _apiKey + _jsonFormat + '&per_page=10&page=$page';
@@ -35,17 +37,22 @@ class FlickrApiService {
 
 List<String> _getPhotosURLfromJson(String response) {
   List<String> photoUrlList = [];
-  final json = jsonDecode(response);
-  final photos = json['photos'] as Map<String, dynamic>;
-  final photoList = photos['photo'] as List<dynamic>;
-  for(var photo in photoList) {
-    final id = photo['id'] as String;
-    final farm = photo['farm'] as int;
-    final server = photo['server'] as String;
-    final secret = photo['secret'] as String;
-    final url = 'https://farm$farm.staticflickr.com/$server/$id' + '_$secret.jpg';
-    photoUrlList.add(url);
+  try {
+    final json = jsonDecode(response);
+    final photos = json['photos'] as Map<String, dynamic>;
+    final photoList = photos['photo'] as List<dynamic>;
+    for(var photo in photoList) {
+      final id = photo['id'] as String;
+      final farm = photo['farm'] as int;
+      final server = photo['server'] as String;
+      final secret = photo['secret'] as String;
+      final url = 'https://farm$farm.staticflickr.com/$server/$id' + '_$secret.jpg';
+      photoUrlList.add(url);
+    }
+    return photoUrlList;
+  } catch(e) {
+    throw ParsingJsonException;
   }
-  return photoUrlList;
 }
 
+class ParsingJsonException implements Exception {}

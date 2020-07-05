@@ -14,5 +14,7 @@ class LoadedImageListState implements ImagePickerPageState {
 }
 
 class EmptyImageListState implements ImagePickerPageState {
+  final String description;
 
+  EmptyImageListState(this.description);
 }

@@ -2,7 +2,9 @@ import 'package:todointernship/model/category_theme.dart';
 
 class ThemeListData {
 
-  static final all = ThemeListData();
+  static final all = ThemeListData._privateConstructor();
+
+  ThemeListData._privateConstructor();
 
   final mainTheme = CategoryTheme(
     primaryColor: 4284613358,

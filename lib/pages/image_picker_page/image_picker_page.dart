@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:todointernship/model/category_theme.dart';
+import 'package:todointernship/pages/image_picker_page/custom_search_app_bar.dart';
 import 'package:todointernship/pages/image_picker_page/image_page_event.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_bloc.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page_state.dart';
-import 'package:todointernship/pages/image_picker_page/search_state.dart';
 
 class ImagePickerBlockProvider extends InheritedWidget {
   
@@ -56,7 +55,7 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
             final theme = _setTheme(themeSnapshot.data);
             return Scaffold(
                 backgroundColor: theme.backgroundColor,
-                appBar: _SearchAppBar(
+                appBar: SearchAppBar(
                   color: theme.primaryColor,
                 ),
                 body: StreamBuilder<ImagePickerPageState>(
@@ -74,9 +73,13 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
                         onPick: _saveImage,
                       );
                     }
-                    return Center(
-                        child: Text("Ничего не найдено")
-                    );
+                    if(snapshot.data is EmptyImageListState) {
+                      var text = (snapshot.data as EmptyImageListState).description;
+                      return Center(
+                          child: Text(text)
+                      );
+                    }
+                    return Container();
                   }
                 )
             );
@@ -109,42 +112,6 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
     }
   }
 
-}
-
-class _SearchAppBar extends StatelessWidget implements PreferredSizeWidget{
-
-  final Color color;
-  final Size preferredSize = Size.fromHeight(56);
-
-  _SearchAppBar({this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<SearchState>(
-      stream: ImagePickerBlockProvider.of(context).block.searchStateStream,
-      initialData: ClosedSearchState(),
-      builder: (context, snapshot) {
-        return AppBar(
-          titleSpacing: 5,
-          automaticallyImplyLeading: !snapshot.data.isSearching,
-          backgroundColor: color,
-          title: snapshot.data.isSearching ? CustomSearchBar(text: (snapshot.data as OpenSearchState).text) : Text('Flickr'),
-          actions: <Widget>[
-            !snapshot.data.isSearching
-                ? IconButton(
-                    icon: Icon(Icons.search),
-                    onPressed: () => _onSearch(context)
-                  )
-                : Container()
-          ],
-        );
-      }
-    );
-  }
-
-  void _onSearch(BuildContext context) {
-    ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(OpenSearchEvent());
-  }
 }
 
 class _ImagesGridView extends StatefulWidget {
@@ -232,61 +199,6 @@ class _ImagesGridViewState extends State<_ImagesGridView> {
         ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(NextImagePage());
       }
     });
-  }
-
-}
-
-class CustomSearchBar extends StatelessWidget {
-
-  final String text;
-
-  CustomSearchBar({this.text});
-
-  @override
-  Widget build(BuildContext context) {
-      return Container(
-        height: 32,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16)
-        ),
-        child: TextFormField(
-          autofocus: true,
-          textAlign: TextAlign.start,
-          initialValue: text,
-          onFieldSubmitted: (val) => _onSubmitted(context, val),
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-            hintText: "Поиск...",
-            icon: IconButton(
-              icon: Icon(Platform.isIOS ? Icons.arrow_back_ios : Icons.arrow_back),
-              padding: EdgeInsets.zero,
-              onPressed: () => _onPressReturn(context),
-              color: Colors.black
-            ),
-            suffixIcon: IconButton(
-              padding: EdgeInsets.zero,
-              icon: Icon(Icons.close),
-              color: Colors.black,
-              onPressed: () => _onClosed(context),
-            )
-          ),
-        ),
-      );
-  }
-
-  void _onSubmitted(BuildContext context, String text) {
-    ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(SearchEvent(text: text));
-  }
-
-  void _onClosed(BuildContext context) {
-    ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(CloseSearchEvent());
-  }
-
-  void _onPressReturn(BuildContext context) {
-    Navigator.pop(context);
   }
 
 }

@@ -1,11 +1,13 @@
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
-import 'package:todointernship/service/flickr_api_service.dart';
+import 'package:todointernship/data/flickr_api_service.dart';
 
 class ImageManager {
 
-  static final shared = ImageManager();
+  static final shared = ImageManager._privateConstructor();
+
+  ImageManager._privateConstructor();
 
   Future<String> get path async {
     final docDir = await getApplicationDocumentsDirectory();
