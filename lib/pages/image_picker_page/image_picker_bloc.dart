@@ -49,6 +49,9 @@ class ImagePickerBloc {
       _imageUrl = imageList;
       _pageStateStreamController.add(LoadedImageListState(urlList: imageList));
     } catch(e) {
+      if(e.runtimeType == StateError) {
+        return;
+      }
       _checkError(e);
     }
   }

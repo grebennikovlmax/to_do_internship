@@ -57,6 +57,7 @@ class CategoryListPageBloc {
     var taskAmount = incompletedTaskCount + completedTaskCount;
     var completionRate = taskAmount == 0 ? 0.0 : completedTaskCount / taskAmount;
     var state = LoadedPageState(completedTaskCount, incompletedTaskCount, completionRate, _categoryList, taskAmount);
+    themeEventSink.add(RefreshThemeEvent());
     _categoryListPageStateStreamController.add(state);
   }
 

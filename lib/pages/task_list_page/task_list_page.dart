@@ -91,6 +91,7 @@ class _TaskList extends StatelessWidget {
           return Container();
         }
         return Scaffold(
+            resizeToAvoidBottomPadding: false,
             backgroundColor: Color(themeSnapshot.data[state.categoryId].backgroundColor),
             appBar: AppBar(
                 title: Text(state.title),
