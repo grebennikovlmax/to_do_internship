@@ -49,7 +49,11 @@ class _EmptyTaskListState extends State<EmptyTaskList> with SingleTickerProvider
             Stack(
               children: <Widget>[
                 SvgPicture.asset('assets/svg/empty_layer.svg'),
-                ClipOval(
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(90),
+                    bottomRight: Radius.circular(90)
+                  ),
                   child: SlideTransition(
                     position: _animation,
                     child: SvgPicture.asset('assets/svg/empty_task_list.svg'),
