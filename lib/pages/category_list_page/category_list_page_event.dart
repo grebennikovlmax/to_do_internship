@@ -1,6 +1,4 @@
-abstract class CategoryListPageEvent {
-
-}
+abstract class CategoryListPageEvent {}
 
 class CreateNewCategoryEvent implements CategoryListPageEvent {
 
@@ -11,6 +9,10 @@ class CreateNewCategoryEvent implements CategoryListPageEvent {
 
 }
 
-class UpdatePageEvent implements CategoryListPageEvent {
+class UpdatePageEvent implements CategoryListPageEvent {}
 
+class DeleteCategoryEvent implements CategoryListPageEvent {
+  final int categoryId;
+
+  DeleteCategoryEvent(this.categoryId);
 }

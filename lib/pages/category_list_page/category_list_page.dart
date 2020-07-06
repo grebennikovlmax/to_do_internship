@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:todointernship/model/category.dart';
 
 import 'dart:async';
 
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
 import 'package:todointernship/pages/category_list_page/category_card.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
 import 'package:todointernship/pages/category_list_page/new_category_dialog.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/theme_bloc_provider.dart';
+import 'package:todointernship/widgets/modal_dialog.dart';
 
 
 class CategoryListBlocProvider extends InheritedWidget {
@@ -42,7 +45,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
     super.didChangeDependencies();
     // ignore: close_sinks
     var themeSink = ThemeBlocProvider.of(context).themeBloc.themeEventSink;
-    _categoryListBloc = CategoryListPageBloc(themeSink);
+    var themeStream = ThemeBlocProvider.of(context).themeBloc.themeStream;
+    _categoryListBloc = CategoryListPageBloc(themeSink, themeStream);
   }
 
   @override
@@ -61,6 +65,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
               return _CategoryList(
                 state: snapshot.data as LoadedPageState,
                 onAddNew: _showNewCategoryDialog,
+                onDelete: _onDelete,
               );
             }
             return Container();
@@ -86,14 +91,29 @@ class _CategoryListPageState extends State<CategoryListPage> {
       }
     );
   }
+
+  Future<void> _onDelete(int id) async {
+    var choice = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return ModalDialog(
+            title: 'Удалить список?',
+          );
+        }
+    );
+    if(choice ?? false) {
+      _categoryListBloc.categoryListPageEventSink.add(DeleteCategoryEvent(id));
+    }
+  }
 }
 
 class _CategoryList extends StatelessWidget {
 
   final VoidCallback onAddNew;
+  final void Function(int) onDelete;
   final LoadedPageState state;
 
-  _CategoryList({this.onAddNew, this.state});
+  _CategoryList({this.onAddNew, this.state, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -123,43 +143,39 @@ class _CategoryList extends StatelessWidget {
                 ),
               ]),
             ),
-            StreamBuilder<Map<int, CategoryTheme>>(
-              stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
-              builder: (context, snapshot) {
-                if(!snapshot.hasData) return SliverPadding(padding: EdgeInsets.zero);
-                return SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if(!state.categoryList.asMap().containsKey(index)) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: _AddButton(
-                              onTap: onAddNew,
-                            ),
-                          );
-                        }
-                        return Padding(
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if(!state.categoryList.asMap().containsKey(index)) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _AddButton(
+                          onTap: onAddNew,
+                        ),
+                      );
+                    }
+                    return Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: CategoryCard(
+                              onLongPress: () => onDelete(state.categoryList[index].id),
                               category: state.categoryList[index],
-                              theme: snapshot.data[state.categoryList[index].id],
+                              theme: state.themes[state.categoryList[index].id],
                             ),
                         );
                       },
-                      childCount: state.categoryList.length + 1
-                  ),
-                );
-              }
+                  childCount: state.categoryList.length + 1
+              ),
             )
-        ]
-      ),
-    );
-  }
+          ]
+        )
+      );
+    }
+
 }
 
 

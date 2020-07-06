@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/main.dart';
 
 import 'dart:math';
 
@@ -14,12 +13,15 @@ class CategoryCard extends StatelessWidget {
 
   final Category category;
   final CategoryTheme theme;
+  final VoidCallback onLongPress;
 
-  CategoryCard({this.category, this.theme});
+  CategoryCard({this.onLongPress, this.category, this.theme});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+          key: ValueKey(category.id),
+          onLongPress: onLongPress,
           onTap: () => _toTaskList(context),
           child: Card(
             margin: EdgeInsets.zero,

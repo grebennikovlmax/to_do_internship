@@ -28,3 +28,9 @@ class ChangeThemeEvent implements ThemeEvent {
 
   ChangeThemeEvent(this.id, this.color);
 }
+
+class DeleteThemeEvent implements ThemeEvent {
+  final int id;
+
+  DeleteThemeEvent(this.id);
+}

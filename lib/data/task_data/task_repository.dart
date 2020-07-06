@@ -20,6 +20,7 @@ abstract class TaskRepository {
   Future<int> saveCategory(Category category);
   Future<int> saveImage({String url, int taskId});
   Future<List<Category>> getAllCategories();
+  Future<void> removeCategory(int id);
 }
 
 class TaskDatabaseRepository implements TaskRepository {
@@ -112,5 +113,11 @@ class TaskDatabaseRepository implements TaskRepository {
     var mapList = await db.queryCategories();
     return mapList.map((e) => Category.fromMap(e)).toList();
   }
+
+  @override
+  Future<void> removeCategory(int id) async {
+    await db.deleteCategory(id);
+  }
+
 }
 

@@ -15,6 +15,13 @@ class SharedPrefManager {
     pref.setInt(primaryColor + stringId, theme.primaryColor);
   }
 
+  Future<void> deleteTheme(int id) async {
+    var pref = await SharedPreferences.getInstance();
+    var stringId = id.toString();
+    pref.remove(backgroundColor + stringId);
+    pref.remove(primaryColor + stringId);
+  }
+
   Future<CategoryTheme> loadTheme(int id) async {
     final pref = await SharedPreferences.getInstance();
     final stringId = id.toString();

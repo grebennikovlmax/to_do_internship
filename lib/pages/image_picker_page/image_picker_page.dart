@@ -10,6 +10,7 @@ import 'package:todointernship/pages/image_picker_page/image_picker_bloc.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page_state.dart';
 import 'package:todointernship/theme_bloc_provider.dart';
 import 'package:todointernship/theme_event.dart';
+import 'package:todointernship/widgets/modal_dialog.dart';
 
 class ImagePickerBlockProvider extends InheritedWidget {
   
@@ -84,9 +85,7 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
                     }
                     if(snapshot.data is EmptyImageListState) {
                       var text = (snapshot.data as EmptyImageListState).description;
-                      return Center(
-                          child: Text(text)
-                      );
+                      return _EmptyPage(text);
                     }
                     return Container();
                   }
@@ -102,7 +101,9 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
     final choice = await showDialog<bool>(
         context: context,
         builder: (context) {
-          return _SaveImageDialog();
+          return ModalDialog(
+            title: 'Выбрать данное изображение?',
+          );
         }
     );
     if(choice != null && choice) {
@@ -111,6 +112,33 @@ class _ImagePickerPageState extends State<ImagePickerPage> {
   }
 
 }
+
+class _EmptyPage extends StatelessWidget {
+
+  final String title;
+
+  _EmptyPage(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(title,
+            style: Theme.of(context).textTheme.headline5
+          ),
+          SizedBox(height: 20),
+          IconButton(
+            onPressed: () => ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(RefreshPageEvent()),
+            icon: Icon(Icons.refresh),
+          )
+        ],
+      )
+    );
+  }
+}
+
 
 class _ImagesGridView extends StatefulWidget {
 
@@ -201,52 +229,3 @@ class _ImagesGridViewState extends State<_ImagesGridView> {
 
 }
 
-class _SaveImageDialog extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SimpleDialog(
-      contentPadding: EdgeInsets.all(16),
-      children: <Widget>[
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text('Выбрать данное изображение?',
-              style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 16),
-            ),
-            Divider(
-              color: Colors.transparent,
-              height: 20,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                InkWell(
-                  onTap: () => _onDecline(context),
-                  child: Text('ОТМЕНА',
-                      style: Theme.of(context).textTheme.headline5
-                  ),
-                ),
-                VerticalDivider(),
-                InkWell(
-                  onTap: () => _onAccept(context),
-                  child: Text('ВЫБРАТЬ',
-                      style: Theme.of(context).textTheme.headline5
-                  ),
-                ),
-              ],
-            )
-          ]
-        )
-      ]
-    );
-  }
-
-  void _onAccept(BuildContext context) {
-    Navigator.of(context).pop(true);
-  }
-
-  void _onDecline(BuildContext context) {
-    Navigator.of(context).pop(false);
-  }
-
-}

@@ -1,4 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'dart:io';
+
 import 'package:todointernship/extension/date_time_extension.dart';
 
 class TimePickerDialog extends StatelessWidget {
@@ -36,25 +40,72 @@ class TimePickerDialog extends StatelessWidget {
   }
 
   void _choseDate(BuildContext context) async {
-    DateTime date = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
-        lastDate: DateTime.now().add(Duration(days: 10000))
-    );
-    if(withTime && date != null) {
-      final time = await showTimePicker(
+    DateTime date;
+    if(Platform.isIOS) {
+      await showDialog(
           context: context,
-          initialTime: TimeOfDay(hour: 0, minute: 0)
+          builder: (context) {
+            return _IosTimePickerDialog(
+              onTimeChanged: (val) => date = val,
+              withTime: withTime,
+            );
+          }
       );
-      if(time != null) {
-        date = date.add(Duration(hours: time.hour, minutes: time.minute));
+    } else {
+      date = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime.now(),
+          lastDate: DateTime.now().add(Duration(days: 10000))
+      );
+      if(withTime && date != null) {
+        final time = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay(hour: 0, minute: 0)
+        );
+        if(time != null) {
+          date = date.add(Duration(hours: time.hour, minutes: time.minute));
+        } else {
+          date = null;
+        }
       }
     }
     Navigator.of(context).pop(date);
   }
-
 }
+
+class _IosTimePickerDialog extends StatelessWidget {
+
+  final ValueChanged<DateTime> onTimeChanged;
+  final bool withTime;
+
+  _IosTimePickerDialog({this.onTimeChanged, this.withTime});
+
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+      children: <Widget>[
+        Container(
+          height: MediaQuery
+              .of(context)
+              .size
+              .height / 3,
+          child: CupertinoDatePicker(
+            mode: withTime
+                ? CupertinoDatePickerMode.dateAndTime
+                : CupertinoDatePickerMode.date,
+            onDateTimeChanged: onTimeChanged,
+          ),
+        ),
+        FlatButton(
+          child: Text("Выбрать"),
+          onPressed: () => Navigator.of(context).pop(),
+        )
+      ],
+    );
+  }
+}
+
 
 class _DialogDivider extends StatelessWidget {
 

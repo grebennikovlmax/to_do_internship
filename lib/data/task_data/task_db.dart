@@ -17,6 +17,11 @@ class TaskDatabase {
   Future<Database> _initDB() async {
     return openDatabase(
         join(await getDatabasesPath(), 'task_database'),
+        onOpen: (db) async {
+          await db.execute(
+              'PRAGMA foreign_keys=ON'
+          );
+        },
         onCreate: (db, version) async {
           await db.execute('CREATE TABLE steps ('
               'id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -172,6 +177,14 @@ class TaskDatabase {
   Future<List<Map<String, dynamic>>> queryCategories() async {
     var db = await database;
     return await db.query('categories');
+  }
+
+  Future<int> deleteCategory(int id) async {
+    var db = await database;
+    return await db.delete('categories',
+      where: 'id = ?',
+      whereArgs: [id]
+    );
   }
 }
 

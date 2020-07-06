@@ -20,7 +20,6 @@ class ThemeBloc {
   
   ThemeBloc() {
     _bindEventListener();
-    _themeStreamController.onListen = _refreshList;
   }
 
   void _bindEventListener() {
@@ -37,6 +36,9 @@ class ThemeBloc {
           break;
         case ChangeThemeEvent:
           _changeTheme(event);
+          break;
+        case DeleteThemeEvent:
+          _deleteTheme(event);
           break;
       }
     });
@@ -61,6 +63,11 @@ class ThemeBloc {
     _themes[event.id] = theme;
     sharedPref.saveTheme(theme, event.id);
     _refreshList();
+  }
+
+  void _deleteTheme(DeleteThemeEvent event) {
+    _themes.remove(event.id);
+    sharedPref.deleteTheme(event.id);
   }
 
   CategoryTheme _setupCategoryTheme(int color) {
