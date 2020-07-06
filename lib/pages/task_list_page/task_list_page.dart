@@ -17,7 +17,6 @@ import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
 import 'package:todointernship/theme_event.dart';
 import 'package:todointernship/theme_bloc_provider.dart';
 
-
 class TaskListPage extends StatefulWidget {
 
   final TaskListPageBloc bloc;

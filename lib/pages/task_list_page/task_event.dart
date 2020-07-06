@@ -1,6 +1,4 @@
-abstract class TaskEvent {
-
-}
+abstract class TaskEvent {}
 
 class CompletedTaskEvent extends TaskEvent {
 

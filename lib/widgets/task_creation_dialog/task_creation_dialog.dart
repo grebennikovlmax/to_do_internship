@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/pages/task_list_page/task_event.dart';
 
+import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_picker_bloc.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';

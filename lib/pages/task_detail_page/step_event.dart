@@ -1,10 +1,6 @@
-abstract class StepEvent {
+abstract class StepEvent {}
 
-}
-
-class AddStepEvent implements StepEvent {
-
-}
+class AddStepEvent implements StepEvent {}
 
 class EditStepEvent implements StepEvent {
 

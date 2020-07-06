@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/pages/category_list_page/category_list_page.dart';
-import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 
+import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker_bloc.dart';
 

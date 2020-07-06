@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/model/category.dart';
 
 import 'dart:async';
 
@@ -9,7 +8,6 @@ import 'package:todointernship/pages/category_list_page/category_list_page_event
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
 import 'package:todointernship/pages/category_list_page/new_category_dialog.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/theme_bloc_provider.dart';
 import 'package:todointernship/widgets/modal_dialog.dart';
 

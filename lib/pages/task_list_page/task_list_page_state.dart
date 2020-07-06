@@ -1,9 +1,6 @@
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
 
-abstract class TaskListPageState {
-
-}
+abstract class TaskListPageState {}
 
 class LoadedPageState implements TaskListPageState {
 

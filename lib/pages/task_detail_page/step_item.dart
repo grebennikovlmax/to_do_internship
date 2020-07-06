@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'dart:async';
-
-import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/widgets/custom_checkbox.dart';
 

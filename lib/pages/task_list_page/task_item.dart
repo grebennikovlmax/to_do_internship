@@ -14,48 +14,54 @@ class TaskItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      direction: DismissDirection.endToStart,
-      background: Container(
-        decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(10)
-        ),
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: Icon(Icons.delete,color: Colors.white,),
-          ),
-        ),
-      ),
-      onDismissed: (dir) => TaskListBlocProvider.of(context).bloc.taskEventSink.add(RemoveTaskEvent(task.id)),
-      key: ValueKey(task.id),
-      child: Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8)
-          ),
-          child: ListTile(
-            onTap: () => _toStepList(context),
-            title: Text(task.name,
-              style: Theme.of(context).textTheme.bodyText2.copyWith(
-                fontSize: 18
-              ),
-            ),
-            subtitle: task.steps.isEmpty ? null : Text("${task.completedStep} из ${task.amountSteps}",
-              style: Theme.of(context).textTheme.bodyText2.copyWith(
-                fontSize: 18,
-                color: const Color(0xff979797)
-              ),
-            ),
-            leading: CustomCheckBox(
-              value: task.isCompleted,
-              color: Scaffold.of(context).widget.backgroundColor,
-              onChange: () => TaskListBlocProvider.of(context).bloc.taskEventSink.add(CompletedTaskEvent(task.id)),
+    return Stack(
+      children: <Widget>[
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(10)
             ),
           )
-      ),
+        ),
+        Dismissible(
+          direction: DismissDirection.endToStart,
+          background: Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Icon(Icons.delete,color: Colors.white,),
+            ),
+          ),
+          onDismissed: (dir) => TaskListBlocProvider.of(context).bloc.taskEventSink.add(RemoveTaskEvent(task.id)),
+          key: ValueKey(task.id),
+          child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8)
+              ),
+              child: ListTile(
+                onTap: () => _toStepList(context),
+                title: Text(task.name,
+                  style: Theme.of(context).textTheme.bodyText2.copyWith(
+                    fontSize: 18
+                  ),
+                ),
+                subtitle: task.steps.isEmpty ? null : Text("${task.completedStep} из ${task.amountSteps}",
+                  style: Theme.of(context).textTheme.bodyText2.copyWith(
+                    fontSize: 18,
+                    color: const Color(0xff979797)
+                  ),
+                ),
+                leading: CustomCheckBox(
+                  value: task.isCompleted,
+                  color: Scaffold.of(context).widget.backgroundColor,
+                  onChange: () => TaskListBlocProvider.of(context).bloc.taskEventSink.add(CompletedTaskEvent(task.id)),
+                ),
+              )
+          ),
+        ),
+      ],
     );
   }
 

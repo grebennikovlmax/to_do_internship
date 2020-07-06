@@ -8,7 +8,6 @@ import 'package:todointernship/pages/category_list_page/category_list_page.dart'
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
 
-
 class CategoryCard extends StatelessWidget {
 
   final Category category;

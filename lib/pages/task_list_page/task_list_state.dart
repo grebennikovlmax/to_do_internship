@@ -1,8 +1,6 @@
 import 'package:todointernship/model/task.dart';
 
-abstract class TaskListState {
-
-}
+abstract class TaskListState {}
 
 
 class FullTaskListState implements TaskListState {

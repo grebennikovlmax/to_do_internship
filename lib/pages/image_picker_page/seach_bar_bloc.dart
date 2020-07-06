@@ -4,7 +4,6 @@ import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/pages/image_picker_page/search_state.dart';
 import 'package:todointernship/pages/image_picker_page/search_event.dart';
 
-
 class SearchBarBloc {
 
   final SharedPrefManager _prefManager = SharedPrefManager();

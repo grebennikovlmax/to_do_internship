@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todointernship/model/category_theme.dart';
 
+import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/image_list.dart';
 import 'package:todointernship/pages/task_detail_page/sliver_fab_bloc.dart';

@@ -1,9 +1,7 @@
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/category_theme.dart';
 
-abstract class CategoryListPageState {
-
-}
+abstract class CategoryListPageState {}
 
 class LoadedPageState implements CategoryListPageState {
 

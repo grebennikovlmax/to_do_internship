@@ -1,10 +1,6 @@
-abstract class ImagePickerPageState {
+abstract class ImagePickerPageState {}
 
-}
-
-class LoadingState implements ImagePickerPageState {
-
-}
+class LoadingState implements ImagePickerPageState {}
 
 class LoadedImageListState implements ImagePickerPageState {
 

@@ -1,9 +1,6 @@
-import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/model/task.dart';
 
-abstract class TaskDetailPageState {
-
-}
+abstract class TaskDetailPageState {}
 
 class LoadedPageState implements TaskDetailPageState {
 

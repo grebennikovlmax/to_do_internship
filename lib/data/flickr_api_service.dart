@@ -17,7 +17,8 @@ class FlickrApiService {
   FlickrApiService._privateConstructor();
 
   Future<List<String>> getRecentImages(int page) async {
-    final url = _url + _getRecentMethod + _apiKey + _jsonFormat + '&per_page=10&page=$page';
+    final url = _url + _photoSearchMethod + _apiKey + '&text=nature&per_page=10&page=$page' + _jsonFormat;
+//    final url = _url + _getRecentMethod + _apiKey + _jsonFormat + '&per_page=10&page=$page';
     final response = await http.get(url);
     return compute(_getPhotosURLfromJson, response.body);
   }
