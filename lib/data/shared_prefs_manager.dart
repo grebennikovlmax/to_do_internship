@@ -6,6 +6,7 @@ class SharedPrefManager {
 
   final backgroundColor = 'backgroundColor_';
   final primaryColor = 'primaryColor_';
+  final lastSearchRequest = 'last_search_request';
 
   Future<void> saveTheme(CategoryTheme theme, int id) async {
     final pref = await SharedPreferences.getInstance();
@@ -32,5 +33,16 @@ class SharedPrefManager {
     final pref = await SharedPreferences.getInstance();
     final flag =  pref.getBool('hidden_flag_$id') ?? false;
     return flag;
+  }
+
+  Future<void> saveSearchRequest(String text) async {
+    final pref = await SharedPreferences.getInstance();
+    pref.setString(lastSearchRequest, text);
+  }
+
+  Future<String> loadSearchRequest() async {
+    final pref = await SharedPreferences.getInstance();
+    final text = pref.getString(lastSearchRequest);
+    return text;
   }
 }

@@ -1,6 +1,7 @@
+import 'package:todointernship/data/ImageManager.dart';
 import 'package:todointernship/model/task.dart';
-
 import 'package:todointernship/data/task_data/task_db.dart';
+import 'package:todointernship/model/task_image.dart';
 
 abstract class TaskRepository {
   Future<List<Task>> getTaskList(bool completedIsHidden);
@@ -12,6 +13,9 @@ abstract class TaskRepository {
   // Возвращает id при сохранение в БД
   Future<int> saveTask(Task task);
   Future<int> saveStep(TaskStep step);
+  Future<void> removeImage(String path);
+  Future<List<TaskImage>> fetchImagesForTask(int taskId);
+  Future<int> saveImage({String url, int taskId});
 }
 
 class TaskDatabaseRepository implements TaskRepository {
@@ -32,6 +36,8 @@ class TaskDatabaseRepository implements TaskRepository {
   Future<void> removeTask(int id) async {
     return await db.deleteTask(id);
   }
+
+
 
   @override
   Future<List<Task>> getTaskList(bool completedIsHidden) async {
@@ -66,5 +72,24 @@ class TaskDatabaseRepository implements TaskRepository {
     return await db.deleteStep(id);
   }
 
+  @override
+  Future<List<TaskImage>> fetchImagesForTask(int taskId) async {
+    final data = await db.queryImages(taskId);
+    return data.map((e) => TaskImage.fromMap(e)).toList();
+  }
+
+  @override
+  Future<void> removeImage(String path) async {
+    await db.deleteImage(path);
+    await ImageManager.shared.removeImage(path);
+  }
+
+  @override
+  Future<int> saveImage({String url, int taskId}) async {
+    final path = await ImageManager.shared.saveImage(url);
+    final image = TaskImage(taskID: taskId, path: path);
+    final res = await db.insertImage(image.toMap());
+    return res;
+  }
 }
 

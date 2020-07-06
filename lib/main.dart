@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:todointernship/pages/image_picker_page/image_picker_page.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
 import 'package:todointernship/pages/category_list_page/home_page.dart';
@@ -13,10 +14,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        initialRoute: "/",
+        initialRoute: '/',
         routes: {
-          "/category_detail" : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
-          "/task_detail" : (context) => TaskDetailPage(ModalRoute.of(context).settings.arguments)
+          '/category_detail' : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
+          '/task_detail' : (context) => TaskDetailPage(ModalRoute.of(context).settings.arguments),
+          '/photo_picker': (context) => ImagePickerPage()
         },
         theme: ThemeData(
           primaryColor: Color(0xff6202EE),

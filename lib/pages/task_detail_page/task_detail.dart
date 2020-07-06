@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
+import 'package:intl/intl.dart';
+
 import 'package:todointernship/model/task.dart';
+import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/date_state.dart';
+import 'package:todointernship/pages/task_detail_page/photo_list.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
@@ -14,6 +18,10 @@ import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 import 'package:todointernship/widgets/new_task_dialog.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
+
+
+
+
 
 class TaskDetail extends StatefulWidget {
 
@@ -34,6 +42,7 @@ class _TaskDetailState extends State<TaskDetail> {
   StreamController<FabState> _fabStateStream;
   StreamController<List<TaskStep>> _stepListStreamController;
   StreamController<DateState> _dateStateStreamController;
+  StreamController<Future<List<TaskImage>>> _imageStreamController;
   ValueNotifier<String> _titleNameNotifier;
 
   @override
@@ -43,6 +52,7 @@ class _TaskDetailState extends State<TaskDetail> {
     _fabStateStream = StreamController();
     _stepListStreamController = StreamController();
     _dateStateStreamController = StreamController();
+    _imageStreamController = StreamController();
     _titleNameNotifier = ValueNotifier("sd");
     _scrollController.addListener(() {
       final state = FabState(_scrollController.offset, TaskInfo.of(context).task.isCompleted);
@@ -90,6 +100,18 @@ class _TaskDetailState extends State<TaskDetail> {
                           onNotification: _setNotification,
                         );
                       },
+                    ),
+                    Divider(color: Colors.transparent, height: 30),
+                    StreamBuilder<Future<List<TaskImage>>>(
+                      stream: _imageStreamController.stream,
+                      initialData: _loadImages(),
+                      builder: (context, snapshot) {
+                        return PhotoList(
+                          onDelete: _deleteImage ,
+                          imageList: snapshot.data,
+                          onPickPhoto: _onPickPhoto,
+                        );
+                      }
                     )
                   ])
               ),
@@ -111,6 +133,7 @@ class _TaskDetailState extends State<TaskDetail> {
     _dateStateStreamController.close();
     _stepListStreamController.close();
     _titleNameNotifier.dispose();
+    _imageStreamController.close();
     super.dispose();
   }
 
@@ -119,6 +142,26 @@ class _TaskDetailState extends State<TaskDetail> {
     TaskInfo.of(context).taskEventSink.add(OnCompletedTask(task));
     final state = FabState(_scrollController.offset, !task.isCompleted);
     _fabStateStream.add(state);
+  }
+
+  Future<void> _onPickPhoto() async {
+    final url = await Navigator.pushNamed(context, '/photo_picker');
+    if(url != null) {
+      final int taskId = TaskInfo.of(context).task.id;
+      await TaskDatabaseRepository.shared.saveImage(url: url, taskId: taskId);
+      _imageStreamController.add(_loadImages());
+    }
+  }
+
+  Future<List<TaskImage>> _loadImages() async {
+    final task = TaskInfo.of(context).task;
+    final imageList = await TaskDatabaseRepository.shared.fetchImagesForTask(task.id);
+    return imageList;
+  }
+
+  Future<void> _deleteImage(String path) async {
+    final res = await TaskDatabaseRepository.shared.removeImage(path);
+    _imageStreamController.add(_loadImages());
   }
 
   Future<void> _updateTaskName() async {
@@ -133,7 +176,7 @@ class _TaskDetailState extends State<TaskDetail> {
       task.name = updatedTask.name;
       task.finalDate = updatedTask.finalDate;
       task.notificationDate = updatedTask.notificationDate;
-      await _taskRepository.updateTask(task);
+      await TaskDatabaseRepository.shared.updateTask(task);
       _titleNameNotifier.value = task.name;
       _dateStateStreamController.add(_getDateState());
 
@@ -160,7 +203,7 @@ class _TaskDetailState extends State<TaskDetail> {
     if(date != null) {
       Task task = TaskInfo.of(context).task;
       task.finalDate = date;
-      await _taskRepository.updateTask(task);
+      await TaskDatabaseRepository.shared.updateTask(task);
       _dateStateStreamController.add(_getDateState());
     }
   }
@@ -177,7 +220,7 @@ class _TaskDetailState extends State<TaskDetail> {
       final platform = PlatformNotificationChannel();
       Task task = TaskInfo.of(context).task;
       task.notificationDate = dateTime;
-      await _taskRepository.updateTask(task);
+      await TaskDatabaseRepository.shared.updateTask(task);
       var res = await platform.setNotification(task);
       _dateStateStreamController.add(_getDateState());
     }
@@ -186,7 +229,7 @@ class _TaskDetailState extends State<TaskDetail> {
   _popupMenuButtonPressed(_TaskDetailPopupMenuItem item) {
       switch (item) {
         case _TaskDetailPopupMenuItem.delete:
-          _taskRepository.removeTask(TaskInfo.of(context).task.id);
+          TaskDatabaseRepository.shared.removeTask(TaskInfo.of(context).task.id);
           Navigator.of(context).pop();
           break;
         case _TaskDetailPopupMenuItem.update:
