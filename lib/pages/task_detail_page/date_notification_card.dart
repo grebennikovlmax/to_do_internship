@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_picker_bloc.dart';
-import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
 
 class DateNotificationCard extends StatefulWidget {
@@ -33,12 +32,11 @@ class _DateNotificationCardState extends State<DateNotificationCard> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DateState>(
-      stream: _datePickerBloc.dateStateStream,
+    return BlocBuilder(
+      bloc: _datePickerBloc,
       builder: (context, snapshot) {
-        if(!snapshot.hasData) return Container();
-        var finalColor = _setColor(snapshot.data.finalDayIsExpired);
-        var notificationColor = _setColor(snapshot.data.notificationDayIsExpired);
+        var finalColor = _setColor(snapshot.finalDayIsExpired);
+        var notificationColor = _setColor(snapshot.notificationDayIsExpired);
         return Card(
           margin: EdgeInsets.fromLTRB(16, 10, 16, 5),
           child: Column(
@@ -49,9 +47,9 @@ class _DateNotificationCardState extends State<DateNotificationCard> {
                   leading: Icon(Icons.notifications_none,
                     color: notificationColor,
                   ),
-                  title: snapshot.data.notificationDate == null
+                  title: snapshot.notificationDate == null
                       ? Text('Напомнить')
-                      : Text(snapshot.data.notificationDate,
+                      : Text(snapshot.notificationDate,
                           style: TextStyle(
                             color: notificationColor
                       )
@@ -68,9 +66,9 @@ class _DateNotificationCardState extends State<DateNotificationCard> {
                   color: finalColor
                 ),
                 onTap: _onPickDate,
-                title: snapshot.data.finalDate == null
+                title: snapshot.finalDate == null
                     ? Text('Добавить дату выполнения')
-                    : Text(snapshot.data.finalDate,
+                    : Text(snapshot.finalDate,
                         style: TextStyle(
                             color: finalColor
                         )
@@ -85,7 +83,7 @@ class _DateNotificationCardState extends State<DateNotificationCard> {
 
   @override
   void dispose() {
-    _datePickerBloc.dispose();
+    _datePickerBloc.close();
     super.dispose();
   }
 
@@ -98,7 +96,7 @@ class _DateNotificationCardState extends State<DateNotificationCard> {
     );
     if(date != null) {
       widget.taskEditingSink.add(UpdateTaskFinalDateEvent(date));
-      _datePickerBloc.dateEventSink.add(DateEvent(finalDate: date));
+      _datePickerBloc.add(DateEvent(finalDate: date));
     }
   }
 
@@ -111,10 +109,9 @@ class _DateNotificationCardState extends State<DateNotificationCard> {
     );
     if(date != null) {
       widget.taskEditingSink.add(UpdateTaskNotificationDateEvent(date));
-      _datePickerBloc.dateEventSink.add(DateEvent(notificationDate: date));
+      _datePickerBloc.add(DateEvent(notificationDate: date));
     }
   }
-
 
   Color _setColor(bool isExpired) {
     if(isExpired == null) {

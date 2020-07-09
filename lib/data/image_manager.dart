@@ -1,7 +1,5 @@
 import 'package:path_provider/path_provider.dart';
-
 import 'dart:io';
-
 import 'package:todointernship/data/flickr_api_service.dart';
 
 class ImageManager {

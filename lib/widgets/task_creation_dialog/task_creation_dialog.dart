@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_event.dart';
 import 'package:todointernship/widgets/task_creation_dialog/date_picker_bloc.dart';
-import 'package:todointernship/widgets/task_creation_dialog/date_state.dart';
 import 'package:todointernship/widgets/time_picker_dialog.dart';
 
 class TaskCreationDialog extends StatefulWidget {
@@ -21,11 +20,17 @@ class TaskCreationDialog extends StatefulWidget {
 class _TaskCreationDialogState extends State<TaskCreationDialog> {
 
   final _formKey = GlobalKey<FormState>();
-  final _block = DatePickerBloc();
+  DatePickerBloc _block;
 
   String name;
   DateTime finalDate;
   DateTime notificationDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _block = DatePickerBloc();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,22 +62,22 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
                 ),
                 widget.edit
                     ? Container()
-                    : StreamBuilder<DateState>(
-                      stream: _block.dateStateStream,
+                    : BlocBuilder(
+                      bloc: _block,
                       builder: (context, snapshot) {
                         return FractionallySizedBox(
                           widthFactor: 0.7,
                           child: Column(
                             children: <Widget>[
                               _DateFormField(
-                                title: snapshot.hasData ? snapshot.data.notificationDate : 'Напомнить',
+                                title: snapshot.notificationDate,
                                 onTap: _onPickNotification ,
                                 icon: Icons.notifications_none,
                                 onSaved: (val) =>  notificationDate = val,
                               ),
                               Divider(color: Colors.transparent),
                               _DateFormField(
-                                title: snapshot.hasData ? snapshot.data.finalDate : 'Дата выполнения',
+                                title: snapshot.finalDate,
                                 onTap: _onPickDate,
                                 icon:  Icons.insert_invitation,
                                 onSaved: (val) => finalDate = val,
@@ -110,7 +115,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
 
   @override
   void dispose() {
-    _block.dispose();
+    _block.close();
     super.dispose();
   }
 
@@ -122,7 +127,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
         }
     );
     if(date != null) {
-      _block.dateEventSink.add(DateEvent(finalDate: date));
+      _block.add(DateEvent(finalDate: date));
       state.didChange(date);
     }
   }
@@ -135,7 +140,7 @@ class _TaskCreationDialogState extends State<TaskCreationDialog> {
         }
     );
     if(dateTime != null) {
-      _block.dateEventSink.add(DateEvent(notificationDate: dateTime));
+      _block.add(DateEvent(notificationDate: dateTime));
       state.didChange(dateTime);
     }
   }

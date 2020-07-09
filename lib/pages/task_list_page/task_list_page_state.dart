@@ -1,12 +1,29 @@
-import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
+import 'package:todointernship/model/task.dart';
 
 abstract class TaskListPageState {}
 
-class LoadedPageState implements TaskListPageState {
-
+abstract class LoadedTaskListPageState {
   final int categoryId;
-  final HiddenTaskState hiddenState;
+  final bool isHidden;
   final String title;
 
-  LoadedPageState({this.categoryId, this.hiddenState, this.title});
+  LoadedTaskListPageState(this.isHidden, this.categoryId, this.title);
+}
+
+class LoadingTaskListPageState implements TaskListPageState {}
+
+class NotEmptyTaskListPageState extends LoadedTaskListPageState implements TaskListPageState {
+
+  final List<Task> taskList;
+
+  NotEmptyTaskListPageState(bool isHidden, int categoryId, String title, this.taskList) : super(isHidden, categoryId, title);
+
+}
+
+class EmptyTaskListPageState extends LoadedTaskListPageState implements TaskListPageState {
+
+  final String description;
+
+  EmptyTaskListPageState(bool isHidden, int categoryId, String title, this.description) : super(isHidden, categoryId, title);
+
 }

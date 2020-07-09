@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/theme_list_data.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker_bloc.dart';
@@ -19,7 +20,7 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
   final _key = GlobalKey<FormState>();
   final _themePickerBloc;
 
-  _NewCategoryDialogState() : _themePickerBloc = ThemePickerBloc();
+  _NewCategoryDialogState() : _themePickerBloc = ThemePickerBloc(Injector.appInstance.getDependency<ThemeListData>());
 
   String text;
   int color;
@@ -49,8 +50,7 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
               ThemePicker(
                 onPick: _onPickColor,
                 height: 24,
-                stateStream: _themePickerBloc.themePickerStateStream,
-                eventSink: _themePickerBloc.themePickerEventSink,
+                bloc: _themePickerBloc,
               ),
               Divider(height: 20, color: Colors.transparent),
               Row(
@@ -80,7 +80,7 @@ class _NewCategoryDialogState extends State<NewCategoryDialog> {
 
   @override
   void dispose() {
-    _themePickerBloc.dispose();
+    _themePickerBloc.close();
     super.dispose();
   }
 

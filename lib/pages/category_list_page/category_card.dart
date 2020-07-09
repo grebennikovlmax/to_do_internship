@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/shared_prefs_manager.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:math';
-
 import 'package:todointernship/model/category.dart';
 import 'package:todointernship/model/category_theme.dart';
-import 'package:todointernship/pages/category_list_page/category_list_page.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
+import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 
 class CategoryCard extends StatelessWidget {
 
@@ -41,7 +44,6 @@ class CategoryCard extends StatelessWidget {
                         color: theme.primaryColor
                     ),
                   ),
-//              SizedBox(height: 10),
                   Spacer(flex: 1),
                   Expanded(
                     flex: 5,
@@ -125,9 +127,17 @@ class CategoryCard extends StatelessWidget {
       }
 
   void _toTaskList(BuildContext context) {
-    var block = TaskListPageBloc(category.id, category.name);
+    var injector = Injector.appInstance;
+    // ignore: close_sinks
+    var block = TaskListPageBloc(
+      injector.getDependency<TaskRepository>(),
+      injector.getDependency<SharedPrefManager>(),
+      injector.getDependency<PlatformNotificationChannel>(),
+      category.name,
+      category.id
+    );
     Navigator.of(context).pushNamed('/category_detail', arguments: block)
-        .then((value) => CategoryListBlocProvider.of(context).bloc.categoryListPageEventSink.add(UpdatePageEvent()));
+        .then((value) => BlocProvider.of<CategoryListPageBloc>(context).add(UpdatePageEvent()));
   }
 
 }

@@ -1,32 +1,15 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
-import 'package:todointernship/model/category_theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/flickr_api_service.dart';
 import 'package:todointernship/pages/image_picker_page/custom_search_app_bar.dart';
 import 'package:todointernship/pages/image_picker_page/image_page_event.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_bloc.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page_state.dart';
-import 'package:todointernship/theme_bloc_provider.dart';
-import 'package:todointernship/theme_event.dart';
+import 'package:todointernship/theme_bloc.dart';
 import 'package:todointernship/widgets/modal_dialog.dart';
-
-class ImagePickerBlockProvider extends InheritedWidget {
-  
-  final ImagePickerBloc block;
-  
-  const ImagePickerBlockProvider({Widget child, this.block})  : super(child: child);
-
-  static ImagePickerBlockProvider of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<ImagePickerBlockProvider>();
-  }
-
-  @override
-  bool updateShouldNotify(ImagePickerBlockProvider old) {
-    return false;
-  }
-}
 
 class  ImagePickerPage extends StatefulWidget {
 
@@ -39,62 +22,55 @@ class  ImagePickerPage extends StatefulWidget {
 
 }
 
-
 class _ImagePickerPageState extends State<ImagePickerPage> {
 
-  final _imagePickerBloc = ImagePickerBloc();
-
+  ImagePickerBloc _imagePickerBloc;
 
   @override
-  void dispose() {
-    _imagePickerBloc.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    var injector = Injector.appInstance;
+    _imagePickerBloc = ImagePickerBloc(injector.getDependency<FlickrApiService>());
   }
 
   @override
   Widget build(BuildContext context) {
-    return ImagePickerBlockProvider(
-      block: _imagePickerBloc,
-      child: StreamBuilder<Map<int, CategoryTheme>>(
-          stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
-          builder: (context, themeSnapshot) {
-            if(!themeSnapshot.hasData) {
-              ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(RefreshThemeEvent());
-              return Container();
-            }
-            var theme = themeSnapshot.data[widget.categoryId];
-            return Scaffold(
-                backgroundColor: Color(theme.backgroundColor),
-                appBar: SearchAppBar(
-                  color: Color(theme.primaryColor),
-                ),
-                body: StreamBuilder<ImagePickerPageState>(
-                  stream: _imagePickerBloc.pageStateStream,
-                  initialData: LoadingState(),
-                  builder: (context, snapshot) {
-                    if (snapshot.data is LoadingState) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    if(snapshot.data is LoadedImageListState) {
-                      return _ImagesGridView(
-                        imageDataList: (snapshot.data as LoadedImageListState).urlList,
-                        onPick: _saveImage,
-                      );
-                    }
-                    if(snapshot.data is EmptyImageListState) {
-                      var text = (snapshot.data as EmptyImageListState).description;
-                      return _EmptyPage(text);
-                    }
-                    return Container();
-                  }
-                )
-            );
-          }
+    var theme = BlocProvider.of<ThemeBloc>(context).state[widget.categoryId];
+    return BlocProvider<ImagePickerBloc>(
+      create: (context) => _imagePickerBloc,
+      child: Scaffold(
+          backgroundColor: Color(theme.backgroundColor),
+          appBar: SearchAppBar(
+            color: Color(theme.primaryColor),
+          ),
+          body: BlocBuilder(
+              bloc: _imagePickerBloc,
+              builder: (context, state) {
+                if (state is LoadingState) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if(state is LoadedImageListState) {
+                  return _ImagesGridView(
+                    imageDataList: state.urlList,
+                    onPick: _saveImage,
+                  );
+                }
+                if(state is EmptyImageListState) {
+                  return _EmptyPage(state.description);
+                }
+                return Container();
+              }
+          )
       ),
     );
+  }
 
+  @override
+  void dispose() {
+    _imagePickerBloc.close();
+    super.dispose();
   }
 
   Future<void> _saveImage(String url) async {
@@ -130,7 +106,7 @@ class _EmptyPage extends StatelessWidget {
           ),
           SizedBox(height: 20),
           IconButton(
-            onPressed: () => ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(RefreshPageEvent()),
+            onPressed: () => BlocProvider.of<ImagePickerBloc>(context).add(RefreshPageEvent()),
             icon: Icon(Icons.refresh),
           )
         ],
@@ -181,15 +157,14 @@ class _ImagesGridViewState extends State<_ImagesGridView> {
                 return GestureDetector(
                   key: ValueKey(widget.imageDataList[index]),
                   onTap: () => widget.onPick(widget.imageDataList[index]),
-                  child: FadeInImage.assetNetwork (
+                  child: FadeInImage(
                       fit: BoxFit.cover,
-                      fadeInDuration: Duration(milliseconds: 500),
-                      placeholder: 'assets/png/placeholder.png',
-                      image: widget.imageDataList[index],
-                      imageErrorBuilder: (context, error, trace ) {
-                        return Image.asset('assets/png/placeholder.png');
-                      },
-                    ),
+                      placeholder: AssetImage('assets/png/placeholder.png'),
+                      image: NetworkImage(widget.imageDataList[index]),
+                      imageErrorBuilder: (___, __, _) {
+                       return Image.asset('assets/png/placeholder.png');
+                      }
+                    )
                   );
                 },
                 childCount: widget.imageDataList.length
@@ -216,16 +191,15 @@ class _ImagesGridViewState extends State<_ImagesGridView> {
   }
 
   Future<void> _onRefresh() async {
-    ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(RefreshPageEvent());
+    BlocProvider.of<ImagePickerBloc>(context).add(RefreshPageEvent());
   }
 
   void _setGridViewListeners() {
     _scrollController.addListener(() {
       if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-        ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(NextImagePage());
+        BlocProvider.of<ImagePickerBloc>(context).add(NextImagePage());
       }
     });
   }
 
 }
-

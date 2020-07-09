@@ -12,3 +12,5 @@ class DeleteImageEvent implements ImageEvent {
 
   DeleteImageEvent(this.path);
 }
+
+class UpdateImageEvent implements ImageEvent {}

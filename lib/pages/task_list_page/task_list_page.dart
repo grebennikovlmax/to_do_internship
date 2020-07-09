@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
-
-import 'package:todointernship/model/category_theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/theme_list_data.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_list_page/empty_task_list.dart';
-import 'package:todointernship/pages/task_list_page/hidden_task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_state.dart';
+import 'package:todointernship/theme_bloc.dart';
 import 'package:todointernship/widgets/popup_menu.dart';
 import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker.dart';
-import 'package:todointernship/pages/task_list_page/task_list_state.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker_bloc.dart';
-import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
 import 'package:todointernship/theme_event.dart';
-import 'package:todointernship/theme_bloc_provider.dart';
 
 class TaskListPage extends StatefulWidget {
 
@@ -30,36 +28,22 @@ class TaskListPage extends StatefulWidget {
 
 }
 
-class TaskListBlocProvider extends InheritedWidget {
-
-  final TaskListPageBloc bloc;
-  static TaskListBlocProvider of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TaskListBlocProvider>();
-
-  TaskListBlocProvider({this.bloc, Widget child}) : super(child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) {
-    return false;
-  }
-
-}
-
 class _TaskListPageState extends State<TaskListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return TaskListBlocProvider(
-      bloc: widget.bloc,
-      child: StreamBuilder<TaskListPageState>(
-        stream: widget.bloc.taskListPageStream,
+    return BlocProvider<TaskListPageBloc>(
+      create: (context) => widget.bloc,
+      child: BlocBuilder(
+        bloc: widget.bloc,
         builder: (context, pageState) {
-          if(pageState.data is LoadedPageState) {
-            return _TaskList(
-              state: pageState.data as LoadedPageState,
+          if(pageState is LoadingTaskListPageState) {
+            return Center(
+              child: CircularProgressIndicator(),
             );
           }
-          return Center(
-            child: CircularProgressIndicator(),
+          return _TaskList(
+            pageState: pageState,
           );
         },
       ),
@@ -68,7 +52,7 @@ class _TaskListPageState extends State<TaskListPage> {
 
   @override
   void dispose() {
-    widget.bloc.dispose();
+    widget.bloc.close();
     super.dispose();
   }
 
@@ -76,53 +60,37 @@ class _TaskListPageState extends State<TaskListPage> {
 
 class _TaskList extends StatelessWidget {
 
-  final LoadedPageState state;
+  final LoadedTaskListPageState pageState;
 
-  _TaskList({this.state});
+  _TaskList({this.pageState});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Map<int, CategoryTheme>>(
-      stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
+    return BlocBuilder(
+      bloc: BlocProvider.of<ThemeBloc>(context),
       builder: (context, themeSnapshot) {
-        if(!themeSnapshot.hasData) {
-          ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(RefreshThemeEvent());
-          return Container();
-        }
         return Scaffold(
             resizeToAvoidBottomPadding: false,
-            backgroundColor: Color(themeSnapshot.data[state.categoryId].backgroundColor),
+            backgroundColor: Color(themeSnapshot[pageState.categoryId].backgroundColor),
             appBar: AppBar(
-                title: Text(state.title),
-                backgroundColor: Color(themeSnapshot.data[state.categoryId].primaryColor),
+                title: Text(pageState.title),
+                backgroundColor: Color(themeSnapshot[pageState.categoryId].primaryColor),
                 actions: <Widget>[
-                  StreamBuilder<HiddenTaskState>(
-                      stream: TaskListBlocProvider.of(context).bloc.hiddenTaskStateStream,
-                      initialData: state.hiddenState,
-                      builder: (context, snapshot) {
-                        return PopupMenu(
-                          isHidden: snapshot.data.state,
-                          onDelete: () => _deleteCompletedTask(context),
-                          onChangeTheme: () => _showThemePicker(context, themeSnapshot.data[state.categoryId].backgroundColor),
-                          onHide: () => _onHideCompleted(context),
-                        );
-                      }
+                  Builder(
+                    builder: (context) {
+                      return PopupMenu(
+                        isHidden: pageState.isHidden,
+                        onDelete: () => _deleteCompletedTask(context),
+                        onChangeTheme: () => _showThemePicker(context, themeSnapshot[pageState.categoryId].backgroundColor),
+                        onHide: () => _onHideCompleted(context),
+                      );
+                    }
                   )
                 ]
             ),
-            body: StreamBuilder<TaskListState>(
-              stream: TaskListBlocProvider.of(context).bloc.taskListStateStream,
-              builder: (context, snapshot) {
-                if(snapshot.data is EmptyListState) {
-                  var description = (snapshot.data as EmptyListState).description;
-                  return EmptyTaskList(description);
-                }
-                if(snapshot.data is FullTaskListState) {
-                  return TaskList((snapshot.data as FullTaskListState).taskList);
-                }
-                return Container();
-              },
-            ),
+            body: pageState is EmptyTaskListPageState
+                    ? EmptyTaskList((pageState as EmptyTaskListPageState).description)
+                    : TaskList((pageState as NotEmptyTaskListPageState).taskList),
             floatingActionButton: FloatingActionButton(
                 onPressed: () => _newTask(context),
                 child: Icon(Icons.add)
@@ -133,7 +101,7 @@ class _TaskList extends StatelessWidget {
   }
 
   void _onHideCompleted(BuildContext context) {
-    TaskListBlocProvider.of(context).bloc.hideTaskEventSink.add(HideTaskEvent());
+    BlocProvider.of<TaskListPageBloc>(context).add(HideTaskEvent());
   }
 
   void _showThemePicker(BuildContext context, int color) {
@@ -142,19 +110,19 @@ class _TaskList extends StatelessWidget {
         builder: (context) {
           return _ThemePickerBottomSheet(
               pickedColor: color,
-              categoryId: state.categoryId,
+              categoryId: pageState.categoryId,
           );
         }
     );
   }
 
   void _deleteCompletedTask(BuildContext context) {
-    TaskListBlocProvider.of(context).bloc.taskEventSink.add(RemoveCompletedEvent());
+    BlocProvider.of<TaskListPageBloc>(context).add(RemoveCompletedEvent());
   }
 
   void _newTask(BuildContext context) async {
     // ignore: close_sinks
-    var sink = TaskListBlocProvider.of(context).bloc.taskEventSink;
+    var sink = BlocProvider.of<TaskListPageBloc>(context);
     await showDialog<Task>(
         context: context,
         builder: (BuildContext context) {
@@ -185,7 +153,7 @@ class _ThemePickerBottomSheetState extends State<_ThemePickerBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _themePickerBloc = ThemePickerBloc(pickedColor: widget.pickedColor);
+    _themePickerBloc = ThemePickerBloc(Injector.appInstance.getDependency<ThemeListData>(),widget.pickedColor);
   }
 
   @override
@@ -203,8 +171,7 @@ class _ThemePickerBottomSheetState extends State<_ThemePickerBottomSheet> {
             SizedBox(height: 20),
             ThemePicker(
               onPick: _onPickTheme,
-              eventSink: _themePickerBloc.themePickerEventSink,
-              stateStream: _themePickerBloc.themePickerStateStream,
+              bloc: _themePickerBloc,
             )
           ],
         ),
@@ -213,11 +180,11 @@ class _ThemePickerBottomSheetState extends State<_ThemePickerBottomSheet> {
 
   @override
   void dispose() {
-    _themePickerBloc.dispose();
+    _themePickerBloc.close();
     super.dispose();
   }
 
   void _onPickTheme(int color) {
-    ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(ChangeThemeEvent(widget.categoryId, color));
+    BlocProvider.of<ThemeBloc>(context).add(ChangeThemeEvent(widget.categoryId, color));
   }
 }

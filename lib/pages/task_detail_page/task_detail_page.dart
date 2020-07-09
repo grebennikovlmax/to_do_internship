@@ -1,34 +1,14 @@
 import 'package:flutter/material.dart';
-
-import 'package:todointernship/model/category_theme.dart';
-import 'package:todointernship/model/task.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/pages/task_detail_page/image_list.dart';
 import 'package:todointernship/pages/task_detail_page/sliver_fab_bloc.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_block.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_state.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_detail_page/steps_card.dart';
-import 'package:todointernship/pages/task_detail_page/fab_state.dart';
-import 'package:todointernship/theme_bloc_provider.dart';
-import 'package:todointernship/theme_event.dart';
+import 'package:todointernship/theme_bloc.dart';
 import 'package:todointernship/widgets/task_creation_dialog/task_creation_dialog.dart';
 import 'package:todointernship/pages/task_detail_page/date_notification_card.dart';
-
-class TaskDetailBlocProvider extends InheritedWidget {
-
-  final TaskDetailPageBloc bloc;
-  final List<TaskStep> stepList;
-  final int taskId;
-  static TaskDetailBlocProvider of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TaskDetailBlocProvider>();
-
-  TaskDetailBlocProvider({this.bloc,this.stepList, this.taskId, Widget child}) : super(child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) {
-    return false;
-  }
-
-}
 
 class TaskDetailPage extends StatefulWidget {
 
@@ -42,171 +22,135 @@ class TaskDetailPage extends StatefulWidget {
 
 class _TaskDetailPageState extends State<TaskDetailPage> {
 
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<TaskDetailPageState>(
-        stream: widget.bloc.taskDetailPageStateStream,
-        builder: (context, snapshot) {
-          if(snapshot.data is LoadedPageState) {
-            var state = snapshot.data as LoadedPageState;
-            return TaskDetailBlocProvider(
-                bloc: widget.bloc,
-                stepList: state.stepList,
-                taskId: state.taskId,
-                child: _StepList(state: snapshot.data)
-            );
-          }
-          return Container();
-        }
-    );
-  }
-
-  @override
-  void dispose() {
-    widget.bloc.dispose();
-    super.dispose();
-  }
-}
-
-class _StepList extends StatefulWidget {
-
-  final LoadedPageState state;
-
-  _StepList({this.state});
-
-  @override
-  State<StatefulWidget> createState() {
-    return _StepListState();
-  }
-
-
-}
-
-class _StepListState extends State<_StepList> {
-
   final double _appBarHeight = 128;
   ScrollController _scrollController;
-  SliverFabBloc _sliverFabBloc;
-  TaskDetailPageBloc _taskDetailBloc;
 
   @override
   void initState() {
     super.initState();
-    _sliverFabBloc = SliverFabBloc(widget.state.isCompleted);
     _scrollController = ScrollController();
-    _scrollController.addListener(() {
-      _sliverFabBloc.fabPositionSink.add(_scrollController.offset);
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _taskDetailBloc = TaskDetailBlocProvider.of(context).bloc;
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Map<int, CategoryTheme>>(
-      stream: ThemeBlocProvider.of(context).themeBloc.themeStream,
-      builder: (context, snapshot) {
-        if(!snapshot.hasData) {
-          ThemeBlocProvider.of(context).themeBloc.themeEventSink.add(RefreshThemeEvent());
-          return Container();
-        }
-        var theme = snapshot.data[widget.state.categoryId];
-        return Scaffold(
-          backgroundColor: Color(theme.backgroundColor),
-          body: Stack(
-            children: <Widget>[
-              CustomScrollView(
-                controller: _scrollController,
-                slivers: <Widget>[
-                  StreamBuilder<String>(
-                    stream: _taskDetailBloc.titleStream,
-                    initialData: widget.state.title,
-                    builder: (context, snapshot) {
-                        return _TaskDetailSliverAppBar(
-                          title: snapshot.data,
+    return BlocProvider<TaskDetailPageBloc>(
+      create: (context) => widget.bloc,
+      child: BlocBuilder(
+          bloc: widget.bloc,
+          builder: (context, pageState) {
+            var state = pageState as LoadedTaskDetailPageState;
+            var theme = BlocProvider.of<ThemeBloc>(context).state[state.task.categoryId];
+            return Scaffold(
+              backgroundColor: Color(theme.backgroundColor),
+              body: Stack(
+                children: <Widget>[
+                  CustomScrollView(
+                      controller: _scrollController,
+                      slivers: <Widget>[
+                        _TaskDetailSliverAppBar(
+                          title: state.task.name,
                           color: Color(theme.primaryColor),
-                          taskEditingSink: _taskDetailBloc.taskEditingSink,
                           height: _appBarHeight,
-                        );
-                      }
-                  ),
-                  SliverList(
-                      delegate: SliverChildListDelegate([
-                        Card(
-                          margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
-                          child: StepsCard(
-                            creationDate: widget.state.creationDate
+                          taskEditingSink: widget.bloc,
+                        ),
+                        SliverList(
+                            delegate: SliverChildListDelegate([
+                              Card(
+                                  margin: EdgeInsets.fromLTRB(16, 28, 16, 10),
+                                  child: StepsCard(state.task)
+                              ),
+                              DateNotificationCard(
+                                finalDate: state.task.finalDate,
+                                notificationDate: state.task.notificationDate,
+                                taskEditingSink: widget.bloc,
+                              ),
+                              SizedBox(height: 30),
+                              ImageList(
+                                  taskId: state.task.id,
+                                  categoryId: state.task.categoryId
+                              ),
+                            ]
                           )
-                        ),
-                        DateNotificationCard(
-                          finalDate: widget.state.finalDate,
-                          notificationDate: widget.state.notificationDate,
-                          taskEditingSink: _taskDetailBloc.taskEditingSink,
-                        ),
-                        SizedBox(height: 30),
-                        ImageList(categoryId: widget.state.categoryId),
+                        )
                       ]
-                    )
+                  ),
+                  SliverFab(
+                    value: state.task.isCompleted,
+                    scrollController: _scrollController,
                   )
                 ]
-              ),
-              _SliverFab(
-                onTap: _onCompleted,
-                fabStateStream: _sliverFabBloc.fabStateStream,
-              )
-            ]
-          )
-        );
-      }
+            )
+          );
+        }
+      ),
     );
   }
 
   @override
   void dispose() {
+    widget.bloc.close();
     _scrollController.dispose();
-    _sliverFabBloc.dispose();
     super.dispose();
-  }
-
-  void _onCompleted() {
-    _taskDetailBloc.taskEditingSink.add(CompletedTaskEvent());
-    _sliverFabBloc.fabEventSink.add(FabTapEvent());
   }
 
 }
 
-class _SliverFab extends StatelessWidget {
+class SliverFab extends StatefulWidget {
 
-  final VoidCallback onTap;
-  final Stream fabStateStream;
+  final bool value;
+  final ScrollController scrollController;
 
-  _SliverFab({this.onTap, this.fabStateStream});
+  SliverFab({this.value, this.scrollController});
+
+  @override
+  SliverFabState createState() => SliverFabState();
+}
+
+class SliverFabState extends State<SliverFab> {
+
+  SliverFabBlock _fabBlock;
+
+  @override
+  void initState() {
+    super.initState();
+    _fabBlock = SliverFabBlock(widget.value);
+    widget.scrollController.addListener(() {
+      _fabBlock.add(SliverFabMoveEvent(widget.scrollController.offset));
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FabState>(
-        stream: fabStateStream,
-        builder: (context, snapshot) {
-          if(!snapshot.hasData) return Container();
+    return BlocBuilder(
+        bloc: _fabBlock,
+        builder: (context, state) {
           return Positioned(
-            top: snapshot.data.top,
+            top: state.top,
             left: 16,
             child: Transform(
               transform: Matrix4.identity()
-                ..scale(snapshot.data.scale),
+                ..scale(state.scale),
               alignment: Alignment.center,
               child: FloatingActionButton(
-                onPressed: onTap,
-                child: Icon(snapshot.data.isCompleted ? Icons.clear : Icons.check),
+                onPressed: onPressed,
+                child: Icon(state.isCompleted ? Icons.clear : Icons.check),
               ),
             ),
           );
         }
     );
+  }
+
+  @override
+  void dispose() {
+    _fabBlock.close();
+    super.dispose();
+  }
+
+  void onPressed() {
+    BlocProvider.of<TaskDetailPageBloc>(context).add(CompletedTaskEvent());
+    _fabBlock.add(SliverFabTapEvent());
   }
 }
 

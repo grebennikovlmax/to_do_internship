@@ -1,73 +1,59 @@
 import 'dart:async';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/model/category_theme.dart';
 import 'package:todointernship/data/theme_list_data.dart';
 import 'package:todointernship/theme_event.dart';
 
-class ThemeBloc {
-  
-  final sharedPref = SharedPrefManager();
+class ThemeBloc extends Bloc<ThemeEvent, Map<int, CategoryTheme>> {
 
-  final _themeStreamController = StreamController<Map<int, CategoryTheme>>.broadcast(sync: true);
-  final _themeEventStreamController = StreamController<ThemeEvent>();
-  
-  Sink get themeEventSink => _themeEventStreamController.sink;
-  
-  Stream get themeStream => _themeStreamController.stream;
-
+  final SharedPrefManager _sharedPref;
   Map<int, CategoryTheme> _themes = {};
-  
-  ThemeBloc() {
-    _bindEventListener();
+
+  ThemeBloc(this._sharedPref) : super(null);
+
+  @override
+  Map<int, CategoryTheme> get state => _themes;
+
+  @override
+  Stream<Map<int, CategoryTheme>> mapEventToState(ThemeEvent event) async* {
+    if (event is DeleteThemeEvent) {
+      _deleteTheme(event);
+    } else if (event is SaveThemeEvent) {
+      yield* _saveTheme(event);
+    } else if (event is LoadThemeEvent) {
+      _loadTheme(event);
+    } else if (event is ChangeThemeEvent) {
+      yield* _changeTheme(event);
+    } else if (event is RefreshThemeEvent) {
+      yield _themes;
+    }
   }
 
-  void _bindEventListener() {
-    _themeEventStreamController.stream.listen((event) { 
-      switch(event.runtimeType) {
-        case LoadThemeEvent:
-          _loadTheme(event);
-          break;
-        case SaveThemeEvent:
-          _saveTheme(event);
-          break;
-        case RefreshThemeEvent:
-          _refreshList();
-          break;
-        case ChangeThemeEvent:
-          _changeTheme(event);
-          break;
-        case DeleteThemeEvent:
-          _deleteTheme(event);
-          break;
-      }
-    });
+  Stream<Map<int, CategoryTheme>> _saveTheme(SaveThemeEvent event) async*{
+    var theme = _setupCategoryTheme(event.color);
+    _themes[event.id] = theme;
+    _sharedPref.saveTheme(theme, event.id);
+    yield _themes;
   }
-  
+
   Future<void> _loadTheme(LoadThemeEvent event) async {
     if(!_themes.containsKey(event.id)) {
-      var theme = await sharedPref.loadTheme(event.id);
+      var theme = await _sharedPref.loadTheme(event.id);
       _themes[event.id] = theme;
     }
   }
 
-  void _saveTheme(SaveThemeEvent event) {
-    var theme = _setupCategoryTheme(event.color);
-    _themes[event.id] = theme;
-    sharedPref.saveTheme(theme, event.id);
-    _refreshList();
-  }
-
-  void _changeTheme(ChangeThemeEvent event) {
-    var theme = _setupCategoryTheme(event.color);
-    _themes[event.id] = theme;
-    sharedPref.saveTheme(theme, event.id);
-    _refreshList();
-  }
-
   void _deleteTheme(DeleteThemeEvent event) {
     _themes.remove(event.id);
-    sharedPref.deleteTheme(event.id);
+    _sharedPref.deleteTheme(event.id);
+  }
+
+  Stream<Map<int, CategoryTheme>> _changeTheme(ChangeThemeEvent event) async* {
+    var theme = _setupCategoryTheme(event.color);
+    _themes[event.id] = theme;
+    _sharedPref.saveTheme(theme, event.id);
+    yield Map.from(_themes);
   }
 
   CategoryTheme _setupCategoryTheme(int color) {
@@ -77,12 +63,4 @@ class ThemeBloc {
     return ThemeListData.all.themes.firstWhere((element) => element.backgroundColor == color);
   }
 
-  void _refreshList() {
-    _themeStreamController.add(_themes);
-  }
-  
-  void dispose() {
-    _themeStreamController.close();
-    _themeEventStreamController.close();
-  }
 }

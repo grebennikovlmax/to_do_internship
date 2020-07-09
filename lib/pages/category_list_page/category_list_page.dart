@@ -1,30 +1,16 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:async';
-
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
 import 'package:todointernship/pages/category_list_page/category_card.dart';
+import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_event.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page_state.dart';
 import 'package:todointernship/pages/category_list_page/new_category_dialog.dart';
-import 'package:todointernship/pages/category_list_page/category_list_page_bloc.dart';
-import 'package:todointernship/theme_bloc_provider.dart';
+import 'package:todointernship/theme_bloc.dart';
 import 'package:todointernship/widgets/modal_dialog.dart';
-
-
-class CategoryListBlocProvider extends InheritedWidget {
-
-  final CategoryListPageBloc bloc;
-  
-  const CategoryListBlocProvider({Key key, Widget child, @required this.bloc}) : super(child: child);
-
-  static CategoryListBlocProvider of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<CategoryListBlocProvider>();
-
-  @override
-  bool updateShouldNotify(CategoryListBlocProvider old) {
-    return false;
-  }
-}
 
 class CategoryListPage extends StatefulWidget {
 
@@ -35,38 +21,39 @@ class CategoryListPage extends StatefulWidget {
 }
 
 class _CategoryListPageState extends State<CategoryListPage> {
-  
+
   CategoryListPageBloc _categoryListBloc;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // ignore: close_sinks
-    var themeSink = ThemeBlocProvider.of(context).themeBloc.themeEventSink;
-    var themeStream = ThemeBlocProvider.of(context).themeBloc.themeStream;
-    _categoryListBloc = CategoryListPageBloc(themeSink, themeStream);
+    var themeBloc = BlocProvider.of<ThemeBloc>(context);
+    var injector = Injector.appInstance;
+    _categoryListBloc = CategoryListPageBloc(
+      injector.getDependency<TaskRepository>(),
+      themeBloc
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return CategoryListBlocProvider(
-      bloc: _categoryListBloc,
+    return BlocProvider<CategoryListPageBloc>(
+      create: (context) => _categoryListBloc,
       child: Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
           title: Text("Оторвись от дивана")
         ),
-        body: StreamBuilder<CategoryListPageState>(
-          stream: _categoryListBloc.categoryListPageStateStream,
-          builder: (context, snapshot) {
-            if(snapshot.data is LoadedPageState) {
-              return _CategoryList(
-                state: snapshot.data as LoadedPageState,
-                onAddNew: _showNewCategoryDialog,
-                onDelete: _onDelete,
-              );
-            }
-            return Container();
+        body: BlocBuilder(
+          bloc: _categoryListBloc,
+          builder: (context, state) {
+            if(state is LoadingCategoryPageState) return Center(child: CircularProgressIndicator(),);
+            return _CategoryList(
+              state: state,
+              onAddNew: _showNewCategoryDialog,
+              onDelete: _onDelete,
+            );
           }
         ),
       ),
@@ -75,7 +62,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
   @override
   void dispose() {
-    _categoryListBloc.dispose();
+    _categoryListBloc.close();
     super.dispose();
   }
 
@@ -84,7 +71,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
       context: context,
       builder: (context) {
         return NewCategoryDialog(
-          pageEventSink: _categoryListBloc.categoryListPageEventSink,
+          pageEventSink: _categoryListBloc,
         );
       }
     );
@@ -100,7 +87,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
         }
     );
     if(choice ?? false) {
-      _categoryListBloc.categoryListPageEventSink.add(DeleteCategoryEvent(id));
+      _categoryListBloc.add(DeleteCategoryEvent(id));
     }
   }
 }
@@ -109,7 +96,7 @@ class _CategoryList extends StatelessWidget {
 
   final VoidCallback onAddNew;
   final void Function(int) onDelete;
-  final LoadedPageState state;
+  final LoadedCategoryPageState state;
 
   _CategoryList({this.onAddNew, this.state, this.onDelete});
 
@@ -157,15 +144,16 @@ class _CategoryList extends StatelessWidget {
                         ),
                       );
                     }
+                    var themes = BlocProvider.of<ThemeBloc>(context).state;
                     return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CategoryCard(
-                              onLongPress: () => onDelete(state.categoryList[index].id),
-                              category: state.categoryList[index],
-                              theme: state.themes[state.categoryList[index].id],
-                            ),
-                        );
-                      },
+                      padding: const EdgeInsets.all(8.0),
+                      child: CategoryCard(
+                        onLongPress: () => onDelete(state.categoryList[index].id),
+                        category: state.categoryList[index],
+                        theme: themes[state.categoryList[index].id],
+                      ),
+                    );
+                  },
                   childCount: state.categoryList.length + 1
               ),
             )

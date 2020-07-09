@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page_block.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
-import 'package:todointernship/pages/task_list_page/task_list_page.dart';
+import 'package:todointernship/pages/task_list_page/task_list_page_bloc.dart';
+import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 import 'package:todointernship/widgets/custom_checkbox.dart';
 
 class TaskItem extends StatelessWidget {
@@ -33,7 +36,7 @@ class TaskItem extends StatelessWidget {
               child: Icon(Icons.delete,color: Colors.white,),
             ),
           ),
-          onDismissed: (dir) => TaskListBlocProvider.of(context).bloc.taskEventSink.add(RemoveTaskEvent(task.id)),
+          onDismissed: (dir) => BlocProvider.of<TaskListPageBloc>(context).add(RemoveTaskEvent(task.id)),
           key: ValueKey(task.id),
           child: Container(
               decoration: BoxDecoration(
@@ -56,7 +59,7 @@ class TaskItem extends StatelessWidget {
                 leading: CustomCheckBox(
                   value: task.isCompleted,
                   color: Scaffold.of(context).widget.backgroundColor,
-                  onChange: () => TaskListBlocProvider.of(context).bloc.taskEventSink.add(CompletedTaskEvent(task.id)),
+                  onChange: () => BlocProvider.of<TaskListPageBloc>(context).add(CompletedTaskEvent(task.id)),
                 ),
               )
           ),
@@ -66,12 +69,16 @@ class TaskItem extends StatelessWidget {
   }
 
   void _toStepList(BuildContext context) {
+    var injector = Injector.appInstance;
+    // ignore: close_sinks
     var bloc = TaskDetailPageBloc(
         task,
-        TaskListBlocProvider.of(context).bloc.taskEventSink,
+        injector.getDependency<TaskRepository>(),
+        injector.getDependency<PlatformNotificationChannel>(),
+        BlocProvider.of<TaskListPageBloc>(context)
     );
     Navigator.of(context).pushNamed('/task_detail', arguments: bloc)
-        .then((value) => TaskListBlocProvider.of(context).bloc.taskEventSink.add((UpdateTaskListEvent())));
+        .then((value) => BlocProvider.of<TaskListPageBloc>(context).add((UpdateTaskListEvent())));
   }
 
 }

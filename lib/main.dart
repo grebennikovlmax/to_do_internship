@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/shared_prefs_manager.dart';
+import 'package:todointernship/global_scope_container.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page.dart';
 import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page.dart';
 import 'package:todointernship/theme_bloc.dart';
-import 'package:todointernship/theme_bloc_provider.dart';
 
 void main() {
+  GlobalScopeContaier()
+      ..init();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
 
-  final _themeBlock = ThemeBloc();
-
   @override
   Widget build(BuildContext context) {
-    return ThemeBlocProvider(
-      themeBloc: _themeBlock,
+    return BlocProvider<ThemeBloc>(
+      create: (context) => ThemeBloc(Injector.appInstance.getDependency<SharedPrefManager>()),
       child: MaterialApp(
           initialRoute: '/',
           routes: {
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
             textTheme: TextTheme(
               headline5: TextStyle(
                 fontFamily: "Roboto",
+
                 fontWeight: FontWeight.w500,
                 fontSize: 14
               ),

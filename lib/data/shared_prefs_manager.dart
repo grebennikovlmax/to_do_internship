@@ -1,5 +1,4 @@
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:todointernship/model/category_theme.dart';
 
 class SharedPrefManager {

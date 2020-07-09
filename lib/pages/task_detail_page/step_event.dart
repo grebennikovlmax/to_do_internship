@@ -24,3 +24,5 @@ class CompletedStepEvent implements StepEvent {
 
   CompletedStepEvent(this.id);
 }
+
+class UpdateStepsEvent implements StepEvent {}

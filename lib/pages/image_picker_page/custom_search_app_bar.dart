@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-
 import 'dart:io';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/pages/image_picker_page/seach_bar_bloc.dart';
-import 'package:todointernship/pages/image_picker_page/search_state.dart';
 import 'package:todointernship/pages/image_picker_page/search_event.dart';
 import 'package:todointernship/pages/image_picker_page/image_page_event.dart';
-import 'package:todointernship/pages/image_picker_page/image_picker_page.dart';
+import 'image_picker_bloc.dart';
 
 class SearchAppBar extends StatefulWidget implements PreferredSizeWidget {
 
@@ -26,26 +26,26 @@ class _SearchAppBarState extends State<SearchAppBar> {
   @override
   void initState() {
     super.initState();
-    _searchBarBloc = SearchBarBloc();
+    var injector = Injector.appInstance;
+    _searchBarBloc = SearchBarBloc(injector.getDependency<SharedPrefManager>());
   }
 
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<SearchState>(
-        stream: _searchBarBloc.searchStateStream,
-        initialData: ClosedSearchState(),
-        builder: (context, snapshot) {
+    return BlocBuilder(
+        bloc: _searchBarBloc,
+        builder: (context, state) {
           return AppBar(
             titleSpacing: 5,
-            automaticallyImplyLeading: !snapshot.data.isSearching,
+            automaticallyImplyLeading: !state.isSearching,
             backgroundColor: widget.color,
-            title: snapshot.data.isSearching ? _CustomSearchBar(
-                text: (snapshot.data as OpenSearchState).text,
-                searchEventSink: _searchBarBloc.searchEventSink,
+            title: state.isSearching ? _CustomSearchBar(
+                text: state.text,
+                searchEventSink: _searchBarBloc,
             ) : Text('Flickr'),
             actions: <Widget>[
-              !snapshot.data.isSearching
+              !state.isSearching
                   ? IconButton(
                   icon: Icon(Icons.search),
                   onPressed: () => _onSearch(context)
@@ -59,12 +59,12 @@ class _SearchAppBarState extends State<SearchAppBar> {
 
   @override
   void dispose() {
-    _searchBarBloc.dispose();
+    _searchBarBloc.close();
     super.dispose();
   }
 
   void _onSearch(BuildContext context) {
-    _searchBarBloc.searchEventSink.add(OpenSearchEvent());
+    _searchBarBloc.add(OpenSearchEvent());
   }
 }
 
@@ -111,13 +111,13 @@ class _CustomSearchBar extends StatelessWidget {
   }
 
   void _onSubmitted(BuildContext context, String text) {
-    ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(SearchImageEvent(text: text));
+    BlocProvider.of<ImagePickerBloc>(context).add(SearchImageEvent(text: text));
     searchEventSink.add(OnSearchEvent(text));
   }
 
   void _onClosed(BuildContext context) {
     searchEventSink.add(CloseSearchEvent());
-    ImagePickerBlockProvider.of(context).block.imagePageEventSink.add(RefreshPageEvent());
+    BlocProvider.of<ImagePickerBloc>(context).add(RefreshPageEvent());
   }
 
   void _onPressReturn(BuildContext context) {

@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/data/theme_list_data.dart';
 
 class ThemePickerState {
@@ -10,45 +10,28 @@ class ThemePickerState {
   ThemePickerState(this.pickedColor, this.colorList);
 }
 
-class ThemePickerEvent {
+  class ThemePickerEvent {
   final int pickedColor;
 
   ThemePickerEvent(this.pickedColor);
 }
 
-class ThemePickerBloc {
+class ThemePickerBloc extends Bloc<ThemePickerEvent, ThemePickerState> {
 
-  final _themePickerEventStreamController = StreamController<ThemePickerEvent>();
-  final _themePickerStateStreamController = StreamController<ThemePickerState>();
-
-  Stream get themePickerStateStream => _themePickerStateStreamController.stream;
-
-  Sink get themePickerEventSink => _themePickerEventStreamController.sink;
-
+  final ThemeListData _themeData;
+  List<int> _colorList;
   int _pickedColor;
 
-  List<int> _colorList;
+  ThemePickerBloc(this._themeData, [int pickedColor]) :
+      _colorList = _themeData.themes.map((e) => e.backgroundColor).toList(),
+      _pickedColor = pickedColor == null ? _themeData.mainTheme.backgroundColor : pickedColor, super(null);
 
-  ThemePickerBloc({int pickedColor}) : _pickedColor = pickedColor {
-    _initColorList();
-    _bindThemeEventListener();
-  }
+  @override
+  ThemePickerState get state => ThemePickerState(_pickedColor, _colorList);
 
-  void _initColorList() {
-    var categoryThemeList = ThemeListData.all.themes;
-    _colorList = categoryThemeList.map((e) => e.backgroundColor).toList();
-    _pickedColor ??= _colorList.last;
-    _themePickerStateStreamController.add(ThemePickerState(_pickedColor, _colorList));
-  }
-  void _bindThemeEventListener() {
-    _themePickerEventStreamController.stream.listen((event) {
-      var color = event.pickedColor;
-      _themePickerStateStreamController.add(ThemePickerState(color, _colorList));
-    });
+  @override
+  Stream<ThemePickerState> mapEventToState(ThemePickerEvent event) async* {
+    yield ThemePickerState(event.pickedColor, _colorList);
   }
 
-  void dispose() {
-    _themePickerEventStreamController.close();
-    _themePickerStateStreamController.close();
-  }
 }

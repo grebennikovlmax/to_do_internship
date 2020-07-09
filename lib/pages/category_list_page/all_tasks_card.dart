@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import 'dart:math';
-
 import 'package:todointernship/widgets/completion_bar.dart';
-
 
 class AllTasksCard extends StatelessWidget {
 

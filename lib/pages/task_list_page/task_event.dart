@@ -17,6 +17,7 @@ class RemoveTaskEvent extends TaskEvent {
 }
 
 class NewTaskEvent implements TaskEvent {
+
   final DateTime finalDate;
   final DateTime notificationDate;
   final String name;
@@ -25,11 +26,13 @@ class NewTaskEvent implements TaskEvent {
 }
 
 class UpdateTaskNameEvent extends TaskEvent {
+
   final String name;
   UpdateTaskNameEvent(this.name);
 }
 
 class UpdateTaskFinalDateEvent extends TaskEvent {
+
   final DateTime newDate;
 
   UpdateTaskFinalDateEvent(this.newDate);
@@ -41,10 +44,8 @@ class UpdateTaskNotificationDateEvent extends TaskEvent {
   UpdateTaskNotificationDateEvent(this.newDate);
 }
 
-class RemoveCompletedEvent extends TaskEvent {
+class RemoveCompletedEvent extends TaskEvent {}
 
-}
+class UpdateTaskListEvent extends TaskEvent {}
 
-class UpdateTaskListEvent extends TaskEvent {
-
-}
+class HideTaskEvent extends TaskEvent {}

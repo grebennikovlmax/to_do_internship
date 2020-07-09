@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/widgets/theme_picker/theme_picker_bloc.dart';
 
 class ThemePicker extends StatelessWidget {
 
-  final Stream<ThemePickerState> stateStream;
-  final Sink<ThemePickerEvent> eventSink;
+  final ThemePickerBloc bloc;
   final double height;
   final void Function(int) onPick;
 
-  ThemePicker({this.eventSink,this.stateStream,this.height, this.onPick});
+  ThemePicker({this.bloc ,this.height, this.onPick});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: height ?? 30,
       width: double.maxFinite,
-      child: StreamBuilder<ThemePickerState>(
-        stream: stateStream,
+      child: BlocBuilder(
+        bloc: bloc,
         builder: (context, snapshot) {
-          if(!snapshot.hasData) {
-            return Container();
-          }
           return GridView.builder(
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
-              itemCount: snapshot.data.colorList.length,
+              itemCount: snapshot.colorList.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 mainAxisSpacing: 5,
                 crossAxisCount: 1,
@@ -33,9 +29,9 @@ class ThemePicker extends StatelessWidget {
               physics: NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 return _CustomThemPickerButton(
-                  color: snapshot.data.colorList[index],
-                  value: snapshot.data.pickedColor == snapshot.data.colorList[index],
-                  onTap: () => _onTap(snapshot.data.colorList[index]),
+                  color: snapshot.colorList[index],
+                  value: snapshot.pickedColor == snapshot.colorList[index],
+                  onTap: () => _onTap(snapshot.colorList[index]),
                 );
               }
           );
@@ -46,7 +42,7 @@ class ThemePicker extends StatelessWidget {
 
   void _onTap(int color) {
     onPick(color);
-    eventSink.add(ThemePickerEvent(color));
+    bloc.add(ThemePickerEvent(color));
   }
 }
 

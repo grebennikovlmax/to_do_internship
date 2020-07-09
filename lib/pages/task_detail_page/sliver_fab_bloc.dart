@@ -1,44 +1,40 @@
 import 'dart:async';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/pages/task_detail_page/fab_state.dart';
 
-class FabTapEvent {}
+abstract class SliverFabEvent {}
 
-class SliverFabBloc {
-  final _fabPositionStreamController = StreamController<double>();
+class SliverFabTapEvent implements SliverFabEvent {}
 
-  final _fabStateStreamController = StreamController<FabState>();
-  final _fabTapEvent = StreamController<FabTapEvent>();
+class SliverFabMoveEvent implements SliverFabEvent {
 
-  Stream get fabStateStream => _fabStateStreamController.stream;
+  final double offset;
 
-  Sink get fabPositionSink => _fabPositionStreamController.sink;
-  Sink get fabEventSink => _fabTapEvent.sink;
+  SliverFabMoveEvent(this.offset);
+}
+
+class SliverFabBlock extends Bloc<SliverFabEvent, FabState> {
 
   double _fabTop = 124;
   double _fabScale = 1;
-  bool isCompleted;
+  bool _isCompleted;
 
-  SliverFabBloc(this.isCompleted) {
-    _setFabState();
-    _bindFabPositionListener();
-    _bindEventListener();
+  SliverFabBlock(this._isCompleted) : super(null);
+
+  @override
+  FabState get state => FabState(_fabTop, _fabScale, _isCompleted);
+
+  @override
+  Stream<FabState> mapEventToState(SliverFabEvent event) async* {
+    if (event is SliverFabTapEvent) {
+      _isCompleted = !_isCompleted;
+      yield _setFabState();
+    } else if ( event is SliverFabMoveEvent){
+      yield* _setFabPosition(event.offset);
+    }
   }
 
-  void _bindFabPositionListener() {
-    _fabPositionStreamController.stream.listen((event) {
-      _setFabPosition(event);
-    });
-  }
-
-  _bindEventListener() {
-    _fabTapEvent.stream.listen((event) {
-      isCompleted = !isCompleted;
-      _setFabState();
-    });
-  }
-
-  void _setFabPosition(double offset) {
+  Stream<FabState> _setFabPosition(double offset) async* {
     var appBarHeight = 128.0;
     var defaultTop = appBarHeight - 4.0;
     var scaleStart = 96.0;
@@ -52,17 +48,11 @@ class SliverFabBloc {
       _fabScale = 0;
     }
     _fabTop = defaultTop - offset;
-    _setFabState();
+    yield _setFabState();
   }
 
-  void _setFabState() {
-    var state = FabState(_fabTop, _fabScale, isCompleted);
-    _fabStateStreamController.add(state);
+  FabState _setFabState() {
+    return FabState(_fabTop, _fabScale, _isCompleted);
   }
 
-  void dispose() {
-    _fabTapEvent.close();
-    _fabStateStreamController.close();
-    _fabPositionStreamController.close();
-  }
 }

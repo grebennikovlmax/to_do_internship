@@ -29,6 +29,9 @@ dependencies:
   intl: ^0.16.1
   http: ^0.12.1
   path_provider: ^1.6.11
+  mockito: ^4.1.1
+  flutter_bloc: ^5.0.1
+  injector: ^1.0.8
 
 
   # The following adds the Cupertino Icons font to your application.

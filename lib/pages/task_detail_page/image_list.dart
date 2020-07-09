@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injector/injector.dart';
+import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:io';
 import 'dart:math';
-
 import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/image_event.dart';
 import 'package:todointernship/pages/task_detail_page/image_list_bloc.dart';
-import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 
 class ImageList extends StatefulWidget {
 
   final int categoryId;
+  final int taskId;
 
-  ImageList({this.categoryId});
+  ImageList({this.categoryId, this.taskId});
 
   @override
   _ImageListState createState() => _ImageListState();
 }
-
 
 class _ImageListState extends State<ImageList> {
 
@@ -27,16 +27,17 @@ class _ImageListState extends State<ImageList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    var taskId = TaskDetailBlocProvider.of(context).taskId;
-    _imageListBloc = ImageListBloc(taskId);
+    _imageListBloc = ImageListBloc(
+      widget.taskId,
+      Injector.appInstance.getDependency<TaskRepository>()
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<TaskImage>>(
-      stream: _imageListBloc.imageListStream,
+    return BlocBuilder(
+      bloc: _imageListBloc,
       builder: (context, snapshot) {
-        if(!snapshot.hasData) return Container();
         return Container(
           color: Colors.white,
           height: height,
@@ -44,14 +45,14 @@ class _ImageListState extends State<ImageList> {
             padding: EdgeInsets.all(16),
             child: GridView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: snapshot.data.length + 1,
+                itemCount: snapshot.length + 1,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   crossAxisCount: 1,
                 ),
                 itemBuilder: (context, index) {
-                  if(!snapshot.data.asMap().containsKey(index)) {
+                  if(!snapshot.asMap().containsKey(index)) {
                     return FractionallySizedBox(
                       widthFactor: 0.5,
                       alignment: Alignment.centerLeft,
@@ -61,8 +62,8 @@ class _ImageListState extends State<ImageList> {
                     );
                   }
                   return _ImageItem(
-                    onDelete: () => _onDelete(snapshot.data[index].path),
-                    image: snapshot.data[index],
+                    onDelete: () => _onDelete(snapshot[index].path),
+                    image: snapshot[index],
                   );
                 }
             )
@@ -74,19 +75,19 @@ class _ImageListState extends State<ImageList> {
 
   @override
   void dispose() {
-    _imageListBloc.dispose();
+    _imageListBloc.close();
     super.dispose();
   }
 
   Future<void> _onAddImage() async{
     var url = await Navigator.of(context).pushNamed('/photo_picker', arguments: widget.categoryId);
     if(url != null) {
-      _imageListBloc.imageEvent.add(NewImageEvent(url));
+      _imageListBloc.add(NewImageEvent(url));
     }
   }
 
   void _onDelete(String path) {
-    _imageListBloc.imageEvent.add(DeleteImageEvent(path));
+    _imageListBloc.add(DeleteImageEvent(path));
   }
 
 }
@@ -133,7 +134,6 @@ class _ImageItem extends StatelessWidget {
   }
 
 }
-
 
 class _AddImageButton extends StatelessWidget {
 

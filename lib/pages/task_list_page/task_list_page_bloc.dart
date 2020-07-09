@@ -1,154 +1,118 @@
 import 'dart:async';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'package:todointernship/model/task.dart';
-import 'package:todointernship/pages/task_list_page/hidden_task_state.dart';
 import 'package:todointernship/pages/task_list_page/task_event.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page_state.dart';
-import 'package:todointernship/pages/task_list_page/hidden_task_event.dart';
-import 'package:todointernship/pages/task_list_page/task_list_state.dart';
 import 'package:todointernship/platform_channel/notifiaction_channel.dart';
 
-class TaskListPageBloc {
+class TaskListPageBloc extends Bloc<TaskEvent, TaskListPageState> {
 
-  final SharedPrefManager _pref;
+  final TaskRepository _taskRepository;
+  final SharedPrefManager _prefManager;
+  final PlatformNotificationChannel _platformNotificationChannel;
   final int _categoryId;
   final String _title;
-  final _taskRepository = TaskDatabaseRepository.shared;
-  final _taskListPageStateStreamController = StreamController<TaskListPageState>();
-  final _taskListStateStreamController = StreamController<TaskListState>();
-  final _hideTaskEventStreamController = StreamController<HiddenTaskEvent>();
-  final _hiddenTaskStateStreamController = StreamController<HiddenTaskState>();
-  final _taskEventStreamController = StreamController<TaskEvent>();
-
-  Stream get taskListPageStream => _taskListPageStateStreamController.stream;
-  Stream get hiddenTaskStateStream => _hiddenTaskStateStreamController.stream;
-  Stream get taskListStateStream => _taskListStateStreamController.stream;
-
-  Sink get hideTaskEventSink => _hideTaskEventStreamController.sink;
-  Sink get taskEventSink => _taskEventStreamController.sink;
-
   bool _isHidden;
-  List<Task> _taskList = [];
+  List<Task> _taskList;
 
-  TaskListPageBloc(int categoryId, String title)
-      : _pref = SharedPrefManager(),
-        _categoryId = categoryId,
-        _title = title
+  TaskListPageBloc(
+      this._taskRepository,
+      this._prefManager,
+      this._platformNotificationChannel,
+      this._title,
+      this._categoryId)
+        : super(LoadingTaskListPageState())
   {
-    _loadPage().then((value) => _taskListPageStateStreamController.add(value));
-    _loadTaskList().then((_) => _setTaskListState());
-    _bindHiddenEventListener();
-    _bindTaskEventListener();
+    _loadPage().then((value) => this.add(UpdateTaskListEvent()));
   }
 
-  Future<LoadedPageState> _loadPage() async {
-    _isHidden = await _getHiddenFlag();
-    return LoadedPageState(categoryId: _categoryId, title: _title, hiddenState: HiddenTaskState(_isHidden));
-  }
-
-  _bindHiddenEventListener() {
-    _hideTaskEventStreamController.stream.listen((event) {
-      _isHidden = !_isHidden;
-      _saveHiddenFlag();
-      _hiddenTaskStateStreamController.add(HiddenTaskState(_isHidden));
-      _setTaskListState();
-    });
-  }
-
-  _bindTaskEventListener() {
-    _taskEventStreamController.stream.listen((event) { 
-      switch(event.runtimeType) {
-        case NewTaskEvent:
-          _saveNewTask(event);
-          break;
-        case CompletedTaskEvent:
-          _completeTask(event);
-          break;
-        case RemoveCompletedEvent:
-          _removerCompleted();
-          break;
-        case RemoveTaskEvent:
-          _removeTask(event);
-          break;
-        case UpdateTaskListEvent:
-          _setTaskListState();
-          break;
-      }
-    });
-  }
-
-  Future<void> _loadTaskList() async {
-    _taskList = await _taskRepository.getTaskListForCategory(_categoryId);
-  }
-
-  void _setTaskListState() {
-    if(_taskList.isEmpty) {
-      _taskListStateStreamController.add(EmptyListState('На данный момент в этой ветке нет задач'));
-    } else if(_isHidden) {
-      var taskList = _taskList.where((element) => !element.isCompleted).toList();
-      if(taskList.isEmpty && _taskList.isNotEmpty) {
-        _taskListStateStreamController.add(EmptyListState('Все задания выполнены'));
-      } else {
-        _taskListStateStreamController.add(FullTaskListState(taskList));
-      }
-    } else {
-      _taskListStateStreamController.add(FullTaskListState(_taskList));
+  @override
+  Stream<TaskListPageState> mapEventToState(TaskEvent event) async* {
+    if( event is NewTaskEvent) {
+      yield* _saveTask(event);
+    } else if (event is CompletedTaskEvent) {
+      yield* _completeTask(event);
+    } else if (event is RemoveCompletedEvent) {
+      yield* _removeCompleted();
+    } else if (event is RemoveTaskEvent) {
+      yield* _removeTask(event);
+    } else if (event is UpdateTaskListEvent) {
+      yield* _setTaskListState();
+    } else if (event is HideTaskEvent) {
+      yield* _hideTaskEvent();
     }
   }
 
-  Future<void> _saveNewTask(NewTaskEvent event) async {
+  Future<void> _loadPage() async {
+    _taskList = await _taskRepository.getTaskListForCategory(_categoryId);
+    _isHidden = await _getHiddenFlag();
+  }
+
+  Stream<TaskListPageState> _saveTask(NewTaskEvent event) async* {
     var task = Task(
-      categoryId: _categoryId,
-      finalDate: event.finalDate,
-      notificationDate: event.notificationDate,
-      name: event.name
+        categoryId: _categoryId,
+        finalDate: event.finalDate,
+        notificationDate: event.notificationDate,
+        name: event.name
     );
     var id = await _taskRepository.saveTask(task);
     task.id = id;
     if(event.notificationDate != null) {
-      var nm = PlatformNotificationChannel();
-      nm.setNotification(task);
+      _platformNotificationChannel.setNotification(task);
     }
     _taskList.add(task);
-    _setTaskListState();
+    yield* _setTaskListState();
   }
 
-  void _completeTask(CompletedTaskEvent event) {
+  Stream<TaskListPageState> _completeTask(CompletedTaskEvent event) async* {
     var task = _taskList.firstWhere((element) => element.id == event.taskId);
     task.isCompleted = !task.isCompleted;
-    _setTaskListState();
     _taskRepository.updateTask(task);
+    yield* _setTaskListState();
   }
 
-  void _removerCompleted() {
+  Stream<TaskListPageState> _removeCompleted() async* {
     _taskList.removeWhere((element) => element.isCompleted);
-    _setTaskListState();
     _taskRepository.removeCompletedTask();
+    yield* _setTaskListState();
   }
 
-  void _removeTask(RemoveTaskEvent event) {
+  Stream<TaskListPageState> _removeTask(RemoveTaskEvent event) async* {
     var id = event.taskId;
     _taskList.removeWhere((element) => element.id == id);
     _taskRepository.removeTask(id);
-    _setTaskListState();
+    yield* _setTaskListState();
+  }
+
+  Stream<TaskListPageState> _setTaskListState() async* {
+    var taskList = _taskList;
+    if(_taskList.isEmpty) {
+      yield EmptyTaskListPageState(_isHidden, _categoryId, _title, 'На данный момент в этой ветке нет задач');
+      return;
+    } else if(_isHidden) {
+      taskList = _taskList.where((element) => !element.isCompleted).toList();
+      if(taskList.isEmpty && _taskList.isNotEmpty) {
+        yield EmptyTaskListPageState(_isHidden, _categoryId, _title, 'Все задания выполнены');
+        return;
+      }
+    }
+    yield NotEmptyTaskListPageState(_isHidden, _categoryId, _title, taskList);
+  }
+
+  Stream<TaskListPageState> _hideTaskEvent() async* {
+    _isHidden = !_isHidden;
+    _saveHiddenFlag();
+    yield* _setTaskListState();
   }
 
   Future<bool> _getHiddenFlag() async {
-    return await _pref.getHiddenFlag(_categoryId);
+    return await _prefManager.getHiddenFlag(_categoryId);
   }
 
   Future<void> _saveHiddenFlag() async {
-    return await _pref.saveHiddenFlag(_isHidden, _categoryId);
-  }
-
-  void dispose() {
-    _taskListPageStateStreamController.close();
-    _hideTaskEventStreamController.close();
-    _hiddenTaskStateStreamController.close();
-    _taskListStateStreamController.close();
-    _taskEventStreamController.close();
+    return await _prefManager.saveHiddenFlag(_isHidden, _categoryId);
   }
 
 }

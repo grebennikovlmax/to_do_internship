@@ -1,8 +1,6 @@
 import 'package:flutter/services.dart';
 import 'dart:async';
-
 import 'package:todointernship/model/task.dart';
-
 
 class PlatformNotificationChannel {
 

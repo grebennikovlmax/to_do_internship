@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:todointernship/model/task.dart';
 import 'package:todointernship/pages/task_list_page/task_item.dart';
 
