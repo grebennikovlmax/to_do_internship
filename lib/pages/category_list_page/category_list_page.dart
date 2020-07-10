@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injector/injector.dart';
+import 'package:todointernship/authorization_page/authorization_bloc.dart';
 import 'package:todointernship/data/task_data/task_repository.dart';
 import 'dart:async';
 import 'package:todointernship/pages/category_list_page/all_tasks_card.dart';
@@ -43,7 +44,13 @@ class _CategoryListPageState extends State<CategoryListPage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
-          title: Text("Оторвись от дивана")
+          title: Text("Оторвись от дивана"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.exit_to_app),
+              onPressed: () => BlocProvider.of<AuthorizationBloc>(context).add(LogOutEvent()),
+            )
+          ]
         ),
         body: BlocBuilder(
           bloc: _categoryListBloc,

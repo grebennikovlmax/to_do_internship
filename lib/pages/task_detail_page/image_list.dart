@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:todointernship/model/task_image.dart';
 import 'package:todointernship/pages/task_detail_page/image_event.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:todointernship/pages/task_detail_page/image_list_bloc.dart';
 
 class ImageList extends StatefulWidget {
@@ -80,9 +81,31 @@ class _ImageListState extends State<ImageList> {
   }
 
   Future<void> _onAddImage() async{
-    var url = await Navigator.of(context).pushNamed('/photo_picker', arguments: widget.categoryId);
-    if(url != null) {
-      _imageListBloc.add(NewImageEvent(url));
+    var option = await showDialog<ImagePickerOption>(
+        context: context,
+        builder: (context) {
+          return _ImagePickerDialog();
+      }
+    );
+    if(option != null) {
+      _onPickImage(option);
+    }
+  }
+
+  Future<void> _onPickImage(ImagePickerOption option) async{
+    switch (option) {
+      case ImagePickerOption.camera:
+        Navigator.of(context).pushNamed('/camera', arguments: widget.taskId).then((value) => _imageListBloc.add(UpdateImageEvent()));
+        break;
+      case ImagePickerOption.flickr:
+        var url = await Navigator.of(context).pushNamed('/photo_picker', arguments: widget.categoryId);
+        if(url != null) {
+          _imageListBloc.add(NewImageEvent(url));
+        }
+        break;
+      case ImagePickerOption.gallery:
+        await ImagePicker().getImage(source: ImageSource.gallery);
+        break;
     }
   }
 
@@ -156,6 +179,56 @@ class _AddImageButton extends StatelessWidget {
               color: Colors.white,
           ),
         ),
+      ),
+    );
+  }
+}
+
+enum ImagePickerOption { camera, gallery, flickr}
+
+class _ImagePickerDialog extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+      contentPadding: EdgeInsets.all(15),
+      children: <Widget>[
+        _ImageDialogOption(
+          title: "Фото",
+          onTap: () => Navigator.of(context).pop(ImagePickerOption.camera),
+        ),
+        SizedBox(height: 10),
+        _ImageDialogOption(
+          title: 'Галерея',
+          onTap: () => Navigator.of(context).pop(ImagePickerOption.gallery),
+        ),
+        SizedBox(height: 10),
+        _ImageDialogOption(
+          title: 'Загрузить c Flickr',
+          onTap: () => Navigator.of(context).pop(ImagePickerOption.flickr),
+        )
+      ],
+    );
+  }
+
+}
+
+class _ImageDialogOption extends StatelessWidget {
+
+  final VoidCallback onTap;
+  final String title;
+
+  _ImageDialogOption({this.onTap, this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(title,
+          style: Theme.of(context).textTheme.bodyText2.copyWith(
+              fontSize: 18,
+              color: Colors.grey
+          )
       ),
     );
   }

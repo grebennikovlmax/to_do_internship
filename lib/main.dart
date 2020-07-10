@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injector/injector.dart';
+import 'package:todointernship/authorization_page/authorization_page.dart';
 import 'package:todointernship/data/shared_prefs_manager.dart';
 import 'package:todointernship/global_scope_container.dart';
 import 'package:todointernship/pages/image_picker_page/image_picker_page.dart';
@@ -8,6 +9,7 @@ import 'package:todointernship/pages/task_detail_page/task_detail_page.dart';
 import 'package:todointernship/pages/task_list_page/task_list_page.dart';
 import 'package:todointernship/pages/category_list_page/category_list_page.dart';
 import 'package:todointernship/theme_bloc.dart';
+import 'file:///C:/Users/Grebennikov.MS/AndroidStudioProjects/todo_internship/lib/widgets/phone_camera/phone_camera.dart';
 
 void main() {
   GlobalScopeContaier()
@@ -24,9 +26,11 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
           initialRoute: '/',
           routes: {
+            '/app': (context) => CategoryListPage(),
             '/category_detail' : (context) => TaskListPage(ModalRoute.of(context).settings.arguments),
             '/task_detail' : (context) => TaskDetailPage(ModalRoute.of(context).settings.arguments),
-            '/photo_picker': (context) => ImagePickerPage(ModalRoute.of(context).settings.arguments)
+            '/photo_picker': (context) => ImagePickerPage(ModalRoute.of(context).settings.arguments),
+            '/camera' : (context) => PhoneCamera(ModalRoute.of(context).settings.arguments)
           },
           theme: ThemeData(
             primaryColor: Color(0xff6202EE),
@@ -52,7 +56,7 @@ class MyApp extends StatelessWidget {
               )
             )
           ),
-          home: CategoryListPage()
+          home: AuthorizationPage(),
       ),
     );
   }

@@ -9,8 +9,7 @@ class ImageManager {
   ImageManager._privateConstructor();
 
   Future<String> get path async {
-    final docDir = await getApplicationDocumentsDirectory();
-    return docDir.path + '/images/';
+    return await _getImageDir();
   }
 
   Future<String> saveImage(String url) async {
@@ -22,22 +21,32 @@ class ImageManager {
   }
 
   Future<void> removeImage(String path) async {
-    final docDir = await getApplicationDocumentsDirectory();
-    final file = File('${docDir.path}/images/$path');
+    final docDir = await _getImageDir();
+    final file = File(docDir + path);
     file.delete();
   }
 
   Future<File> _getFileFor(String name) async {
-    final docDir = await getApplicationDocumentsDirectory();
-    final imageDir = Directory(docDir.path +'/images');
-    final newDir = await imageDir.create();
-    return File('${newDir.path}/$name');
+    var dir = await _getImageDir();
+    return File(dir + name);
   }
 
   String _clipUrl(String url) {
     final reg = RegExp(r'[^A-Za-z0-9]');
     final res = url.replaceAll(reg, '');
     return res +'.jpg';
+  }
+
+  Future<String> getPathForSaveCameraImage(String path) async{
+    var docDir = await _getImageDir();
+    return docDir + path;
+  }
+
+  Future<String> _getImageDir() async {
+    var docDir = await getApplicationDocumentsDirectory();
+    final imageDir = Directory(docDir.path +'/images/');
+    final newDir = await imageDir.create();
+    return newDir.path;
   }
 
 }

@@ -21,6 +21,7 @@ abstract class TaskRepository {
   Future<int> saveImage({String url, int taskId});
   Future<List<Category>> getAllCategories();
   Future<void> removeCategory(int id);
+  Future<void> saveCameraImage(String path, int taskId);
 }
 
 class TaskDatabaseRepository implements TaskRepository {
@@ -117,6 +118,12 @@ class TaskDatabaseRepository implements TaskRepository {
   @override
   Future<void> removeCategory(int id) async {
     await db.deleteCategory(id);
+  }
+
+  @override
+  Future<void> saveCameraImage(String path, int taskId) async {
+    final image = TaskImage(taskID: taskId, path: path);
+    await db.insertImage(image.toMap());
   }
 
 }

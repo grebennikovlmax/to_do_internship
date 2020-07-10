@@ -11,9 +11,10 @@ import 'image_picker_bloc.dart';
 class SearchAppBar extends StatefulWidget implements PreferredSizeWidget {
 
   final Color color;
+  final int id;
   final Size preferredSize = Size.fromHeight(56);
 
-  SearchAppBar({this.color});
+  SearchAppBar({this.color, this.id});
 
   @override
   _SearchAppBarState createState() => _SearchAppBarState();
@@ -47,9 +48,9 @@ class _SearchAppBarState extends State<SearchAppBar> {
             actions: <Widget>[
               !state.isSearching
                   ? IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () => _onSearch(context)
-              )
+                      icon: Icon(Icons.search),
+                      onPressed: _onSearch,
+                  )
                   : Container()
             ],
           );
@@ -63,7 +64,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
     super.dispose();
   }
 
-  void _onSearch(BuildContext context) {
+  void _onSearch() {
     _searchBarBloc.add(OpenSearchEvent());
   }
 }

@@ -12,7 +12,7 @@ class ImageListBloc extends Bloc<ImageEvent, List<TaskImage>> {
   List<TaskImage> _imageList = [];
 
   ImageListBloc(this.taskId, this._taskRepository) : super(null) {
-    _loadImagesPath().then((value) => this.add(UpdateImageEvent()));
+    this.add(UpdateImageEvent());
   }
 
   @override
@@ -25,6 +25,7 @@ class ImageListBloc extends Bloc<ImageEvent, List<TaskImage>> {
     } else if ( event is DeleteImageEvent) {
       yield* _deleteImage(event);
     } else if ( event is UpdateImageEvent) {
+      await _loadImagesPath();
       yield List.from(_imageList);
     }
   }
